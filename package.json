@@ -1,5 +1,5 @@
 {
-  "name": "webvakwerk-ticket",
+  "name": "ticket-system",
   "private": true,
   "scripts": {
     "dev": "pnpm -F web dev",
