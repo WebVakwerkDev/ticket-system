@@ -4,13 +4,36 @@ Intern systeem voor WebVakwerk om leads, projecten en tickets te beheren — van
 
 ---
 
-## Opstarten (Docker)
+## Opstarten
 
-Dit is de enige manier om de applicatie te draaien in productie. Je hebt alleen Docker nodig.
+Het makkelijkste is via het `dev.sh` script. Je hebt alleen Docker nodig.
 
-### 1. Eerste keer instellen
+```bash
+./dev.sh start
+```
 
-**Kopieer het voorbeeld-envbestand en vul het in:**
+Hiermee starten automatisch: PostgreSQL, Redis en de webapplicatie op poort **3000**.
+
+### Alle commando's
+
+```bash
+./dev.sh start          # Start alle containers
+./dev.sh stop           # Stop containers (data bewaard)
+./dev.sh restart        # Herstart alleen de web container
+./dev.sh rebuild        # Bouw image opnieuw + herstart
+./dev.sh logs           # Volg web logs live
+./dev.sh logs db        # Volg database logs
+./dev.sh status         # Containerstatus + health check
+./dev.sh db             # Open psql shell
+./dev.sh push-schema    # Sync Prisma schema zonder rebuild
+./dev.sh down           # Verwijder containers (volumes bewaard)
+```
+
+---
+
+## Eerste keer instellen
+
+### 1. Omgevingsvariabelen
 
 ```bash
 cp .env.example .env
@@ -20,128 +43,57 @@ Open `.env` en stel minimaal in:
 
 | Variabele | Beschrijving |
 |---|---|
-| `POSTGRES_PASSWORD` | Wachtwoord voor de database (kies iets sterks) |
+| `POSTGRES_PASSWORD` | Wachtwoord voor de database |
 | `REDIS_PASSWORD` | Wachtwoord voor Redis |
 | `JWT_SECRET` | Minimaal 32 tekens, willekeurige string |
 | `REFRESH_TOKEN_SECRET` | Minimaal 32 tekens, willekeurige string |
 | `SEED_ADMIN_EMAIL` | E-mailadres van de eerste beheerder |
 | `SEED_ADMIN_PASSWORD` | Wachtwoord van de eerste beheerder |
+| `GITHUB_TOKEN_ENCRYPTION_KEY` | 32-byte hex string (64 tekens) voor tokenversleuteling |
 
-**Start de containers:**
+Genereer `GITHUB_TOKEN_ENCRYPTION_KEY` met:
+```bash
+openssl rand -hex 32
+```
+
+### 2. Starten
 
 ```bash
-docker compose up -d
+./dev.sh start
 ```
 
-Dit start automatisch:
-- De database (PostgreSQL)
-- Redis (voor rate limiting)
-- De webapplicatie op poort 3000
+### 3. Inloggen
 
-**Maak de databasetabellen aan:**
-
-```bash
-# Voer dit eenmalig uit na de eerste start
-docker compose run --rm migrate
-```
-
-Als je een foutmelding krijgt dat er geen migraties zijn, gebruik dan:
-
-```bash
-source .env
-docker run --rm \
-  --network webvakwerk-ticket_internal \
-  -e DATABASE_URL="postgresql://app:${POSTGRES_PASSWORD}@db:5432/app" \
-  --entrypoint node \
-  webvakwerk-ticket-migrate:latest \
-  /app/node_modules/.pnpm/prisma@5.22.0/node_modules/prisma/build/index.js \
-  db push --schema=/app/packages/db/prisma/schema.prisma --skip-generate
-```
-
-**Vul de database met de eerste beheerder en voorbeelddata:**
-
-```bash
-source .env
-docker exec \
-  -e DATABASE_URL="postgresql://app:${POSTGRES_PASSWORD}@db:5432/app" \
-  -e SEED_ADMIN_EMAIL="${SEED_ADMIN_EMAIL}" \
-  -e SEED_ADMIN_PASSWORD="${SEED_ADMIN_PASSWORD}" \
-  -e SEED_ADMIN_NAME="${SEED_ADMIN_NAME:-Admin}" \
-  webvakwerk-ticket-web-1 \
-  node -e "
-const { PrismaClient } = require('/app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client');
-const bcrypt = require('/app/node_modules/.pnpm/bcryptjs@2.4.3/node_modules/bcryptjs');
-const db = new PrismaClient();
-async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL;
-  const password = process.env.SEED_ADMIN_PASSWORD;
-  const name = process.env.SEED_ADMIN_NAME || 'Admin';
-  const existing = await db.user.findUnique({ where: { email } });
-  if (existing) { console.log('Beheerder bestaat al: ' + email); return; }
-  const passwordHash = await bcrypt.hash(password, 12);
-  const user = await db.user.create({ data: { email, name, passwordHash, role: 'SUPER_ADMIN' } });
-  console.log('Beheerder aangemaakt: ' + user.email);
-}
-main().catch(console.error).finally(() => db.\$disconnect());
-"
-```
-
-**Open de applicatie:**
-
-```
-http://localhost:3000
-```
-
-Log in met het e-mailadres en wachtwoord uit je `.env`.
+Ga naar **http://localhost:3000** en log in met het e-mailadres en wachtwoord uit `.env`.
 
 ---
 
-### Dagelijks gebruik (al eerder opgestart)
+## Updates uitrollen
 
 ```bash
-# Starten
-docker compose up -d
+git pull
+./dev.sh rebuild
+```
 
-# Stoppen
-docker compose down
+Als het schema is gewijzigd maar je niet wil rebuilden:
 
-# Status bekijken
-docker compose ps
-
-# Logs bekijken
-docker compose logs -f web
+```bash
+./dev.sh push-schema
+./dev.sh restart
 ```
 
 ---
 
-### Updates uitrollen
+## GitHub integratie
 
-```bash
-# Stop de containers
-docker compose down
+Repositories koppel je via **Instellingen → GitHub Connections**. Per repository sla je een Personal Access Token (PAT) op:
 
-# Bouw de nieuwe image
-docker compose build
+**Benodigde permissies (fine-grained PAT):**
+- Contents: read/write
+- Pull requests: read/write
+- Issues: read/write
 
-# Start opnieuw
-docker compose up -d
-```
-
----
-
-## Verificatie
-
-Controleer of alles werkt:
-
-```bash
-# Health check
-curl http://localhost:3000/api/health
-# Verwachte output: {"status":"ok","timestamp":"..."}
-
-# Status van containers
-docker compose ps
-# Alle services moeten "(healthy)" tonen
-```
+Het token wordt gevalideerd tegen de GitHub API en versleuteld opgeslagen (AES-256-GCM).
 
 ---
 
@@ -154,7 +106,7 @@ docker compose ps
 | Cache / Rate limiting | Redis 7 |
 | Authenticatie | JWT (15 min access token + 7 dagen refresh) |
 | ORM | Prisma |
-| Styling | Tailwind CSS + shadcn/ui |
+| Styling | Tailwind CSS |
 
 ### Rollen
 
@@ -169,10 +121,11 @@ docker compose ps
 ### Projectstructuur
 
 ```
-apps/web/        — Next.js applicatie (routes, API, UI)
-packages/db/     — Prisma schema
+apps/web/           — Next.js applicatie (routes, API, UI)
+packages/db/        — Prisma schema
 docker-compose.yml
-.env             — Configuratie (nooit committen!)
+dev.sh              — Helper script
+.env                — Configuratie (nooit committen!)
 ```
 
 ### API endpoints
@@ -190,3 +143,5 @@ Alle endpoints zitten onder `/api/v1/`:
 | GET | `/dashboard` | Dashboard statistieken |
 | GET | `/notifications` | Meldingen |
 | GET/POST | `/api-keys` | API-sleutels beheren |
+| GET/POST | `/github/connections` | GitHub repositories beheren |
+| GET/POST | `/tickets/:id/agent-runs` | Agent runs starten en opvragen |
