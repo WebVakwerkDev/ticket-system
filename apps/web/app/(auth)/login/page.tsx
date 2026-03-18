@@ -22,23 +22,31 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      const controller = new AbortController()
+      const timeout = window.setTimeout(() => controller.abort(), 10000)
       const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       })
+      window.clearTimeout(timeout)
 
-      const data = await res.json()
+      const data = await res.json().catch(() => null)
 
       if (!res.ok) {
-        setError(data.error ?? 'Login failed')
+        setError(data?.error ?? 'Login failed')
         return
       }
 
       router.push(redirect)
       router.refresh()
-    } catch {
-      setError('Network error. Please try again.')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setError('Login request timed out. Check whether the app, database and Redis are running.')
+      } else {
+        setError('Network error. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

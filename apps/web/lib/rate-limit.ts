@@ -2,14 +2,23 @@ import { Redis } from 'ioredis'
 import { NextRequest } from 'next/server'
 
 let redisClient: Redis | null = null
+let redisDisabled = false
 
 function getRedis(): Redis {
+  if (redisDisabled) {
+    throw new Error('Redis rate limiter disabled after connection failures')
+  }
+
   if (!redisClient) {
     redisClient = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
       lazyConnect: true,
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 500,
+      commandTimeout: 500,
       retryStrategy(times) {
-        if (times > 3) return null
-        return Math.min(times * 100, 3000)
+        if (times > 1) return null
+        return 100
       },
     })
     redisClient.on('error', (err) => {
@@ -31,12 +40,16 @@ export async function rateLimit(
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
-  const redis = getRedis()
   const now = Math.floor(Date.now() / 1000)
   const windowStart = now - windowSeconds
   const redisKey = `rl:${key}`
 
   try {
+    const redis = getRedis()
+    if (redis.status !== 'ready') {
+      await redis.connect()
+    }
+
     const pipeline = redis.pipeline()
     pipeline.zremrangebyscore(redisKey, '-inf', windowStart)
     pipeline.zadd(redisKey, now, `${now}-${Math.random()}`)
@@ -56,6 +69,11 @@ export async function rateLimit(
     }
   } catch (err) {
     console.error('Rate limit check failed, allowing request:', err)
+    redisDisabled = true
+    if (redisClient) {
+      redisClient.disconnect(false)
+      redisClient = null
+    }
     // Fail open — don't block requests if Redis is down
     return { allowed: true, remaining: limit, reset: now + windowSeconds, limit }
   }
