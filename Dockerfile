@@ -3,7 +3,6 @@ FROM node:22-alpine AS deps
 
 WORKDIR /app
 
-# Install libc compatibility (needed by some native modules)
 RUN apk add --no-cache libc6-compat
 
 COPY package*.json ./
@@ -46,17 +45,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Copy public assets
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Copy Prisma client, CLI, and schema (needed at runtime for migrations + queries)
-# Copy the entire .bin directory to get all Prisma wasm/helper files
+# Copy Prisma runtime client (needed for queries at runtime)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
-# Copy startup script
-COPY --chown=nextjs:nodejs scripts/start-web.sh ./start-web.sh
-RUN chmod +x ./start-web.sh
 
 USER nextjs
 
@@ -68,4 +59,4 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget -qO- http://localhost:3000/api/health || exit 1
 
-CMD ["./start-web.sh"]
+CMD ["node", "server.js"]

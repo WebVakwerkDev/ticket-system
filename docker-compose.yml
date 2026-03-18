@@ -4,6 +4,21 @@ name: agency-os
 
 services:
 
+  # ── Database migrations (runs once at startup, then exits) ───────────────────
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    container_name: agency_migrate
+    environment:
+      DATABASE_URL: "postgresql://app:${POSTGRES_PASSWORD}@db:5432/app"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - agency_net
+    restart: "no"
+
   # ── Next.js web application ──────────────────────────────────────────────────
   web:
     build:
@@ -17,23 +32,20 @@ services:
       NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
       NEXTAUTH_URL: "${NEXTAUTH_URL}"
       NODE_ENV: "production"
-      SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL}"
-      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD}"
-      SEED_ADMIN_NAME: "${SEED_ADMIN_NAME}"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - agency_net
-    # Port not exposed publicly — nginx handles external traffic
-    # For local dev without nginx: uncomment the override file
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
-      start_period: 40s
+      start_period: 30s
       retries: 3
 
   # ── Background worker ─────────────────────────────────────────────────────────
@@ -52,8 +64,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      web:
-        condition: service_healthy   # ensures migrations ran before worker starts
+      migrate:
+        condition: service_completed_successfully
     networks:
       - agency_net
 
@@ -70,7 +82,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - agency_net
-    # Not exposed to host — internal only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d app"]
       interval: 10s
@@ -94,7 +105,6 @@ services:
       - redis_data:/data
     networks:
       - agency_net
-    # Not exposed to host — internal only
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
