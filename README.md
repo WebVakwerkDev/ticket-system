@@ -2,10 +2,6 @@
 
 Intern systeem voor WebVakwerk om leads, projecten en tickets te beheren — van intake tot oplevering.
 
-```
-intake → demo (50%) → goedkeuring → betaling → feedbackrondes → go-live → overdracht
-```
-
 ---
 
 ## Opstarten (Docker)
