@@ -43,7 +43,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: runner
-    command: ["node", "/app/node_modules/.pnpm/prisma@5.22.0/node_modules/prisma/build/index.js", "migrate", "deploy", "--schema=/app/packages/db/prisma/schema.prisma"]
+    command: ["node", "/app/node_modules/.pnpm/prisma@5.22.0/node_modules/prisma/build/index.js", "db", "push", "--schema=/app/packages/db/prisma/schema.prisma", "--skip-generate", "--accept-data-loss"]
     depends_on:
       db:
         condition: service_healthy

@@ -137,13 +137,7 @@ cmd_db() {
 cmd_push_schema() {
   header "🔄  Schema synchroniseren met database"
   check_deps
-  docker run --rm \
-    --network webvakwerk-ticket_internal \
-    -e DATABASE_URL="postgresql://app:$(grep POSTGRES_PASSWORD .env | cut -d= -f2)@db:5432/app" \
-    -v "$(pwd)/packages/db/prisma:/tmp/prisma:ro" \
-    webvakwerk-ticket-migrate \
-    node /app/node_modules/.pnpm/prisma@5.22.0/node_modules/prisma/build/index.js \
-    db push --schema=/tmp/prisma/schema.prisma --skip-generate --accept-data-loss
+  docker compose run --rm migrate
   success "Schema bijgewerkt"
 }
 
