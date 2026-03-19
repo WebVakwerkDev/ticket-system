@@ -12,7 +12,6 @@ import { type JobName, type JobData } from "@/lib/queue";
 import { getRedisUrl, getDatabaseUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { processAgentBriefing } from "./jobs/agent-briefing";
-import { processInvoiceReminder } from "./jobs/invoice-reminder";
 import { processGitHubSync } from "./jobs/github-sync";
 
 const QUEUE_NAME = "agency-jobs";
@@ -34,9 +33,6 @@ async function processJob(job: Job<JobData, unknown, JobName>) {
   switch (job.name) {
     case "agent:generate-briefing":
       return processAgentBriefing(job.data as Parameters<typeof processAgentBriefing>[0]);
-
-    case "invoice:send-reminder":
-      return processInvoiceReminder(job.data as Parameters<typeof processInvoiceReminder>[0]);
 
     case "github:sync-repo":
       return processGitHubSync(job.data as Parameters<typeof processGitHubSync>[0]);

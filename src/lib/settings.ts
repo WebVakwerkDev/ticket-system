@@ -20,7 +20,6 @@ export const DEFAULT_BUSINESS_SETTINGS = {
   quoteFooterText: null,
   invoiceFooterText: null,
   defaultTermsText: null,
-  emailSignature: null,
 } as const;
 
 export async function getResolvedBusinessSettings() {
@@ -50,6 +49,5 @@ export async function getResolvedBusinessSettings() {
     quoteFooterText: settings.quoteFooterText,
     invoiceFooterText: settings.invoiceFooterText,
     defaultTermsText: settings.defaultTermsText,
-    emailSignature: settings.emailSignature,
   };
 }

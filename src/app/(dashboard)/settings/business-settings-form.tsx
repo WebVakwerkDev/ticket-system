@@ -33,7 +33,6 @@ export function BusinessSettingsForm({ initial }: Props) {
     quoteFooterText: initial?.quoteFooterText ?? "",
     invoiceFooterText: initial?.invoiceFooterText ?? "",
     defaultTermsText: initial?.defaultTermsText ?? "",
-    emailSignature: initial?.emailSignature ?? "",
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -68,7 +67,6 @@ export function BusinessSettingsForm({ initial }: Props) {
         quoteFooterText: form.quoteFooterText || undefined,
         invoiceFooterText: form.invoiceFooterText || undefined,
         defaultTermsText: form.defaultTermsText || undefined,
-        emailSignature: form.emailSignature || undefined,
       },
       session.user.id
     );
@@ -318,10 +316,8 @@ export function BusinessSettingsForm({ initial }: Props) {
             <div className="col-span-2">
               <label className="form-label">E-mailhandtekening</label>
               <textarea
-                name="emailSignature"
                 className="form-textarea"
                 rows={4}
-                value={form.emailSignature}
                 onChange={handleChange}
                 placeholder="Met vriendelijke groet..."
               />
