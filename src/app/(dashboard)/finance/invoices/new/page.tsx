@@ -1,6 +1,7 @@
 import { getClients } from "@/actions/clients";
 import { getProjects } from "@/actions/projects";
 import { getInvoices } from "@/actions/invoices";
+import { getResolvedBusinessSettings } from "@/lib/settings";
 import { generateInvoiceNumber } from "@/lib/utils";
 import { InvoiceForm } from "./invoice-form";
 import Link from "next/link";
@@ -14,10 +15,11 @@ export default async function NewInvoicePage({
   const { clientId: defaultClientId, projectId: defaultProjectId } =
     await searchParams;
 
-  const [clientsResult, projectsResult, invoicesResult] = await Promise.all([
+  const [clientsResult, projectsResult, invoicesResult, businessSettings] = await Promise.all([
     getClients(),
     getProjects(),
     getInvoices(),
+    getResolvedBusinessSettings(),
   ]);
 
   const clients = clientsResult.success ? clientsResult.clients ?? [] : [];
@@ -50,6 +52,9 @@ export default async function NewInvoicePage({
         defaultInvoiceNumber={nextInvoiceNumber}
         defaultClientId={defaultClientId}
         defaultProjectId={defaultProjectId}
+        defaultVatRate={businessSettings.defaultVatRate}
+        defaultPaymentTermDays={businessSettings.paymentTermDays}
+        defaultTermsText={businessSettings.defaultTermsText ?? ""}
       />
     </div>
   );

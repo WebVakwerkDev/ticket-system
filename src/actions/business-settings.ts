@@ -34,7 +34,11 @@ export async function updateBusinessSettings(data: BusinessSettingsData, actorUs
       entityType: "BusinessSettings",
       entityId: SINGLETON_ID,
       action: "UPDATE",
-      metadata: { companyName: validated.companyName },
+      metadata: {
+        companyName: validated.companyName,
+        paymentTermDays: validated.paymentTermDays,
+        defaultVatRate: validated.defaultVatRate,
+      },
     });
 
     return { success: true as const, settings };

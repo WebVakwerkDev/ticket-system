@@ -26,6 +26,9 @@ interface Props {
   defaultInvoiceNumber: string;
   defaultClientId?: string;
   defaultProjectId?: string;
+  defaultVatRate: number;
+  defaultPaymentTermDays: number;
+  defaultTermsText: string;
 }
 
 const STATUSES: { value: InvoiceStatus; label: string }[] = [
@@ -41,6 +44,9 @@ export function InvoiceForm({
   defaultInvoiceNumber,
   defaultClientId,
   defaultProjectId,
+  defaultVatRate,
+  defaultPaymentTermDays,
+  defaultTermsText,
 }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -48,7 +54,7 @@ export function InvoiceForm({
   const [error, setError] = useState<string | null>(null);
 
   const today = new Date().toISOString().split("T")[0];
-  const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const dueDateDefault = new Date(Date.now() + defaultPaymentTermDays * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
 
@@ -58,12 +64,12 @@ export function InvoiceForm({
     invoiceNumber: defaultInvoiceNumber,
     issueDate: today,
     serviceDate: "",
-    dueDate: thirtyDaysLater,
+    dueDate: dueDateDefault,
     status: "DRAFT" as InvoiceStatus,
     subtotal: "",
-    vatRate: "21",
+    vatRate: defaultVatRate.toString(),
     description: "",
-    notes: "",
+    notes: defaultTermsText,
   });
 
   // Filter projects by selected client

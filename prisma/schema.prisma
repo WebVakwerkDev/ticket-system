@@ -355,18 +355,26 @@ model DocEntry {
 }
 
 model BusinessSettings {
-  id          String   @id @default("singleton")
-  companyName String   @default("")
-  address     String?
-  kvkNumber   String?
-  vatNumber   String?
-  iban        String?
-  bankName    String?
-  email       String   @default("")
-  phone       String?
-  logoUrl     String?
-  websiteUrl  String?
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default("singleton")
+  companyName           String   @default("")
+  address               String?
+  kvkNumber             String?
+  vatNumber             String?
+  iban                  String?
+  bankName              String?
+  email                 String   @default("")
+  phone                 String?
+  logoUrl               String?
+  websiteUrl            String?
+  defaultVatRate        Decimal  @default(21) @db.Decimal(5, 2)
+  paymentTermDays       Int      @default(30)
+  defaultQuoteValidDays Int      @default(30)
+  defaultPriceLabel     String   @default("Projectprijs")
+  quoteFooterText       String?
+  invoiceFooterText     String?
+  defaultTermsText      String?
+  emailSignature        String?
+  updatedAt             DateTime @updatedAt
 
   @@map("business_settings")
 }

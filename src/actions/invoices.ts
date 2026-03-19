@@ -6,6 +6,7 @@ import { InvoiceFormSchema, type InvoiceFormData } from "@/lib/validations/invoi
 import { InvoiceStatus } from "@prisma/client";
 import { getN8nInvoiceWebhookUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { getResolvedBusinessSettings } from "@/lib/settings";
 
 export async function getInvoices(filters?: {
   clientId?: string;
@@ -220,7 +221,7 @@ export async function sendInvoiceToN8n(invoiceId: string, actorUserId: string) {
         project: { select: { id: true, name: true } },
       },
     }),
-    prisma.businessSettings.findUnique({ where: { id: "singleton" } }),
+    getResolvedBusinessSettings(),
   ]);
 
   if (!invoice) {
@@ -253,15 +254,21 @@ export async function sendInvoiceToN8n(invoiceId: string, actorUserId: string) {
         },
         project: invoice.project ?? null,
         from: {
-          companyName: settings?.companyName ?? "",
-          email: settings?.email ?? "",
-          address: settings?.address ?? null,
-          kvkNumber: settings?.kvkNumber ?? null,
-          vatNumber: settings?.vatNumber ?? null,
-          iban: settings?.iban ?? null,
-          bankName: settings?.bankName ?? null,
-          phone: settings?.phone ?? null,
-          websiteUrl: settings?.websiteUrl ?? null,
+          companyName: settings.companyName,
+          email: settings.email,
+          address: settings.address,
+          kvkNumber: settings.kvkNumber,
+          vatNumber: settings.vatNumber,
+          iban: settings.iban,
+          bankName: settings.bankName,
+          phone: settings.phone,
+          websiteUrl: settings.websiteUrl,
+        },
+        defaults: {
+          invoiceFooterText: settings.invoiceFooterText,
+          termsText: settings.defaultTermsText,
+          emailSignature: settings.emailSignature,
+          paymentTermDays: settings.paymentTermDays,
         },
       }),
     });

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { getN8nWebhookUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { getResolvedBusinessSettings } from "@/lib/settings";
 
 export async function getProposalDrafts(projectId: string) {
   try {
@@ -42,7 +43,7 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
         },
       },
     }),
-    prisma.businessSettings.findUnique({ where: { id: "singleton" } }),
+    getResolvedBusinessSettings(),
   ]);
 
   if (!proposal) {
@@ -70,15 +71,21 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
         project: proposal.project,
         createdAt: proposal.createdAt,
         from: {
-          companyName: settings?.companyName ?? "",
-          email: settings?.email ?? "",
-          address: settings?.address ?? null,
-          kvkNumber: settings?.kvkNumber ?? null,
-          vatNumber: settings?.vatNumber ?? null,
-          iban: settings?.iban ?? null,
-          bankName: settings?.bankName ?? null,
-          phone: settings?.phone ?? null,
-          websiteUrl: settings?.websiteUrl ?? null,
+          companyName: settings.companyName,
+          email: settings.email,
+          address: settings.address,
+          kvkNumber: settings.kvkNumber,
+          vatNumber: settings.vatNumber,
+          iban: settings.iban,
+          bankName: settings.bankName,
+          phone: settings.phone,
+          websiteUrl: settings.websiteUrl,
+        },
+        defaults: {
+          quoteValidDays: settings.defaultQuoteValidDays,
+          quoteFooterText: settings.quoteFooterText,
+          termsText: settings.defaultTermsText,
+          emailSignature: settings.emailSignature,
         },
       }),
     });

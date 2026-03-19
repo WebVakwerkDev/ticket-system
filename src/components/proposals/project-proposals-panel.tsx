@@ -47,9 +47,17 @@ interface Props {
   proposals: Proposal[];
   invoices: ProjectInvoice[];
   n8nEnabled: boolean;
+  defaultPriceLabel: string;
 }
 
-export function ProjectProposalsPanel({ client, project, proposals, invoices, n8nEnabled }: Props) {
+export function ProjectProposalsPanel({
+  client,
+  project,
+  proposals,
+  invoices,
+  n8nEnabled,
+  defaultPriceLabel,
+}: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -67,12 +75,21 @@ export function ProjectProposalsPanel({ client, project, proposals, invoices, n8
       recipientAddress: client.address ?? "",
       summary: project.description ?? "",
       scope: project.scope ?? "",
-      priceLabel: "Projectprijs",
+      priceLabel: defaultPriceLabel,
       amount: "",
       deliveryTime: "",
       notes: "",
     }),
-    [client.address, client.companyName, client.contactName, client.email, project.description, project.name, project.scope]
+    [
+      client.address,
+      client.companyName,
+      client.contactName,
+      client.email,
+      defaultPriceLabel,
+      project.description,
+      project.name,
+      project.scope,
+    ]
   );
 
   const [form, setForm] = useState(initialForm);

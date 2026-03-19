@@ -39,7 +39,7 @@ export default async function SettingsPage() {
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="font-semibold text-gray-900">Bedrijfsinstellingen</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Deze gegevens worden automatisch ingevuld op offertes en facturen.
+            Deze gegevens en documentdefaults worden automatisch gebruikt in offertes, facturen en uitgaande communicatie.
           </p>
         </div>
         <div className="p-5">

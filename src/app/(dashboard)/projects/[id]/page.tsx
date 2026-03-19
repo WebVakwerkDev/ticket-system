@@ -7,6 +7,7 @@ import { getRepositories } from "@/actions/repositories";
 import { getProposalDrafts } from "@/actions/proposals";
 import { getInvoices } from "@/actions/invoices";
 import { getN8nWebhookUrl } from "@/lib/env";
+import { getResolvedBusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -54,11 +55,12 @@ export default async function ProjectDetailPage({
   const project = projectResult.project;
   const n8nEnabled = Boolean(getN8nWebhookUrl());
 
-  const [commResult, reposResult, proposalsResult, invoicesResult] = await Promise.all([
+  const [commResult, reposResult, proposalsResult, invoicesResult, businessSettings] = await Promise.all([
     getCommunicationEntries(id),
     getRepositories(id),
     getProposalDrafts(id),
     getInvoices({ projectId: id }),
+    getResolvedBusinessSettings(),
   ]);
 
   const communications = commResult.success ? commResult.entries ?? [] : [];
@@ -215,6 +217,7 @@ export default async function ProjectDetailPage({
           proposals={proposals}
           invoices={projectInvoices}
           n8nEnabled={n8nEnabled}
+          defaultPriceLabel={businessSettings.defaultPriceLabel}
         />
       )}
 
