@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 interface AuditOptions {
   actorUserId?: string;
@@ -24,6 +25,10 @@ export async function createAuditLog(options: AuditOptions) {
     });
   } catch (error) {
     // Audit logging should never crash the main flow
-    console.error("Audit log failed:", error);
+    logger.error("Audit log failed", error, {
+      entityType: options.entityType,
+      entityId: options.entityId,
+      action: options.action,
+    });
   }
 }

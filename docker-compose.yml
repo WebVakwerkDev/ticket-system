@@ -3,8 +3,6 @@ name: agency-os
 # ─── Services ─────────────────────────────────────────────────────────────────
 
 services:
-
-  # ── Database migrations (runs once at startup, then exits) ───────────────────
   migrate:
     build:
       context: .
@@ -21,8 +19,14 @@ services:
     networks:
       - agency_net
     restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
-  # ── Next.js web application ──────────────────────────────────────────────────
   web:
     build:
       context: .
@@ -52,8 +56,17 @@ services:
       timeout: 10s
       start_period: 30s
       retries: 3
+    expose:
+      - "3000"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
-  # ── Background worker ─────────────────────────────────────────────────────────
   worker:
     build:
       context: .
@@ -73,8 +86,15 @@ services:
         condition: service_completed_successfully
     networks:
       - agency_net
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
-  # ── PostgreSQL ────────────────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: agency_db
@@ -94,7 +114,6 @@ services:
       start_period: 10s
       retries: 5
 
-  # ── Redis ─────────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: agency_redis
@@ -117,7 +136,6 @@ services:
       start_period: 5s
       retries: 5
 
-  # ── Nginx reverse proxy ───────────────────────────────────────────────────────
   nginx:
     image: nginx:1.27-alpine
     container_name: agency_nginx
@@ -133,6 +151,15 @@ services:
         condition: service_healthy
     networks:
       - agency_net
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/health"]
       interval: 30s

@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { UserRole } from "@prisma/client";
+import { getNextAuthSecret, getNextAuthUrl } from "@/lib/env";
 
 declare module "next-auth" {
   interface Session {
@@ -77,7 +78,8 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getNextAuthSecret(),
+  ...(getNextAuthUrl() ? { debug: false } : {}),
 };
 
 export async function getSession() {

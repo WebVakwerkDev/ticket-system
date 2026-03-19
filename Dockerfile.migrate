@@ -1,5 +1,3 @@
-# Lightweight migration + seed runner.
-# Runs once at startup: deploys migrations, seeds if DB is empty, then exits.
 FROM node:22-alpine
 
 WORKDIR /app
@@ -9,9 +7,14 @@ RUN apk add --no-cache libc6-compat
 COPY package*.json ./
 COPY prisma/ ./prisma/
 
-# Install all deps (prisma CLI + tsx + bcryptjs needed for seed)
 RUN npm ci && npx prisma generate
 
 COPY scripts/migrate-and-seed.sh ./scripts/
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs migrate && \
+    chown -R migrate:nodejs /app
+
+USER migrate
 
 CMD ["sh", "scripts/migrate-and-seed.sh"]

@@ -5,6 +5,7 @@ import { createAuditLog } from "@/lib/audit";
 import { ProjectFormSchema, type ProjectFormData } from "@/lib/validations/project";
 import { generateSlug } from "@/lib/utils";
 import { CommunicationType, ProjectStatus, InvoiceStatus } from "@prisma/client";
+import { logger } from "@/lib/logger";
 
 export async function getProjects(filters?: {
   status?: ProjectStatus;
@@ -32,7 +33,7 @@ export async function getProjects(filters?: {
 
     return { success: true, projects };
   } catch (error) {
-    console.error("getProjects error:", error);
+    logger.error("Failed to fetch projects", error);
     return { success: false, error: "Failed to fetch projects" };
   }
 }
@@ -69,7 +70,7 @@ export async function getProject(id: string) {
 
     return { success: true, project };
   } catch (error) {
-    console.error("getProject error:", error);
+    logger.error("Failed to fetch project", error, { projectId: id });
     return { success: false, error: "Failed to fetch project" };
   }
 }
@@ -106,7 +107,7 @@ export async function getProjectBySlug(slug: string) {
 
     return { success: true, project };
   } catch (error) {
-    console.error("getProjectBySlug error:", error);
+    logger.error("Failed to fetch project by slug", error, { slug });
     return { success: false, error: "Failed to fetch project" };
   }
 }
@@ -152,7 +153,7 @@ export async function createProject(data: ProjectFormData, actorUserId: string) 
 
     return { success: true, project };
   } catch (error) {
-    console.error("createProject error:", error);
+    logger.error("Failed to create project", error);
     return { success: false, error: "Failed to create project" };
   }
 }
@@ -215,7 +216,7 @@ export async function updateProject(
 
     return { success: true };
   } catch (error) {
-    console.error("updateProject error:", error);
+    logger.error("Failed to update project", error, { projectId: id });
     return { success: false, error: "Failed to update project" };
   }
 }
@@ -266,7 +267,6 @@ export async function getDashboardStats() {
         orderBy: { updatedAt: "desc" },
         take: 5,
       }),
-      Promise.resolve([]),
     ]);
 
     return {
@@ -282,7 +282,7 @@ export async function getDashboardStats() {
       },
     };
   } catch (error) {
-    console.error("getDashboardStats error:", error);
+    logger.error("Failed to fetch dashboard stats", error);
     return { success: false, error: "Failed to fetch dashboard stats" };
   }
 }

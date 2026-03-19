@@ -6,6 +6,7 @@ import {
   CommunicationFormSchema,
   type CommunicationFormData,
 } from "@/lib/validations/communication";
+import { logger } from "@/lib/logger";
 
 export async function getCommunicationEntries(projectId: string) {
   try {
@@ -21,7 +22,7 @@ export async function getCommunicationEntries(projectId: string) {
 
     return { success: true, entries };
   } catch (error) {
-    console.error("getCommunicationEntries error:", error);
+    logger.error("Failed to fetch communication entries", error, { projectId });
     return { success: false, error: "Failed to fetch communication entries" };
   }
 }
@@ -62,7 +63,9 @@ export async function createCommunicationEntry(
 
     return { success: true, entry };
   } catch (error) {
-    console.error("createCommunicationEntry error:", error);
+    logger.error("Failed to create communication entry", error, {
+      projectId: data.projectId,
+    });
     return { success: false, error: "Failed to create communication entry" };
   }
 }
@@ -119,7 +122,7 @@ export async function deleteCommunicationEntry(
 
     return { success: true };
   } catch (error) {
-    console.error("deleteCommunicationEntry error:", error);
+    logger.error("Failed to delete communication entry", error, { entryId: id });
     return { success: false, error: "Failed to delete communication entry" };
   }
 }

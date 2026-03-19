@@ -9,52 +9,68 @@ import {
   ChangeRequestImpact,
 } from "@prisma/client";
 
+const optionalTrimmedString = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return value;
+    const trimmed = value.trim();
+    return trimmed === "" ? undefined : trimmed;
+  },
+  z.string().optional(),
+);
+
 // ─── Client (inline or by reference) ─────────────────────────────────────────
 
 const ApiClientSchema = z.object({
-  companyName: z.string().min(2, "Company name must be at least 2 characters"),
-  contactName: z.string().min(2, "Contact name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  notes: z.string().optional(),
-  invoiceDetails: z.string().optional(),
+  companyName: z.string().trim().min(2, "Company name must be at least 2 characters"),
+  contactName: z.string().trim().min(2, "Contact name must be at least 2 characters"),
+  email: z.string().trim().email("Invalid email address"),
+  phone: optionalTrimmedString,
+  address: optionalTrimmedString,
+  notes: optionalTrimmedString,
+  invoiceDetails: optionalTrimmedString,
 });
 
 // ─── Project ──────────────────────────────────────────────────────────────────
 
 const ApiProjectSchema = z.object({
-  name: z.string().min(2, "Project name must be at least 2 characters"),
+  name: z.string().trim().min(2, "Project name must be at least 2 characters"),
   projectType: z.nativeEnum(ProjectType).default(ProjectType.OTHER),
   status: z.nativeEnum(ProjectStatus).default(ProjectStatus.INTAKE),
   priority: z.nativeEnum(ProjectPriority).default(ProjectPriority.MEDIUM),
-  description: z.string().optional(),
-  intakeSummary: z.string().optional(),
-  scope: z.string().optional(),
-  techStack: z.string().optional(),
-  domainName: z.string().optional(),
-  hostingInfo: z.string().optional(),
-  startDate: z.string().datetime({ offset: true }).or(z.string().date()).optional(),
-  ownerUserId: z.string().optional(),
-  tags: z.array(z.string()).default([]),
+  description: optionalTrimmedString,
+  intakeSummary: optionalTrimmedString,
+  scope: optionalTrimmedString,
+  techStack: optionalTrimmedString,
+  domainName: optionalTrimmedString,
+  hostingInfo: optionalTrimmedString,
+  startDate: z.string().trim().datetime({ offset: true }).or(z.string().trim().date()).optional(),
+  ownerUserId: optionalTrimmedString,
+  tags: z.array(z.string().trim().min(1)).default([]),
 });
 
 // ─── Initial communication ────────────────────────────────────────────────────
 
 const ApiCommunicationSchema = z.object({
   type: z.nativeEnum(CommunicationType).default(CommunicationType.OTHER),
-  subject: z.string().min(1, "Subject is required"),
-  content: z.string().min(1, "Content is required"),
-  externalSenderName: z.string().optional(),
-  externalSenderEmail: z.string().email().optional(),
-  occurredAt: z.string().datetime({ offset: true }).optional(),
+  subject: z.string().trim().min(1, "Subject is required"),
+  content: z.string().trim().min(1, "Content is required"),
+  externalSenderName: optionalTrimmedString,
+  externalSenderEmail: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed === "" ? undefined : trimmed;
+    },
+    z.string().email().optional(),
+  ),
+  occurredAt: z.string().trim().datetime({ offset: true }).optional(),
 });
 
 // ─── Initial change request ──────────────────────────────────────────────────
 
 const ApiChangeRequestSchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
-  description: z.string().min(1, "Description is required"),
+  title: z.string().trim().min(2, "Title must be at least 2 characters"),
+  description: z.string().trim().min(1, "Description is required"),
   sourceType: z.nativeEnum(ChangeRequestSource).default(ChangeRequestSource.INTERNAL),
   status: z.nativeEnum(ChangeRequestStatus).default(ChangeRequestStatus.NEW),
   impact: z.nativeEnum(ChangeRequestImpact).default(ChangeRequestImpact.MEDIUM),
@@ -63,8 +79,8 @@ const ApiChangeRequestSchema = z.object({
 // ─── Source tracking ──────────────────────────────────────────────────────────
 
 const ApiSourceSchema = z.object({
-  type: z.string().min(1),
-  label: z.string().optional(),
+  type: z.string().trim().min(1),
+  label: optionalTrimmedString,
 });
 
 // ─── Top-level request body ───────────────────────────────────────────────────

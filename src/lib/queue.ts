@@ -7,6 +7,7 @@
  * Redis connection is configured via REDIS_URL env var.
  */
 import { Queue, type ConnectionOptions } from "bullmq";
+import { getRedisUrl } from "@/lib/env";
 
 // ─── Job type definitions ─────────────────────────────────────────────────────
 
@@ -52,12 +53,7 @@ export type JobName =
 // ─── Redis connection ─────────────────────────────────────────────────────────
 
 function getRedisConnection(): ConnectionOptions {
-  const url = process.env.REDIS_URL;
-  if (!url) {
-    throw new Error("REDIS_URL environment variable is not set");
-  }
-
-  const parsed = new URL(url);
+  const parsed = new URL(getRedisUrl());
   return {
     host: parsed.hostname,
     port: Number(parsed.port) || 6379,

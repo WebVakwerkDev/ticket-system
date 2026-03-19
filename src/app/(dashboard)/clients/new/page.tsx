@@ -94,12 +94,13 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="contactName" className="form-label">
-                Contactpersoon
+                Contactpersoon <span className="text-red-500">*</span>
               </label>
               <input
                 id="contactName"
                 name="contactName"
                 type="text"
+                required
                 value={form.contactName}
                 onChange={handleChange}
                 className="form-input"
@@ -108,12 +109,13 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="email" className="form-label">
-                E-mailadres
+                E-mailadres <span className="text-red-500">*</span>
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
+                required
                 value={form.email}
                 onChange={handleChange}
                 className="form-input"

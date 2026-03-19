@@ -1,31 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { ZodError } from "zod";
 import { ProjectCreateApiSchema } from "@/lib/validations/api";
 import {
   createProjectViaApi,
   ApiError,
 } from "@/services/projectCreationService";
+import { getInternalApiKey } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 function authenticateApiKey(request: NextRequest): boolean {
-  const key = process.env.INTERNAL_API_KEY;
-  if (!key) {
-    console.error("[internal-api] INTERNAL_API_KEY is not configured");
-    return false;
-  }
+  const key = getInternalApiKey();
 
   const header = request.headers.get("authorization");
   if (!header?.startsWith("Bearer ")) return false;
 
-  const provided = header.slice(7);
-  // Constant-time comparison to prevent timing attacks
-  if (provided.length !== key.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < key.length; i++) {
-    mismatch |= provided.charCodeAt(i) ^ key.charCodeAt(i);
-  }
-  return mismatch === 0;
+  const provided = Buffer.from(header.slice(7));
+  const expected = Buffer.from(key);
+  return provided.length === expected.length && timingSafeEqual(provided, expected);
 }
 
 // ─── POST /api/internal/projects ──────────────────────────────────────────────
@@ -33,9 +27,9 @@ function authenticateApiKey(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   // 1. Authenticate
   if (!authenticateApiKey(request)) {
-    console.warn(
-      `[internal-api] Rejected request from ${request.headers.get("x-forwarded-for") ?? "unknown"}`,
-    );
+    logger.warn("Rejected internal API request", {
+      requestIp: request.headers.get("x-forwarded-for") ?? "unknown",
+    });
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 },
@@ -98,7 +92,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("[internal-api] Unexpected error:", error);
+    logger.error("Unexpected internal API error", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 },

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { ClientFormSchema, type ClientFormData } from "@/lib/validations/client";
+import { logger } from "@/lib/logger";
 
 export async function getClients() {
   try {
@@ -16,7 +17,7 @@ export async function getClients() {
     });
     return { success: true, clients };
   } catch (error) {
-    console.error("getClients error:", error);
+    logger.error("Failed to fetch clients", error);
     return { success: false, error: "Failed to fetch clients" };
   }
 }
@@ -46,7 +47,7 @@ export async function getClient(id: string) {
 
     return { success: true, client };
   } catch (error) {
-    console.error("getClient error:", error);
+    logger.error("Failed to fetch client", error, { clientId: id });
     return { success: false, error: "Failed to fetch client" };
   }
 }
@@ -77,7 +78,7 @@ export async function createClient(data: ClientFormData, actorUserId: string) {
 
     return { success: true, client };
   } catch (error) {
-    console.error("createClient error:", error);
+    logger.error("Failed to create client", error);
     return { success: false, error: "Failed to create client" };
   }
 }
@@ -113,7 +114,7 @@ export async function updateClient(
 
     return { success: true };
   } catch (error) {
-    console.error("updateClient error:", error);
+    logger.error("Failed to update client", error, { clientId: id });
     return { success: false, error: "Failed to update client" };
   }
 }
@@ -145,7 +146,7 @@ export async function deleteClient(id: string, actorUserId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("deleteClient error:", error);
+    logger.error("Failed to delete client", error, { clientId: id });
     return { success: false, error: "Failed to delete client" };
   }
 }

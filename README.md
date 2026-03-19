@@ -1,6 +1,6 @@
 # Agency OS
 
-Intern operations platform voor het beheren van klanten, websiteprojecten, communicatie, change requests, facturen en developer briefings.
+Interne managementapp voor klanten, projecten, logboeknotities, offertes, facturen en documentatie.
 
 ## Stack
 
@@ -28,6 +28,7 @@ Open `.env` en vul de waarden in. Minimaal nodig:
 | `REDIS_PASSWORD` | Redis wachtwoord | `openssl rand -base64 32` |
 | `NEXTAUTH_SECRET` | Auth signing key (min 32 chars) | `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | URL van de app | `http://localhost:3000` |
+| `INTERNAL_API_KEY` | Bearer key voor interne API | `openssl rand -base64 32` |
 | `SEED_ADMIN_EMAIL` | Admin login email | `admin@jouwbedrijf.nl` |
 | `SEED_ADMIN_PASSWORD` | Admin login wachtwoord | kies iets sterk |
 
@@ -45,15 +46,15 @@ Dit start:
 - **db** — PostgreSQL (bereikbaar op `localhost:5432` in dev)
 - **redis** — Redis (bereikbaar op `localhost:6379` in dev)
 
-Database migraties draaien automatisch bij het starten van de `web` container.
+Database migraties en de initiële seed draaien automatisch via de eenmalige `migrate` container.
 
-### 3. Database seeden (eerste keer)
+### 3. Database handmatig seeden (optioneel)
 
 ```bash
-docker compose exec web sh scripts/seed-db.sh
+docker compose exec web npm run db:seed
 ```
 
-Dit maakt testdata aan: 4 klanten, 4 projecten, communicatie-entries, change requests, facturen en 3 gebruikers.
+Dit maakt testdata aan voor klanten, projecten, communicatie, facturen en gebruikers.
 
 ### 4. Inloggen
 
@@ -129,19 +130,20 @@ src/
 │   ├── clients.ts
 │   ├── projects.ts
 │   ├── communication.ts
-│   ├── change-requests.ts
 │   ├── invoices.ts
 │   ├── repositories.ts
 │   ├── agent-runs.ts
-│   ├── users.ts
-│   └── search.ts
+│   ├── proposals.ts
+│   ├── docs.ts
+│   └── users.ts
 ├── app/
 │   ├── (auth)/login/  Login pagina
 │   ├── (dashboard)/   Alle dashboard pagina's
 │   │   ├── page.tsx           Dashboard
 │   │   ├── clients/           Klanten (lijst, detail, nieuw, bewerk)
 │   │   ├── projects/          Projecten (lijst, nieuw, workspace met tabs)
-│   │   ├── finance/           Facturen en BTW overzicht
+│   │   ├── finance/           Facturen en financiële overzichten
+│   │   ├── docs/              Algemene interne documentatie
 │   │   └── settings/          Gebruikersbeheer (admin only)
 │   └── api/
 │       ├── auth/              NextAuth endpoints
@@ -150,14 +152,16 @@ src/
 │   ├── layout/        Sidebar, header
 │   ├── ui/            Badge en andere basis componenten
 │   ├── projects/      Project tabs, status badges
+│   ├── proposals/     Offerteconcepten per project
+│   ├── docs/          Algemene en klant-specifieke documentatie
 │   ├── communication/ Communicatie formulier en lijst
-│   ├── change-requests/ Change request formulier en lijst
-│   ├── briefing/      Developer briefing generator
 │   ├── repositories/  Repository formulier
 │   └── timeline/      Audit log timeline
 ├── lib/
 │   ├── auth.ts        NextAuth configuratie + helpers
 │   ├── db.ts          Prisma client singleton
+│   ├── env.ts         Centrale env validatie
+│   ├── logger.ts      Veilige applicatielogging
 │   ├── utils.ts       Formatting, slug generatie, etc.
 │   ├── audit.ts       Audit log helper
 │   ├── queue.ts       BullMQ queue client
@@ -176,8 +180,8 @@ docker/
     └── nginx.conf     Reverse proxy configuratie
 
 scripts/
-├── start-web.sh       Startup script (migraties + server)
-└── seed-db.sh         Database seed script
+├── migrate-and-seed.sh  Runtime migratie + eenmalige seed
+└── seed-db.sh          Database seed script
 ```
 
 ## Docker services
@@ -197,7 +201,7 @@ scripts/
 | Rol | Rechten |
 |-----|---------|
 | **ADMIN** | Alles + gebruikersbeheer + instellingen |
-| **EMPLOYEE** | Projecten, klanten, communicatie, change requests |
+| **EMPLOYEE** | Projecten, klanten, communicatie en docs |
 | **FINANCE** | Facturen, BTW overzicht, klanten |
 
 ## Handige commando's

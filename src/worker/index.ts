@@ -9,6 +9,8 @@
  */
 import { Worker, type Job } from "bullmq";
 import { type JobName, type JobData } from "@/lib/queue";
+import { getRedisUrl, getDatabaseUrl } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import { processAgentBriefing } from "./jobs/agent-briefing";
 import { processInvoiceReminder } from "./jobs/invoice-reminder";
 import { processGitHubSync } from "./jobs/github-sync";
@@ -16,10 +18,7 @@ import { processGitHubSync } from "./jobs/github-sync";
 const QUEUE_NAME = "agency-jobs";
 
 function getRedisConnection() {
-  const url = process.env.REDIS_URL;
-  if (!url) throw new Error("REDIS_URL is not set");
-
-  const parsed = new URL(url);
+  const parsed = new URL(getRedisUrl());
   return {
     host: parsed.hostname,
     port: Number(parsed.port) || 6379,
@@ -30,7 +29,7 @@ function getRedisConnection() {
 // ─── Job router ───────────────────────────────────────────────────────────────
 
 async function processJob(job: Job<JobData, unknown, JobName>) {
-  console.log(`[worker] Processing job: ${job.name} (id=${job.id})`);
+  logger.info("Processing worker job", { jobName: job.name, jobId: job.id?.toString() });
 
   switch (job.name) {
     case "agent:generate-briefing":
@@ -44,11 +43,11 @@ async function processJob(job: Job<JobData, unknown, JobName>) {
 
     case "email:ingest":
       // Future: email parsing implementation
-      console.log("[worker] email:ingest job received — not yet implemented");
+      logger.info("email:ingest job received but is not implemented yet");
       return { skipped: true };
 
     default:
-      console.warn(`[worker] Unknown job name: ${(job as Job).name}`);
+      logger.warn("Unknown worker job name", { jobName: (job as Job).name });
       return null;
   }
 }
@@ -72,26 +71,33 @@ function startWorker() {
   );
 
   worker.on("completed", (job) => {
-    console.log(`[worker] ✓ Job completed: ${job.name} (id=${job.id})`);
+    logger.info("Worker job completed", { jobName: job.name, jobId: job.id?.toString() });
   });
 
   worker.on("failed", (job, err) => {
-    console.error(
-      `[worker] ✗ Job failed: ${job?.name ?? "unknown"} (id=${job?.id}) — ${err.message}`
-    );
+    logger.error("Worker job failed", err, {
+      jobName: job?.name ?? "unknown",
+      jobId: job?.id?.toString(),
+    });
   });
 
   worker.on("error", (err) => {
-    console.error("[worker] Worker error:", err.message);
+    logger.error("Worker process error", err);
   });
 
-  console.log(`[worker] Started — listening on queue "${QUEUE_NAME}"`);
-  console.log(`[worker] Redis: ${process.env.REDIS_URL?.replace(/:([^@]+)@/, ":*****@") ?? "not set"}`);
-  console.log(`[worker] DB: ${process.env.DATABASE_URL?.replace(/:([^@]+)@/, ":*****@") ?? "not set"}`);
+  const redisUrl = new URL(getRedisUrl());
+  const databaseUrl = new URL(getDatabaseUrl());
+  logger.info("Worker started", {
+    queueName: QUEUE_NAME,
+    redisHost: redisUrl.hostname,
+    redisPort: redisUrl.port || "6379",
+    databaseHost: databaseUrl.hostname,
+    databasePort: databaseUrl.port || "5432",
+  });
 
   // Graceful shutdown
   const shutdown = async () => {
-    console.log("[worker] Shutting down gracefully...");
+    logger.info("Shutting worker down gracefully");
     await worker.close();
     process.exit(0);
   };
