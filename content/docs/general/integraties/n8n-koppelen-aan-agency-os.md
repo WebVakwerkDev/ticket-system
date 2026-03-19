@@ -27,7 +27,7 @@ Gebruik deze instellingen:
 - Header: `Authorization = Bearer JOUW_INTERNAL_API_KEY`
 - Header: `Content-Type = application/json`
 
-3. Stuur een JSON body mee met klant, project en eventueel het eerste logboekitem.
+3. Stuur een JSON body mee met klant, project en eventueel het eerste logitem.
 
 # Praktisch voorbeeld
 
@@ -46,7 +46,7 @@ Gebruik deze instellingen:
     "priority": "MEDIUM",
     "description": "Klant wil een nieuwe website met duidelijke dienstenpagina's en een betere intakeflow."
   },
-  "initialLogEntry": {
+  "initialCommunication": {
     "type": "EMAIL",
     "subject": "Nieuwe aanvraag via formulier",
     "content": "Aanvraag automatisch doorgestuurd vanuit n8n."

@@ -63,7 +63,3 @@ export function getN8nWebhookUrl() {
 export function getN8nInvoiceWebhookUrl() {
   return parseOptional("N8N_WEBHOOK_INVOICE_URL", UrlStringSchema);
 }
-
-export function getN8nEmailSendWebhookUrl() {
-  return parseOptional("N8N_WEBHOOK_EMAIL_SEND_URL", UrlStringSchema);
-}

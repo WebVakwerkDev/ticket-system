@@ -4,6 +4,9 @@ import {
   ProjectStatus,
   ProjectPriority,
   CommunicationType,
+  ChangeRequestSource,
+  ChangeRequestStatus,
+  ChangeRequestImpact,
 } from "@prisma/client";
 
 const optionalTrimmedString = z.preprocess(
@@ -45,10 +48,10 @@ const ApiProjectSchema = z.object({
   tags: z.array(z.string().trim().min(1)).default([]),
 });
 
-// ─── Initial log entry ────────────────────────────────────────────────────────
+// ─── Initial communication ────────────────────────────────────────────────────
 
-const ApiLogEntrySchema = z.object({
-  type: z.nativeEnum(CommunicationType).default(CommunicationType.INTERNAL),
+const ApiCommunicationSchema = z.object({
+  type: z.nativeEnum(CommunicationType).default(CommunicationType.OTHER),
   subject: z.string().trim().min(1, "Subject is required"),
   content: z.string().trim().min(1, "Content is required"),
   externalSenderName: optionalTrimmedString,
@@ -61,6 +64,16 @@ const ApiLogEntrySchema = z.object({
     z.string().email().optional(),
   ),
   occurredAt: z.string().trim().datetime({ offset: true }).optional(),
+});
+
+// ─── Initial change request ──────────────────────────────────────────────────
+
+const ApiChangeRequestSchema = z.object({
+  title: z.string().trim().min(2, "Title must be at least 2 characters"),
+  description: z.string().trim().min(1, "Description is required"),
+  sourceType: z.nativeEnum(ChangeRequestSource).default(ChangeRequestSource.INTERNAL),
+  status: z.nativeEnum(ChangeRequestStatus).default(ChangeRequestStatus.NEW),
+  impact: z.nativeEnum(ChangeRequestImpact).default(ChangeRequestImpact.MEDIUM),
 });
 
 // ─── Source tracking ──────────────────────────────────────────────────────────
@@ -77,7 +90,8 @@ export const ProjectCreateApiSchema = z
     clientId: z.string().optional(),
     client: ApiClientSchema.optional(),
     project: ApiProjectSchema,
-    initialLogEntry: ApiLogEntrySchema.optional(),
+    initialCommunication: ApiCommunicationSchema.optional(),
+    initialChangeRequest: ApiChangeRequestSchema.optional(),
     source: ApiSourceSchema.optional(),
   })
   .refine(

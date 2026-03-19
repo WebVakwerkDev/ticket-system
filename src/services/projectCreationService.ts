@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
-import { CommunicationType } from "@prisma/client";
 import type { ProjectCreateApiInput } from "@/lib/validations/api";
 
 export interface ProjectCreateResult {
@@ -16,31 +15,27 @@ export interface ProjectCreateResult {
     slug: string;
     status: string;
   };
-  logEntry?: { id: string };
+  communication?: { id: string };
+  changeRequest?: { id: string };
 }
 
 /**
- * Creates a project workspace and optionally the first logbook item inside a
- * single database transaction.
+ * Creates a project workspace (and optionally a client, communication entry,
+ * and change request) inside a single database transaction.
  */
 export async function createProjectViaApi(
   input: ProjectCreateApiInput,
   sourceMetadata: Record<string, unknown>,
 ): Promise<ProjectCreateResult> {
   return prisma.$transaction(async (tx) => {
-    // Prefer an admin as API actor, but fall back to any user to keep the
-    // intake endpoint usable in simpler internal setups.
-    const systemActor =
-      (await tx.user.findFirst({
-        where: { role: "ADMIN" },
-        select: { id: true },
-      })) ??
-      (await tx.user.findFirst({
-        select: { id: true },
-      }));
-
+    // Resolve a system actor for records that require an authorUserId.
+    // Uses the first admin user as the API actor.
+    const systemActor = await tx.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { id: true },
+    });
     if (!systemActor) {
-      throw new ApiError(500, "No user found — cannot create records via API");
+      throw new ApiError(500, "No admin user found — cannot create records via API");
     }
 
     // ── 1. Resolve or create client ──────────────────────────────────────────
@@ -143,44 +138,71 @@ export async function createProjectViaApi(
     });
 
     await createAuditEntry(tx, {
-      entityType: "Project",
+      entityType: "ProjectWorkspace",
       entityId: project.id,
-      action: "CREATE",
+      action: "PROJECT_CREATED_VIA_API",
       metadata: { ...sourceMetadata, name: project.name, slug: project.slug, clientId },
     });
 
-    // ── 3. Optional: initial logbook entry ───────────────────────────────────
+    // ── 3. Optional: initial communication entry ─────────────────────────────
 
-    let logEntry: { id: string } | undefined;
-    if (input.initialLogEntry) {
-      const entry = input.initialLogEntry;
+    let communication: { id: string } | undefined;
+    if (input.initialCommunication) {
+      const comm = input.initialCommunication;
       const created = await tx.communicationEntry.create({
         data: {
           projectId: project.id,
           authorUserId: systemActor.id,
-          type: entry.type,
-          subject: entry.subject,
-          content: entry.content,
-          externalSenderName: entry.externalSenderName ?? null,
-          externalSenderEmail: entry.externalSenderEmail ?? null,
-          isInternal: entry.type === CommunicationType.INTERNAL,
-          occurredAt: entry.occurredAt ? new Date(entry.occurredAt) : new Date(),
+          type: comm.type,
+          subject: comm.subject,
+          content: comm.content,
+          externalSenderName: comm.externalSenderName ?? null,
+          externalSenderEmail: comm.externalSenderEmail ?? null,
+          isInternal: false,
+          occurredAt: comm.occurredAt ? new Date(comm.occurredAt) : new Date(),
         },
       });
-      logEntry = { id: created.id };
+      communication = { id: created.id };
 
       await createAuditEntry(tx, {
         entityType: "CommunicationEntry",
         entityId: created.id,
-        action: "CREATE",
-        metadata: { ...sourceMetadata, projectId: project.id, subject: entry.subject },
+        action: "COMMUNICATION_CREATED_VIA_API",
+        metadata: { ...sourceMetadata, projectId: project.id, subject: comm.subject },
+      });
+    }
+
+    // ── 4. Optional: initial change request ──────────────────────────────────
+
+    let changeRequest: { id: string } | undefined;
+    if (input.initialChangeRequest) {
+      const cr = input.initialChangeRequest;
+      const created = await tx.changeRequest.create({
+        data: {
+          projectId: project.id,
+          createdByUserId: systemActor.id,
+          title: cr.title,
+          description: cr.description,
+          sourceType: cr.sourceType,
+          status: cr.status,
+          impact: cr.impact,
+        },
+      });
+      changeRequest = { id: created.id };
+
+      await createAuditEntry(tx, {
+        entityType: "ChangeRequest",
+        entityId: created.id,
+        action: "CHANGE_REQUEST_CREATED_VIA_API",
+        metadata: { ...sourceMetadata, projectId: project.id, title: cr.title },
       });
     }
 
     return {
       client: { id: clientId, companyName: clientCompanyName, wasCreated: clientWasCreated },
       project: { id: project.id, name: project.name, slug: project.slug, status: project.status },
-      logEntry,
+      communication,
+      changeRequest,
     };
   });
 }

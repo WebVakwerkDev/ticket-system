@@ -36,19 +36,7 @@ export async function POST(request: NextRequest) {
   // 3. Validate
   let input;
   try {
-    const normalizedBody =
-      body &&
-      typeof body === "object" &&
-      !Array.isArray(body) &&
-      "initialCommunication" in body &&
-      !("initialLogEntry" in body)
-        ? {
-            ...body,
-            initialLogEntry: (body as Record<string, unknown>).initialCommunication,
-          }
-        : body;
-
-    input = ProjectCreateApiSchema.parse(normalizedBody);
+    input = ProjectCreateApiSchema.parse(body);
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

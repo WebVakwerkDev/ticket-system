@@ -137,7 +137,6 @@ model Client {
   invoices       Invoice[]
   docFolders     DocFolder[]
   proposalDrafts ProposalDraft[]
-  emails         Email[]
 
   @@map("clients")
 }
@@ -220,7 +219,6 @@ model ChangeRequest {
   communications CommunicationEntry[] @relation("CommunicationChangeRequests")
   notes         InternalNote[]
   agentRuns     AgentRun[]
-  emails        Email[]
 
   @@map("change_requests")
 }
@@ -379,47 +377,6 @@ model BusinessSettings {
   updatedAt             DateTime @updatedAt
 
   @@map("business_settings")
-}
-
-enum EmailFolder {
-  INBOX
-  SENT
-  DRAFT
-  TRASH
-}
-
-enum EmailDirection {
-  INBOUND
-  OUTBOUND
-}
-
-model Email {
-  id              String         @id @default(cuid())
-  externalId      String?        @unique
-  direction       EmailDirection
-  folder          EmailFolder    @default(INBOX)
-  fromName        String?
-  fromEmail       String
-  toAddresses     String[]       @default([])
-  ccAddresses     String[]       @default([])
-  subject         String
-  bodyText        String?
-  bodyHtml        String?
-  isRead          Boolean        @default(false)
-  threadId        String?
-  changeRequestId String?
-  clientId        String?
-  receivedAt      DateTime?
-  sentAt          DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  changeRequest   ChangeRequest? @relation(fields: [changeRequestId], references: [id], onDelete: SetNull)
-  client          Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
-
-  @@index([folder])
-  @@index([changeRequestId])
-  @@map("emails")
 }
 
 model AuditLog {
