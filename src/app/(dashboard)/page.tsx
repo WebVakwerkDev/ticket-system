@@ -4,7 +4,7 @@ import { formatDate } from "@/lib/utils";
 import {
   FolderKanban,
   Clock,
-  GitPullRequest,
+  MessageSquareText,
   AlertTriangle,
   ArrowRight,
   Calendar,
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   const {
     inProgress,
     waitingForClient,
-    newChangeRequests,
+    recentLogEntries,
     overdueInvoices,
     recentActivity,
     projectsWithoutRepo,
@@ -50,9 +50,9 @@ export default async function DashboardPage() {
       bgColor: "bg-yellow-50",
     },
     {
-      label: "Nieuwe wijzigingsverzoeken",
-      value: newChangeRequests,
-      icon: GitPullRequest,
+      label: "Nieuwe logboekitems",
+      value: recentLogEntries,
+      icon: MessageSquareText,
       borderColor: "border-purple-500",
       iconColor: "text-purple-500",
       bgColor: "bg-purple-50",

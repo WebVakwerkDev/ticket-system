@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getInvoices, getFinanceOverview } from "@/actions/invoices";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, TrendingUp, Clock, AlertTriangle, Calendar } from "lucide-react";
+import { TrendingUp, Clock, AlertTriangle, Calendar } from "lucide-react";
 import { InvoiceStatus } from "@prisma/client";
 import { InvoiceStatusBadge } from "@/components/projects/status-badge";
 import { MarkPaidButton } from "./mark-paid-button";
+import { ProposalPlaceholderButton } from "@/components/ui/proposal-placeholder-button";
 
 const STATUS_TABS = [
   { label: "Alle", value: "" },
@@ -76,10 +77,7 @@ export default async function FinancePage({
     <div className="space-y-6">
       <div className="page-header">
         <h1 className="page-title">Financiën</h1>
-        <Link href="/finance/invoices/new" className="btn-primary">
-          <Plus className="h-4 w-4" />
-          Nieuwe factuur
-        </Link>
+        <ProposalPlaceholderButton />
       </div>
 
       {/* Stats */}
@@ -259,7 +257,7 @@ export default async function FinancePage({
             Geen facturen gevonden.{" "}
             {!activeStatus && (
               <Link href="/finance/invoices/new" className="text-blue-600 hover:underline">
-                Maak er een aan
+                Later via n8n
               </Link>
             )}
           </div>

@@ -127,9 +127,8 @@ export default async function ProjectsPage({
                   )}
                   <div className="flex items-center gap-3 pt-1">
                     <span>
-                      {project._count.communicationEntries} comm.
+                      {project._count.communicationEntries} logitems
                     </span>
-                    <span>{project._count.changeRequests} WV's</span>
                   </div>
                 </div>
 

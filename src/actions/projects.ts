@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { ProjectFormSchema, type ProjectFormData } from "@/lib/validations/project";
 import { generateSlug } from "@/lib/utils";
-import { ProjectStatus, InvoiceStatus } from "@prisma/client";
+import { CommunicationType, ProjectStatus, InvoiceStatus } from "@prisma/client";
 
 export async function getProjects(filters?: {
   status?: ProjectStatus;
@@ -25,7 +25,7 @@ export async function getProjects(filters?: {
           select: { id: true, name: true },
         },
         _count: {
-          select: { changeRequests: true, communicationEntries: true },
+          select: { communicationEntries: true },
         },
       },
     });
@@ -47,17 +47,9 @@ export async function getProject(id: string) {
           select: { id: true, name: true, email: true },
         },
         repositories: true,
-        changeRequests: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          include: {
-            createdBy: { select: { id: true, name: true } },
-            assignedTo: { select: { id: true, name: true } },
-          },
-        },
         communicationEntries: {
           orderBy: { occurredAt: "desc" },
-          take: 5,
+          take: 10,
           include: {
             author: { select: { id: true, name: true } },
           },
@@ -66,7 +58,7 @@ export async function getProject(id: string) {
           orderBy: { issueDate: "desc" },
         },
         _count: {
-          select: { changeRequests: true, communicationEntries: true },
+          select: { communicationEntries: true },
         },
       },
     });
@@ -92,17 +84,9 @@ export async function getProjectBySlug(slug: string) {
           select: { id: true, name: true, email: true },
         },
         repositories: true,
-        changeRequests: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          include: {
-            createdBy: { select: { id: true, name: true } },
-            assignedTo: { select: { id: true, name: true } },
-          },
-        },
         communicationEntries: {
           orderBy: { occurredAt: "desc" },
-          take: 5,
+          take: 10,
           include: {
             author: { select: { id: true, name: true } },
           },
@@ -111,7 +95,7 @@ export async function getProjectBySlug(slug: string) {
           orderBy: { issueDate: "desc" },
         },
         _count: {
-          select: { changeRequests: true, communicationEntries: true },
+          select: { communicationEntries: true },
         },
       },
     });
@@ -245,7 +229,7 @@ export async function getDashboardStats() {
     const [
       inProgressCount,
       waitingForClientCount,
-      newChangeRequests,
+      recentLogEntries,
       overdueInvoices,
       recentActivity,
       projectsWithoutRepo,
@@ -257,8 +241,14 @@ export async function getDashboardStats() {
       prisma.projectWorkspace.count({
         where: { status: ProjectStatus.WAITING_FOR_CLIENT },
       }),
-      prisma.changeRequest.count({
-        where: { status: "NEW" },
+      prisma.communicationEntry.count({
+        where: {
+          isInternal: true,
+          type: CommunicationType.INTERNAL,
+          occurredAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          },
+        },
       }),
       prisma.invoice.count({
         where: { status: InvoiceStatus.OVERDUE },
@@ -308,7 +298,7 @@ export async function getDashboardStats() {
       stats: {
         inProgress: inProgressCount,
         waitingForClient: waitingForClientCount,
-        newChangeRequests,
+        recentLogEntries,
         overdueInvoices,
         recentActivity,
         projectsWithoutRepo,

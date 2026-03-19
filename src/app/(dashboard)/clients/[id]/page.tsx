@@ -13,6 +13,7 @@ import {
   Receipt,
 } from "lucide-react";
 import { ProjectStatusBadge, InvoiceStatusBadge } from "@/components/projects/status-badge";
+import { ProposalPlaceholderButton } from "@/components/ui/proposal-placeholder-button";
 
 export default async function ClientDetailPage({
   params,
@@ -168,8 +169,7 @@ export default async function ClientDetailPage({
                         {project.name}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {project._count.communicationEntries} comm. &middot;{" "}
-                        {project._count.changeRequests} wijzigingsverzoeken
+                        {project._count.communicationEntries} logitems
                       </p>
                     </div>
                     <ProjectStatusBadge status={project.status} />
@@ -196,12 +196,7 @@ export default async function ClientDetailPage({
                 <Receipt className="h-4 w-4 text-gray-400" />
                 Facturen ({client.invoices.length})
               </h2>
-              <Link
-                href={`/finance/invoices/new?clientId=${client.id}`}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                + Nieuwe factuur
-              </Link>
+              <ProposalPlaceholderButton label="Offerte via n8n" />
             </div>
             {client.invoices.length > 0 ? (
               <div className="divide-y divide-gray-50">

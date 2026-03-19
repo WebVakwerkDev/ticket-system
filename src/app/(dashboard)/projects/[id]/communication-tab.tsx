@@ -43,7 +43,7 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
       {/* Add new button */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">
-          Communicatielog ({entries.length})
+          Projectlogboek ({entries.length})
         </h3>
         <button
           onClick={() => setShowForm(!showForm)}
@@ -57,7 +57,7 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              Item toevoegen
+              Uitgebreid logitem
             </>
           )}
         </button>
@@ -67,7 +67,7 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
       {showForm && (
         <div className="card p-5">
           <h4 className="text-sm font-semibold text-gray-900 mb-4">
-            Nieuw communicatie-item
+            Nieuw logboekitem
           </h4>
           <CommunicationForm projectId={projectId} onSuccess={handleSuccess} />
         </div>

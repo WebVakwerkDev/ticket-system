@@ -30,7 +30,7 @@ export async function getClient(id: string) {
           orderBy: { updatedAt: "desc" },
           include: {
             _count: {
-              select: { changeRequests: true, communicationEntries: true },
+              select: { communicationEntries: true },
             },
           },
         },

@@ -128,11 +128,14 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic info */}
         <div className="card p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Projectgegevens
+          <h2 className="mb-2 text-sm font-semibold text-gray-900">
+            Nieuw project
           </h2>
+          <p className="mb-5 text-sm text-gray-500">
+            Houd het simpel: maak het project aan en werk daarna alles verder bij in het overzicht en logboek.
+          </p>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label htmlFor="name" className="form-label">
@@ -146,9 +149,10 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 value={form.name}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Website-herontwerp voor Acme"
+                placeholder="Nieuwe website voor Acme"
               />
             </div>
+
             <div>
               <label htmlFor="clientId" className="form-label">
                 Klant <span className="text-red-500">*</span>
@@ -169,24 +173,27 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 ))}
               </select>
             </div>
+
             <div>
-              <label htmlFor="projectType" className="form-label">
-                Projecttype
+              <label htmlFor="ownerUserId" className="form-label">
+                Verantwoordelijke
               </label>
               <select
-                id="projectType"
-                name="projectType"
-                value={form.projectType}
+                id="ownerUserId"
+                name="ownerUserId"
+                value={form.ownerUserId}
                 onChange={handleChange}
                 className="form-select"
               >
-                {PROJECT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
+                <option value="">Nog niemand toegewezen</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
                   </option>
                 ))}
               </select>
             </div>
+
             <div>
               <label htmlFor="status" className="form-label">
                 Status
@@ -205,6 +212,55 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 ))}
               </select>
             </div>
+
+            <div>
+              <label htmlFor="dueDate" className="form-label">
+                Deadline
+              </label>
+              <input
+                id="dueDate"
+                name="dueDate"
+                type="date"
+                value={form.dueDate}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label htmlFor="description" className="form-label">
+                Wat wil de klant?
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows={6}
+                value={form.description}
+                onChange={handleChange}
+                className="form-textarea"
+                placeholder="Beschrijf kort de wens van de klant, de afgesproken richting en wat belangrijk is voor dit project…"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="projectType" className="form-label">
+                Projecttype
+              </label>
+              <select
+                id="projectType"
+                name="projectType"
+                value={form.projectType}
+                onChange={handleChange}
+                className="form-select"
+              >
+                {PROJECT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label htmlFor="priority" className="form-label">
                 Prioriteit
@@ -222,162 +278,6 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                   </option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label htmlFor="ownerUserId" className="form-label">
-                Projecteigenaar
-              </label>
-              <select
-                id="ownerUserId"
-                name="ownerUserId"
-                value={form.ownerUserId}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="">Geen eigenaar toegewezen</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="startDate" className="form-label">
-                Startdatum
-              </label>
-              <input
-                id="startDate"
-                name="startDate"
-                type="date"
-                value={form.startDate}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-            <div>
-              <label htmlFor="dueDate" className="form-label">
-                Einddatum
-              </label>
-              <input
-                id="dueDate"
-                name="dueDate"
-                type="date"
-                value={form.dueDate}
-                onChange={handleChange}
-                className="form-input"
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor="tags" className="form-label">
-                Tags{" "}
-                <span className="font-normal text-gray-400">
-                  (kommagescheiden)
-                </span>
-              </label>
-              <input
-                id="tags"
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                className="form-input"
-                placeholder="wordpress, woocommerce, seo"
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor="description" className="form-label">
-                Beschrijving
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={3}
-                value={form.description}
-                onChange={handleChange}
-                className="form-textarea"
-                placeholder="Korte beschrijving van het project…"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Technical & scope */}
-        <div className="card p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Technische details &amp; scope
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="intakeSummary" className="form-label">
-                Intake-samenvatting
-              </label>
-              <textarea
-                id="intakeSummary"
-                name="intakeSummary"
-                rows={4}
-                value={form.intakeSummary}
-                onChange={handleChange}
-                className="form-textarea"
-                placeholder="Samenvatting van het intakegesprek…"
-              />
-            </div>
-            <div>
-              <label htmlFor="scope" className="form-label">
-                Scope
-              </label>
-              <textarea
-                id="scope"
-                name="scope"
-                rows={4}
-                value={form.scope}
-                onChange={handleChange}
-                className="form-textarea"
-                placeholder="Wat wel en niet binnen dit project valt…"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="techStack" className="form-label">
-                  Tech stack
-                </label>
-                <input
-                  id="techStack"
-                  name="techStack"
-                  type="text"
-                  value={form.techStack}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Next.js, Prisma, PostgreSQL"
-                />
-              </div>
-              <div>
-                <label htmlFor="domainName" className="form-label">
-                  Domein
-                </label>
-                <input
-                  id="domainName"
-                  name="domainName"
-                  type="text"
-                  value={form.domainName}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="acme.nl"
-                />
-              </div>
-              <div className="col-span-2">
-                <label htmlFor="hostingInfo" className="form-label">
-                  Hostinginformatie
-                </label>
-                <input
-                  id="hostingInfo"
-                  name="hostingInfo"
-                  type="text"
-                  value={form.hostingInfo}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="Vercel, AWS, Cloudflare, enz."
-                />
-              </div>
             </div>
           </div>
         </div>
