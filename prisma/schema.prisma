@@ -407,7 +407,6 @@ model Email {
   bodyHtml        String?
   isRead          Boolean        @default(false)
   threadId        String?
-  attachmentsMeta Json?
   changeRequestId String?
   clientId        String?
   receivedAt      DateTime?

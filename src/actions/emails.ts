@@ -109,20 +109,12 @@ export async function unlinkEmailFromTicket(emailId: string, actorUserId: string
   }
 }
 
-export type EmailAttachment = {
-  name: string;
-  mimeType: string;
-  data: string; // base64
-  size: number;
-};
-
 export async function sendEmail(
   data: {
     toAddresses: string[];
     ccAddresses?: string[];
     subject: string;
     bodyText: string;
-    attachments?: EmailAttachment[];
     changeRequestId?: string;
     clientId?: string;
     replyToExternalId?: string;
@@ -136,18 +128,15 @@ export async function sendEmail(
 
   try {
     // Create outbound email record first
-    const attachmentsMeta = data.attachments?.map(({ name, mimeType, size }) => ({ name, mimeType, size })) ?? [];
-
     const email = await prisma.email.create({
       data: {
         direction: EmailDirection.OUTBOUND,
         folder: EmailFolder.SENT,
-        fromEmail: "",
+        fromEmail: "", // filled in by n8n from Gmail sender
         toAddresses: data.toAddresses,
         ccAddresses: data.ccAddresses ?? [],
         subject: data.subject,
         bodyText: data.bodyText,
-        attachmentsMeta: attachmentsMeta.length > 0 ? attachmentsMeta : undefined,
         isRead: true,
         changeRequestId: data.changeRequestId ?? null,
         clientId: data.clientId ?? null,
@@ -166,7 +155,6 @@ export async function sendEmail(
         subject: data.subject,
         bodyText: data.bodyText,
         replyToExternalId: data.replyToExternalId ?? null,
-        attachments: data.attachments ?? [],
       }),
     });
 

@@ -16,34 +16,19 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $input.first().json.body;\n\n// Zet base64 bijlagen om naar n8n binary fields\nconst binary = {};\nconst attachmentProps = [];\n\nif (Array.isArray(d.attachments) && d.attachments.length > 0) {\n  d.attachments.forEach((att, i) => {\n    const propName = `attachment_${i}`;\n    binary[propName] = {\n      data: att.data,\n      mimeType: att.mimeType || 'application/octet-stream',\n      fileName: att.name,\n    };\n    attachmentProps.push(propName);\n  });\n}\n\nreturn [{\n  json: {\n    ...d,\n    _attachmentProps: attachmentProps.join(','),\n    _hasAttachments: attachmentProps.length > 0,\n  },\n  binary,\n}];"
-      },
-      "id": "verwerk-bijlagen",
-      "name": "Verwerk bijlagen",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [480, 0]
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $json.to.join(',') }}",
-        "subject": "={{ $json.subject }}",
+        "sendTo": "={{ $json.body.to.join(',') }}",
+        "subject": "={{ $json.body.subject }}",
         "emailType": "text",
-        "message": "={{ $json.bodyText }}",
+        "message": "={{ $json.body.bodyText }}",
         "options": {
-          "ccList": "={{ $json.cc?.join(',') || '' }}",
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              { "property": "={{ $json._hasAttachments ? $json._attachmentProps : '' }}" }
-            ]
-          }
+          "ccList": "={{ $json.body.cc?.join(',') || '' }}"
         }
       },
       "id": "gmail-send",
       "name": "Gmail – Verstuur",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [720, 0],
+      "position": [480, 0],
       "credentials": {
         "gmailOAuth2": { "id": "JOUW_GMAIL_CREDENTIAL_ID", "name": "Gmail account" }
       }
@@ -58,12 +43,11 @@
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [960, 0]
+      "position": [720, 0]
     }
   ],
   "connections": {
-    "Webhook – Verzend e-mail": { "main": [[{ "node": "Verwerk bijlagen", "type": "main", "index": 0 }]] },
-    "Verwerk bijlagen": { "main": [[{ "node": "Gmail – Verstuur", "type": "main", "index": 0 }]] },
+    "Webhook – Verzend e-mail": { "main": [[{ "node": "Gmail – Verstuur", "type": "main", "index": 0 }]] },
     "Gmail – Verstuur": { "main": [[{ "node": "Webhook Response", "type": "main", "index": 0 }]] }
   },
   "meta": {

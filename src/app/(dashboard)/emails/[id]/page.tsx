@@ -2,7 +2,7 @@ import { requireSession } from "@/lib/auth";
 import { getEmail, getTicketsForLinking } from "@/actions/emails";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Paperclip } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { EmailActions } from "./email-actions";
 import { markEmailRead } from "@/actions/emails";
 
@@ -64,34 +64,6 @@ export default async function EmailDetailPage({ params }: Props) {
             )}
           </div>
         </div>
-
-        {/* Attachments */}
-        {Array.isArray(email.attachmentsMeta) && email.attachmentsMeta.length > 0 && (
-          <div className="col-span-2">
-            <div className="card p-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Paperclip className="h-3.5 w-3.5" />
-                Bijlagen ({(email.attachmentsMeta as { name: string; mimeType: string; size: number }[]).length})
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {(email.attachmentsMeta as { name: string; mimeType: string; size: number }[]).map((att, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm"
-                  >
-                    <Paperclip className="h-3.5 w-3.5 text-gray-400" />
-                    <span className="text-gray-700">{att.name}</span>
-                    <span className="text-xs text-gray-400">
-                      {att.size < 1024 * 1024
-                        ? `${(att.size / 1024).toFixed(1)} KB`
-                        : `${(att.size / (1024 * 1024)).toFixed(1)} MB`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Sidebar: metadata + actions */}
         <div className="space-y-4">
