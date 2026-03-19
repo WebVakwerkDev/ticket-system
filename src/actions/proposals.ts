@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
+import { getN8nWebhookUrl } from "@/lib/env";
 
 export async function getProposalDrafts(projectId: string) {
   try {
@@ -20,6 +21,74 @@ export async function getProposalDrafts(projectId: string) {
     console.error("getProposalDrafts error:", error);
     return { success: false, error: "Offerteconcepten ophalen mislukt." };
   }
+}
+
+export async function sendProposalToN8n(proposalId: string, actorUserId: string) {
+  const webhookUrl = getN8nWebhookUrl();
+  if (!webhookUrl) {
+    return { success: false, error: "N8N_WEBHOOK_PROPOSAL_URL is niet ingesteld." };
+  }
+
+  const proposal = await prisma.proposalDraft.findUnique({
+    where: { id: proposalId },
+    include: {
+      client: {
+        select: { id: true, companyName: true, contactName: true, email: true, address: true },
+      },
+      project: {
+        select: { id: true, name: true, description: true },
+      },
+    },
+  });
+
+  if (!proposal) {
+    return { success: false, error: "Offerte niet gevonden." };
+  }
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proposalId: proposal.id,
+        title: proposal.title,
+        recipientName: proposal.recipientName,
+        recipientEmail: proposal.recipientEmail,
+        recipientCompany: proposal.recipientCompany,
+        recipientAddress: proposal.recipientAddress,
+        summary: proposal.summary,
+        scope: proposal.scope,
+        priceLabel: proposal.priceLabel,
+        amount: proposal.amount ? Number(proposal.amount) : null,
+        deliveryTime: proposal.deliveryTime,
+        notes: proposal.notes,
+        client: proposal.client,
+        project: proposal.project,
+        createdAt: proposal.createdAt,
+      }),
+    });
+
+    if (!res.ok) {
+      return { success: false, error: `n8n webhook fout: ${res.status}` };
+    }
+  } catch {
+    return { success: false, error: "n8n webhook niet bereikbaar." };
+  }
+
+  await prisma.proposalDraft.update({
+    where: { id: proposalId },
+    data: { status: "SENT_TO_N8N" },
+  });
+
+  await createAuditLog({
+    actorUserId,
+    entityType: "ProposalDraft",
+    entityId: proposalId,
+    action: "UPDATE",
+    metadata: { status: "SENT_TO_N8N" },
+  });
+
+  return { success: true };
 }
 
 export async function createProposalDraft(data: {

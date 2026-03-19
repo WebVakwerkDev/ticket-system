@@ -55,3 +55,7 @@ export function getNextAuthUrl() {
 export function getInternalApiKey() {
   return parseRequired("INTERNAL_API_KEY", z.string().trim().min(24));
 }
+
+export function getN8nWebhookUrl() {
+  return parseOptional("N8N_WEBHOOK_PROPOSAL_URL", UrlStringSchema);
+}

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { FileText, Plus, X } from "lucide-react";
-import { createProposalDraft } from "@/actions/proposals";
+import { createProposalDraft, sendProposalToN8n } from "@/actions/proposals";
 
 interface Proposal {
   id: string;
@@ -39,6 +39,8 @@ export function ProjectProposalsPanel({ client, project, proposals }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const initialForm = useMemo(
     () => ({
@@ -62,6 +64,19 @@ export function ProjectProposalsPanel({ client, project, proposals }: Props) {
   function resetForm() {
     setForm(initialForm);
     setError(null);
+  }
+
+  async function handleSendToN8n(proposalId: string) {
+    if (!session?.user?.id) return;
+    setSendingId(proposalId);
+    setSendError(null);
+    const result = await sendProposalToN8n(proposalId, session.user.id);
+    setSendingId(null);
+    if (!result.success) {
+      setSendError(result.error ?? "Verzenden naar n8n mislukt.");
+    } else {
+      router.refresh();
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
