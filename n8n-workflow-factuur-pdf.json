@@ -1,0 +1,144 @@
+{
+  "name": "Factuur PDF → Google Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "factuur-pdf",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-factuur",
+      "name": "Webhook – Ontvang factuur",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json.body;\n\nconst esc = (v) => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;');\nconst br = (v) => esc(v).replace(/\\n/g, '<br/>');\nconst euro = (v) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(v);\nconst dateFmt = (v) => new Intl.DateTimeFormat('nl-NL', { dateStyle: 'long' }).format(new Date(v));\n\nconst factuurNr = esc(d.invoiceNumber ?? 'ONBEKEND');\nconst subtotal = Number(d.subtotal ?? 0);\nconst vatRate = Number(d.vatRate ?? 21);\nconst vatAmount = Number(d.vatAmount ?? subtotal * vatRate / 100);\nconst totalAmount = Number(d.totalAmount ?? subtotal + vatAmount);\n\nconst html = `<!DOCTYPE html>\n<html lang=\"nl\">\n<head>\n<meta charset=\"UTF-8\"/>\n<style>\n  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\n  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; line-height: 1.6; color: #1a1a1a; background: #fff; padding: 52px 56px; }\n  .page-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 28px; border-bottom: 3px solid #111; margin-bottom: 36px; }\n  .company-name { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -.5px; }\n  .company-sub { font-size: 11px; color: #666; margin-top: 3px; }\n  .doc-title { text-align: right; }\n  .doc-title h1 { font-size: 28px; font-weight: 800; color: #111; letter-spacing: -1px; }\n  .doc-title .meta { font-size: 11px; color: #555; line-height: 1.9; margin-top: 4px; }\n  .doc-title .meta strong { color: #111; }\n  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 36px; }\n  .party { background: #f8f9fa; border-radius: 8px; padding: 18px 20px; }\n  .party-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #999; margin-bottom: 8px; }\n  .party-name { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 2px; }\n  .party-detail { font-size: 12px; color: #444; line-height: 1.7; }\n  .section { margin-bottom: 28px; }\n  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #666; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }\n  .section p { font-size: 13px; color: #333; line-height: 1.75; }\n  .price-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }\n  .price-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #999; padding: 8px 12px; border-bottom: 2px solid #e5e7eb; text-align: left; }\n  .price-table th:last-child { text-align: right; }\n  .price-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f0; }\n  .price-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }\n  .price-table .subtotal-row td { padding-top: 14px; color: #555; }\n  .price-table .vat-row td { color: #888; font-size: 12px; }\n  .price-table .total-row td { font-size: 16px; font-weight: 700; color: #111; border-top: 2px solid #111; border-bottom: none; padding-top: 12px; }\n  .betaal-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 18px 20px; margin-bottom: 28px; }\n  .betaal-box .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #16a34a; margin-bottom: 8px; }\n  .betaal-box .detail { font-size: 13px; color: #111; line-height: 1.8; }\n  .betaal-box .detail strong { font-weight: 700; }\n  .page-footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #aaa; line-height: 1.8; text-align: center; }\n</style>\n</head>\n<body>\n\n<div class=\"page-header\">\n  <div>\n    <div class=\"company-name\">Webvakwerk</div>\n    <div class=\"company-sub\">webvakwerk.nl &nbsp;·&nbsp; info@webvakwerk.nl</div>\n  </div>\n  <div class=\"doc-title\">\n    <h1>FACTUUR</h1>\n    <div class=\"meta\">\n      <strong>Factuurnummer:</strong> ${factuurNr}<br/>\n      <strong>Factuurdatum:</strong> ${dateFmt(d.issueDate)}<br/>\n      <strong>Vervaldatum:</strong> ${dateFmt(d.dueDate)}\n    </div>\n  </div>\n</div>\n\n<div class=\"parties\">\n  <div class=\"party\">\n    <div class=\"party-label\">Van</div>\n    <div class=\"party-name\">Webvakwerk</div>\n    <div class=\"party-detail\">\n      info@webvakwerk.nl<br/>\n      webvakwerk.nl\n    </div>\n  </div>\n  <div class=\"party\">\n    <div class=\"party-label\">Aan</div>\n    <div class=\"party-name\">${esc(d.client?.companyName ?? '')}</div>\n    <div class=\"party-detail\">\n      ${esc(d.client?.contactName ?? '')}<br/>\n      ${br(d.client?.address ?? '')}<br/>\n      ${esc(d.client?.email ?? '')}\n    </div>\n  </div>\n</div>\n\n${d.project ? `\n<div class=\"section\">\n  <div class=\"section-title\">Project</div>\n  <p>${esc(d.project.name)}</p>\n</div>` : ''}\n\n<div class=\"section\">\n  <div class=\"section-title\">Omschrijving</div>\n  <p>${br(d.description ?? '')}</p>\n</div>\n\n<table class=\"price-table\">\n  <thead>\n    <tr>\n      <th>Omschrijving</th>\n      <th>Bedrag</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>${esc(d.description ?? 'Dienstverlening')}</td>\n      <td>${euro(subtotal)}</td>\n    </tr>\n    <tr class=\"subtotal-row\">\n      <td>Subtotaal excl. BTW</td>\n      <td>${euro(subtotal)}</td>\n    </tr>\n    <tr class=\"vat-row\">\n      <td>BTW ${vatRate}%</td>\n      <td>${euro(vatAmount)}</td>\n    </tr>\n    <tr class=\"total-row\">\n      <td>Totaal incl. BTW</td>\n      <td>${euro(totalAmount)}</td>\n    </tr>\n  </tbody>\n</table>\n\n<div class=\"betaal-box\">\n  <div class=\"label\">Betalingsinformatie</div>\n  <div class=\"detail\">\n    <strong>Bedrag:</strong> ${euro(totalAmount)}<br/>\n    <strong>Vervaldatum:</strong> ${dateFmt(d.dueDate)}<br/>\n    <strong>Onder vermelding van:</strong> Factuur ${factuurNr}<br/>\n    Gelieve het bovenstaande bedrag uiterlijk op de vervaldatum te voldoen.\n    Bij vragen kunt u contact opnemen via <strong>info@webvakwerk.nl</strong>.\n  </div>\n</div>\n\n${d.notes ? `\n<div class=\"section\">\n  <div class=\"section-title\">Notities</div>\n  <p>${br(d.notes)}</p>\n</div>` : ''}\n\n<div class=\"page-footer\">\n  Webvakwerk &nbsp;·&nbsp; info@webvakwerk.nl &nbsp;·&nbsp; webvakwerk.nl<br/>\n  Factuurnummer ${factuurNr} &nbsp;·&nbsp; Betalingstermijn 14 dagen\n</div>\n\n</body>\n</html>`;\n\nreturn [{ json: { ...d, html } }];"
+      },
+      "id": "bouw-html-factuur",
+      "name": "Bouw HTML factuur",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.html;\nconst buffer = Buffer.from(html, 'utf8');\nconst item = $input.first();\nitem.binary = { data: { data: buffer.toString('base64'), mimeType: 'application/octet-stream', fileName: 'factuur.html' } };\nreturn [item];"
+      },
+      "id": "html-to-binary-factuur",
+      "name": "HTML → Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.convertapi.com/convert/html/to/pdf",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Accept", "value": "application/octet-stream" }]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            { "parameterType": "formBinaryData", "name": "file", "inputDataFieldName": "data" }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": { "responseFormat": "file", "outputPropertyName": "data" }
+          }
+        }
+      },
+      "id": "convertapi-factuur",
+      "name": "HTML → PDF (ConvertAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 0],
+      "credentials": {
+        "httpBearerAuth": { "id": "sdqCbWt1JuZ3OBf1", "name": "Bearer Auth account" }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=Factuur - {{ $('Bouw HTML factuur').item.json.client.companyName }} - {{ $('Bouw HTML factuur').item.json.invoiceNumber }}.pdf",
+        "driveId": {
+          "__rl": true, "value": "My Drive", "mode": "list",
+          "cachedResultName": "My Drive", "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/u/0/folders/1e2bzWKRrxNWyBIgX5dgsum8Cx2k74xae",
+          "mode": "url"
+        },
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "drive-upload-factuur",
+      "name": "Upload naar Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1200, 0],
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "j6FUWoXphw2lPiUG", "name": "Google Drive account" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://portal.webvakwerk.nl/api/internal/invoices/{{ $('Bouw HTML factuur').item.json.invoiceId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer 8VIluuOv8tilh6L7+bkAb6AsJW9oYplzCEMXKjeFUWo" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "driveUrl", "value": "={{ $json.webViewLink }}" },
+            { "name": "driveFileId", "value": "={{ $json.id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "callback-factuur",
+      "name": "Callback → Ticket systeem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": {}
+      },
+      "id": "webhook-response-factuur",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1680, 0]
+    }
+  ],
+  "connections": {
+    "Webhook – Ontvang factuur": { "main": [[{ "node": "Bouw HTML factuur", "type": "main", "index": 0 }]] },
+    "Bouw HTML factuur": { "main": [[{ "node": "HTML → Binary", "type": "main", "index": 0 }]] },
+    "HTML → Binary": { "main": [[{ "node": "HTML → PDF (ConvertAPI)", "type": "main", "index": 0 }]] },
+    "HTML → PDF (ConvertAPI)": { "main": [[{ "node": "Upload naar Google Drive", "type": "main", "index": 0 }]] },
+    "Upload naar Google Drive": { "main": [[{ "node": "Callback → Ticket systeem", "type": "main", "index": 0 }]] },
+    "Callback → Ticket systeem": { "main": [[{ "node": "Webhook Response", "type": "main", "index": 0 }]] }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f3df8f20b1b3e507874502c6b6a8ac02a4e70f4290a80feec850b51ed962a44"
+  }
+}

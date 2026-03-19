@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getInvoice } from "@/actions/invoices";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { InvoiceStatusBadge } from "@/components/projects/status-badge";
 import { MarkPaidButton } from "../../mark-paid-button";
+import { SendInvoiceButton } from "./send-invoice-button";
+import { getN8nInvoiceWebhookUrl } from "@/lib/env";
 
 export default async function InvoiceDetailPage({
   params,
@@ -19,6 +21,7 @@ export default async function InvoiceDetailPage({
   }
 
   const inv = result.invoice;
+  const n8nEnabled = !!getN8nInvoiceWebhookUrl();
   const subtotal = Number(inv.subtotal);
   const vatAmount = Number(inv.vatAmount);
   const totalAmount = Number(inv.totalAmount);
@@ -63,14 +66,9 @@ export default async function InvoiceDetailPage({
             {(inv.status === "SENT" || inv.status === "OVERDUE") && (
               <MarkPaidButton invoiceId={inv.id} />
             )}
-            <button
-              className="btn-secondary"
-              disabled
-              title="Downloaden (binnenkort beschikbaar)"
-            >
-              <Download className="h-4 w-4" />
-              Downloaden
-            </button>
+            {inv.status === "DRAFT" && (
+              <SendInvoiceButton invoiceId={inv.id} n8nEnabled={n8nEnabled} />
+            )}
           </div>
         </div>
 

@@ -59,3 +59,7 @@ export function getInternalApiKey() {
 export function getN8nWebhookUrl() {
   return parseOptional("N8N_WEBHOOK_PROPOSAL_URL", UrlStringSchema);
 }
+
+export function getN8nInvoiceWebhookUrl() {
+  return parseOptional("N8N_WEBHOOK_INVOICE_URL", UrlStringSchema);
+}

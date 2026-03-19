@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { InvoiceFormSchema, type InvoiceFormData } from "@/lib/validations/invoice";
 import { InvoiceStatus } from "@prisma/client";
+import { getN8nInvoiceWebhookUrl } from "@/lib/env";
 
 export async function getInvoices(filters?: {
   clientId?: string;
@@ -201,6 +202,74 @@ export async function markInvoicePaid(id: string, actorUserId: string) {
     console.error("markInvoicePaid error:", error);
     return { success: false, error: "Failed to mark invoice as paid" };
   }
+}
+
+export async function sendInvoiceToN8n(invoiceId: string, actorUserId: string) {
+  const webhookUrl = getN8nInvoiceWebhookUrl();
+  if (!webhookUrl) {
+    return { success: false, error: "N8N_WEBHOOK_INVOICE_URL is niet ingesteld." };
+  }
+
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    include: {
+      client: true,
+      project: { select: { id: true, name: true } },
+    },
+  });
+
+  if (!invoice) {
+    return { success: false, error: "Factuur niet gevonden." };
+  }
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        issueDate: invoice.issueDate,
+        dueDate: invoice.dueDate,
+        status: invoice.status,
+        description: invoice.description,
+        notes: invoice.notes,
+        subtotal: Number(invoice.subtotal),
+        vatRate: Number(invoice.vatRate),
+        vatAmount: Number(invoice.vatAmount),
+        totalAmount: Number(invoice.totalAmount),
+        client: {
+          id: invoice.client.id,
+          companyName: invoice.client.companyName,
+          contactName: invoice.client.contactName,
+          email: invoice.client.email,
+          address: invoice.client.address,
+        },
+        project: invoice.project ?? null,
+      }),
+    });
+
+    if (!res.ok) {
+      return { success: false, error: `n8n webhook fout: ${res.status}` };
+    }
+  } catch {
+    return { success: false, error: "n8n webhook niet bereikbaar." };
+  }
+
+  await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: { status: InvoiceStatus.SENT },
+  });
+
+  await createAuditLog({
+    actorUserId,
+    entityType: "Invoice",
+    entityId: invoiceId,
+    action: "UPDATE",
+    metadata: { status: "SENT", sentViaN8n: true },
+  });
+
+  return { success: true };
 }
 
 export async function getFinanceOverview() {
