@@ -33,7 +33,7 @@ export function ClientsTable({ clients }: { clients: Client[] }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search clients…"
+            placeholder="Zoek klanten…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="form-input pl-9"
@@ -47,15 +47,15 @@ export function ClientsTable({ clients }: { clients: Client[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                <th className="px-5 py-3 font-medium text-gray-600">Company</th>
+                <th className="px-5 py-3 font-medium text-gray-600">Bedrijf</th>
                 <th className="px-5 py-3 font-medium text-gray-600">Contact</th>
-                <th className="px-5 py-3 font-medium text-gray-600">Email</th>
-                <th className="px-5 py-3 font-medium text-gray-600">Phone</th>
+                <th className="px-5 py-3 font-medium text-gray-600">E-mail</th>
+                <th className="px-5 py-3 font-medium text-gray-600">Telefoon</th>
                 <th className="px-5 py-3 font-medium text-gray-600 text-center">
-                  Projects
+                  Projecten
                 </th>
                 <th className="px-5 py-3 font-medium text-gray-600 text-right">
-                  Actions
+                  Acties
                 </th>
               </tr>
             </thead>
@@ -105,14 +105,14 @@ export function ClientsTable({ clients }: { clients: Client[] }) {
                         className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                       >
                         <Eye className="h-3.5 w-3.5" />
-                        View
+                        Bekijken
                       </Link>
                       <Link
                         href={`/clients/${client.id}/edit`}
                         className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        Edit
+                        Bewerken
                       </Link>
                     </div>
                   </td>
@@ -125,16 +125,16 @@ export function ClientsTable({ clients }: { clients: Client[] }) {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Building2 className="h-10 w-10 text-gray-300 mb-3" />
           <p className="font-medium text-gray-600">
-            {search ? "No clients match your search" : "No clients yet"}
+            {search ? "Geen klanten gevonden voor je zoekopdracht" : "Nog geen klanten"}
           </p>
           <p className="text-sm text-gray-400 mt-1">
             {search
-              ? "Try a different search term"
-              : "Add your first client to get started"}
+              ? "Probeer een andere zoekterm"
+              : "Voeg je eerste klant toe om te beginnen"}
           </p>
           {!search && (
             <Link href="/clients/new" className="btn-primary mt-4">
-              Add Client
+              Klant toevoegen
             </Link>
           )}
         </div>

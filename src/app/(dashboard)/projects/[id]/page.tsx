@@ -32,12 +32,12 @@ import { ProjectChangeRequestsTab } from "./change-requests-tab";
 import { ProjectGithubTab } from "./github-tab";
 
 const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "communication", label: "Communication" },
-  { id: "change-requests", label: "Change Requests" },
+  { id: "overview", label: "Overzicht" },
+  { id: "communication", label: "Communicatie" },
+  { id: "change-requests", label: "Wijzigingsverzoeken" },
   { id: "github", label: "GitHub" },
-  { id: "invoices", label: "Invoices" },
-  { id: "timeline", label: "Timeline" },
+  { id: "invoices", label: "Facturen" },
+  { id: "timeline", label: "Tijdlijn" },
 ];
 
 export default async function ProjectDetailPage({
@@ -121,7 +121,7 @@ export default async function ProjectDetailPage({
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-4"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Projects
+        Terug naar projecten
       </Link>
 
       {/* Project Header */}
@@ -143,13 +143,13 @@ export default async function ProjectDetailPage({
               {project.owner && (
                 <>
                   <span>&middot;</span>
-                  <span>Owner: {project.owner.name}</span>
+                  <span>Eigenaar: {project.owner.name}</span>
                 </>
               )}
               {project.dueDate && (
                 <>
                   <span>&middot;</span>
-                  <span>Due: {formatDate(project.dueDate)}</span>
+                  <span>Deadline: {formatDate(project.dueDate)}</span>
                 </>
               )}
             </div>
@@ -173,26 +173,26 @@ export default async function ProjectDetailPage({
           <div className="flex items-center gap-2 text-sm">
             <MessageSquare className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
-              {communications.length} communication
+              {communications.length} communicatie-item
               {communications.length !== 1 ? "s" : ""}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <GitPullRequest className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
-              {changeRequests.length} CRs ({openCRCount} open)
+              {changeRequests.length} WV's ({openCRCount} open)
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Github className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
-              {repositories.length} repo{repositories.length !== 1 ? "s" : ""}
+              {repositories.length} repo{repositories.length !== 1 ? "'s" : ""}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Receipt className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
-              {invoices.length} invoice{invoices.length !== 1 ? "s" : ""}
+              {invoices.length} factuur{invoices.length !== 1 ? "en" : ""}
             </span>
           </div>
         </div>
@@ -287,7 +287,7 @@ function OverviewTab({
         {p.description && (
           <div className="card p-5">
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
-              Description
+              Beschrijving
             </h3>
             <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
               {p.description}
@@ -298,7 +298,7 @@ function OverviewTab({
         {p.intakeSummary && (
           <div className="card p-5">
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
-              Intake Summary
+              Intake-samenvatting
             </h3>
             <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
               {p.intakeSummary}
@@ -320,7 +320,7 @@ function OverviewTab({
           <div className="card">
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
               <h3 className="text-sm font-semibold text-gray-900">
-                Recent Communication
+                Recente communicatie
               </h3>
             </div>
             <div className="divide-y divide-gray-50">
@@ -344,7 +344,7 @@ function OverviewTab({
           <div className="card">
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
               <h3 className="text-sm font-semibold text-gray-900">
-                Open Change Requests
+                Open wijzigingsverzoeken
               </h3>
             </div>
             <div className="divide-y divide-gray-50">
@@ -388,13 +388,13 @@ function OverviewTab({
         {/* Project info */}
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Project Info
+            Projectinformatie
           </h3>
           <dl className="space-y-2 text-sm">
             {p.techStack && (
               <div>
                 <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                  Tech Stack
+                  Tech stack
                 </dt>
                 <dd className="text-gray-700">{p.techStack}</dd>
               </div>
@@ -402,7 +402,7 @@ function OverviewTab({
             {p.domainName && (
               <div>
                 <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                  Domain
+                  Domein
                 </dt>
                 <dd className="text-gray-700">{p.domainName}</dd>
               </div>
@@ -418,7 +418,7 @@ function OverviewTab({
             {p.startDate && (
               <div>
                 <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                  Start Date
+                  Startdatum
                 </dt>
                 <dd className="text-gray-700">{formatDate(p.startDate)}</dd>
               </div>
@@ -426,7 +426,7 @@ function OverviewTab({
             {p.dueDate && (
               <div>
                 <dt className="text-xs text-gray-400 uppercase tracking-wide">
-                  Due Date
+                  Einddatum
                 </dt>
                 <dd className="text-gray-700">{formatDate(p.dueDate)}</dd>
               </div>
@@ -485,13 +485,13 @@ function InvoicesTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Invoices</h3>
+        <h3 className="font-semibold text-gray-900">Facturen</h3>
         <Link
           href={`/finance/invoices/new?projectId=${projectId}&clientId=${clientId}`}
           className="btn-primary"
         >
           <Plus className="h-4 w-4" />
-          New Invoice
+          Nieuwe factuur
         </Link>
       </div>
 
@@ -501,10 +501,10 @@ function InvoicesTab({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                  <th className="px-5 py-3 font-medium text-gray-600">Invoice #</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Issue Date</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Due Date</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Amount</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Factuur #</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Factuurdatum</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Vervaldatum</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Bedrag</th>
                   <th className="px-5 py-3 font-medium text-gray-600">Status</th>
                   <th className="px-5 py-3 font-medium text-gray-600"></th>
                 </tr>
@@ -534,7 +534,7 @@ function InvoicesTab({
                         href={`/finance/invoices/${inv.id}`}
                         className="text-xs text-blue-600 hover:underline"
                       >
-                        View
+                        Bekijken
                       </Link>
                     </td>
                   </tr>
@@ -545,12 +545,12 @@ function InvoicesTab({
         </div>
       ) : (
         <div className="text-center py-10 text-sm text-gray-400">
-          No invoices yet.{" "}
+          Nog geen facturen.{" "}
           <Link
             href={`/finance/invoices/new?projectId=${projectId}&clientId=${clientId}`}
             className="text-blue-600 hover:underline"
           >
-            Create one
+            Maak er een aan
           </Link>
         </div>
       )}

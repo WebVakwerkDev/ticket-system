@@ -9,11 +9,11 @@ import {
 } from "@/components/projects/status-badge";
 
 const STATUS_TABS = [
-  { label: "All", value: "" },
-  { label: "In Progress", value: "IN_PROGRESS" },
-  { label: "Waiting for Client", value: "WAITING_FOR_CLIENT" },
+  { label: "Alle", value: "" },
+  { label: "In uitvoering", value: "IN_PROGRESS" },
+  { label: "Wacht op klant", value: "WAITING_FOR_CLIENT" },
   { label: "Review", value: "REVIEW" },
-  { label: "Completed", value: "COMPLETED" },
+  { label: "Afgerond", value: "COMPLETED" },
 ];
 
 export default async function ProjectsPage({
@@ -33,15 +33,15 @@ export default async function ProjectsPage({
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Projects</h1>
+          <h1 className="page-title">Projecten</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {projects.length} project{projects.length !== 1 ? "s" : ""}
+            {projects.length} project{projects.length !== 1 ? "en" : ""}
             {activeStatus ? ` · ${activeStatus.replace(/_/g, " ").toLowerCase()}` : ""}
           </p>
         </div>
         <Link href="/projects/new" className="btn-primary">
           <Plus className="h-4 w-4" />
-          New Project
+          Nieuw project
         </Link>
       </div>
 
@@ -106,7 +106,7 @@ export default async function ProjectsPage({
                 <div className="space-y-1.5 text-xs text-gray-500">
                   {project.owner && (
                     <div>
-                      <span className="text-gray-400">Owner: </span>
+                      <span className="text-gray-400">Eigenaar: </span>
                       {project.owner.name}
                     </div>
                   )}
@@ -120,16 +120,16 @@ export default async function ProjectsPage({
                           : ""
                       }
                     >
-                      <span className="text-gray-400">Due: </span>
+                      <span className="text-gray-400">Deadline: </span>
                       {formatDate(project.dueDate)}
-                      {isOverdue && " (overdue)"}
+                      {isOverdue && " (achterstallig)"}
                     </div>
                   )}
                   <div className="flex items-center gap-3 pt-1">
                     <span>
                       {project._count.communicationEntries} comm.
                     </span>
-                    <span>{project._count.changeRequests} CRs</span>
+                    <span>{project._count.changeRequests} WV's</span>
                   </div>
                 </div>
 
@@ -160,15 +160,15 @@ export default async function ProjectsPage({
           <div className="rounded-xl bg-gray-100 p-5 mb-4">
             <Plus className="h-8 w-8 text-gray-400" />
           </div>
-          <p className="font-medium text-gray-600">No projects found</p>
+          <p className="font-medium text-gray-600">Geen projecten gevonden</p>
           <p className="text-sm text-gray-400 mt-1">
             {activeStatus
-              ? "No projects with this status"
-              : "Create your first project to get started"}
+              ? "Geen projecten met deze status"
+              : "Maak je eerste project aan om te beginnen"}
           </p>
           {!activeStatus && (
             <Link href="/projects/new" className="btn-primary mt-4">
-              New Project
+              Nieuw project
             </Link>
           )}
         </div>

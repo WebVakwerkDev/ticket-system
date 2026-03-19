@@ -27,9 +27,9 @@ export default async function EditClientPage({
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Client
+            Terug naar klant
           </Link>
-          <h1 className="page-title">Edit {client.companyName}</h1>
+          <h1 className="page-title">Bewerk {client.companyName}</h1>
         </div>
       </div>
       <EditClientForm client={client} />

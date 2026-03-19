@@ -11,14 +11,14 @@ export default async function ClientsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Clients</h1>
+          <h1 className="page-title">Klanten</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {clients.length} client{clients.length !== 1 ? "s" : ""} total
+            {clients.length} klant{clients.length !== 1 ? "en" : ""} totaal
           </p>
         </div>
         <Link href="/clients/new" className="btn-primary">
           <Plus className="h-4 w-4" />
-          New Client
+          Nieuwe klant
         </Link>
       </div>
 

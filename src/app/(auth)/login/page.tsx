@@ -25,13 +25,13 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.");
+        setError("Ongeldig e-mailadres of wachtwoord. Probeer het opnieuw.");
       } else if (result?.ok) {
         router.push("/");
         router.refresh();
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("Er is een onverwachte fout opgetreden. Probeer het opnieuw.");
     } finally {
       setLoading(false);
     }
@@ -51,14 +51,14 @@ export default function LoginPage() {
             </span>
           </div>
           <p className="text-blue-300 text-sm mt-1">
-            Sign in to your workspace
+            Log in op je werkomgeving
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-xl shadow-2xl p-8">
           <h1 className="text-xl font-semibold text-gray-900 mb-6">
-            Welcome back
+            Welkom terug
           </h1>
 
           {error && (
@@ -70,7 +70,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="form-label">
-                Email address
+                E-mailadres
               </label>
               <input
                 id="email"
@@ -87,7 +87,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="form-label">
-                Password
+                Wachtwoord
               </label>
               <input
                 id="password"
@@ -110,17 +110,17 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Signing in…
+                  Bezig met inloggen…
                 </>
               ) : (
-                "Sign in"
+                "Inloggen"
               )}
             </button>
           </form>
         </div>
 
         <p className="text-center text-blue-400 text-xs mt-6">
-          Agency OS &mdash; Internal use only
+          Agency OS &mdash; Alleen voor intern gebruik
         </p>
       </div>
     </div>

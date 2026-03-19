@@ -39,9 +39,9 @@ export default async function NewInvoicePage({
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Finance
+            Terug naar financiën
           </Link>
-          <h1 className="page-title">New Invoice</h1>
+          <h1 className="page-title">Nieuwe factuur</h1>
         </div>
       </div>
       <InvoiceForm

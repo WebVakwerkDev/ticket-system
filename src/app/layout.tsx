@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Agency OS",
-  description: "Internal web app for agency project management",
+  description: "Interne webapp voor agency-projectbeheer",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="nl">
       <body className={inter.className}>
         <SessionProvider>{children}</SessionProvider>
       </body>

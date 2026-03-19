@@ -15,9 +15,9 @@ import { cn, getInitials } from "@/lib/utils";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { label: "Clients", href: "/clients", icon: Building2 },
-  { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Finance", href: "/finance", icon: Receipt },
+  { label: "Klanten", href: "/clients", icon: Building2 },
+  { label: "Projecten", href: "/projects", icon: FolderKanban },
+  { label: "Financiën", href: "/finance", icon: Receipt },
 ];
 
 export function Sidebar() {
@@ -74,7 +74,7 @@ export function Sidebar() {
             )}
           >
             <Settings className="h-4 w-4 flex-shrink-0" />
-            Settings
+            Instellingen
           </Link>
         )}
       </nav>
@@ -89,7 +89,7 @@ export function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">
-              {session?.user?.name ?? "User"}
+              {session?.user?.name ?? "Gebruiker"}
             </p>
             <p className="text-xs text-gray-400 truncate">
               {session?.user?.email ?? ""}
@@ -98,7 +98,7 @@ export function Sidebar() {
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="text-gray-400 hover:text-white transition-colors p-1 rounded"
-            title="Sign out"
+            title="Uitloggen"
           >
             <LogOut className="h-4 w-4" />
           </button>

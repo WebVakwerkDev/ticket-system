@@ -42,10 +42,10 @@ export default function NewClientPage() {
       if (result.success && result.client) {
         router.push(`/clients/${result.client.id}`);
       } else {
-        setError(result.error ?? "Failed to create client.");
+        setError(result.error ?? "Klant aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -60,9 +60,9 @@ export default function NewClientPage() {
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Clients
+            Terug naar klanten
           </Link>
-          <h1 className="page-title">New Client</h1>
+          <h1 className="page-title">Nieuwe klant</h1>
         </div>
       </div>
 
@@ -76,12 +76,12 @@ export default function NewClientPage() {
         {/* Contact Information */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Contact Information
+            Contactinformatie
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label htmlFor="companyName" className="form-label">
-                Company Name <span className="text-red-500">*</span>
+                Bedrijfsnaam <span className="text-red-500">*</span>
               </label>
               <input
                 id="companyName"
@@ -96,7 +96,7 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="contactName" className="form-label">
-                Contact Person
+                Contactpersoon
               </label>
               <input
                 id="contactName"
@@ -110,7 +110,7 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="email" className="form-label">
-                Email Address
+                E-mailadres
               </label>
               <input
                 id="email"
@@ -124,7 +124,7 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="phone" className="form-label">
-                Phone
+                Telefoon
               </label>
               <input
                 id="phone"
@@ -138,7 +138,7 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="address" className="form-label">
-                Address
+                Adres
               </label>
               <input
                 id="address"
@@ -156,12 +156,12 @@ export default function NewClientPage() {
         {/* Company Details */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Company Details
+            Bedrijfsgegevens
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="vatNumber" className="form-label">
-                VAT Number
+                Btw-nummer
               </label>
               <input
                 id="vatNumber"
@@ -175,7 +175,7 @@ export default function NewClientPage() {
             </div>
             <div>
               <label htmlFor="chamberOfCommerceNumber" className="form-label">
-                Chamber of Commerce
+                Kamer van Koophandel
               </label>
               <input
                 id="chamberOfCommerceNumber"
@@ -193,12 +193,12 @@ export default function NewClientPage() {
         {/* Notes & Billing */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Notes &amp; Billing
+            Notities &amp; facturatie
           </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="invoiceDetails" className="form-label">
-                Invoice Details
+                Factuurgegevens
               </label>
               <textarea
                 id="invoiceDetails"
@@ -207,12 +207,12 @@ export default function NewClientPage() {
                 value={form.invoiceDetails}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="Payment terms, billing address override, etc."
+                placeholder="Betaaltermijnen, afwijkend factuuradres, enz."
               />
             </div>
             <div>
               <label htmlFor="notes" className="form-label">
-                Internal Notes
+                Interne notities
               </label>
               <textarea
                 id="notes"
@@ -221,7 +221,7 @@ export default function NewClientPage() {
                 value={form.notes}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="Any internal notes about this client…"
+                placeholder="Interne notities over deze klant…"
               />
             </div>
           </div>
@@ -233,14 +233,14 @@ export default function NewClientPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating…
+                Bezig met aanmaken…
               </>
             ) : (
-              "Create Client"
+              "Klant aanmaken"
             )}
           </button>
           <Link href="/clients" className="btn-secondary">
-            Cancel
+            Annuleren
           </Link>
         </div>
       </form>

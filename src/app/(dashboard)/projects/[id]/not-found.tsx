@@ -8,14 +8,14 @@ export default function ProjectNotFound() {
         <FolderKanban className="h-10 w-10 text-gray-400" />
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">
-        Project not found
+        Project niet gevonden
       </h1>
       <p className="text-gray-500 text-sm mb-6">
-        The project you&apos;re looking for doesn&apos;t exist or has been removed.
+        Het project dat je zoekt bestaat niet of is verwijderd.
       </p>
       <Link href="/projects" className="btn-primary">
         <ArrowLeft className="h-4 w-4" />
-        Back to Projects
+        Terug naar projecten
       </Link>
     </div>
   );

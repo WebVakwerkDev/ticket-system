@@ -43,7 +43,7 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
       {/* Add new button */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">
-          Communication Log ({entries.length})
+          Communicatielog ({entries.length})
         </h3>
         <button
           onClick={() => setShowForm(!showForm)}
@@ -52,12 +52,12 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
           {showForm ? (
             <>
               <ChevronUp className="h-4 w-4" />
-              Cancel
+              Annuleren
             </>
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              Add Entry
+              Item toevoegen
             </>
           )}
         </button>
@@ -67,7 +67,7 @@ export function ProjectCommunicationTab({ projectId, initialEntries }: Props) {
       {showForm && (
         <div className="card p-5">
           <h4 className="text-sm font-semibold text-gray-900 mb-4">
-            New Communication Entry
+            Nieuw communicatie-item
           </h4>
           <CommunicationForm projectId={projectId} onSuccess={handleSuccess} />
         </div>

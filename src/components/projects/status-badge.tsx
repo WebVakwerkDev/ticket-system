@@ -11,12 +11,12 @@ export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
   const map: Record<ProjectStatus, { variant: Parameters<typeof Badge>[0]["variant"]; label: string }> = {
     LEAD: { variant: "info", label: "Lead" },
     INTAKE: { variant: "purple", label: "Intake" },
-    IN_PROGRESS: { variant: "info", label: "In Progress" },
-    WAITING_FOR_CLIENT: { variant: "warning", label: "Waiting for Client" },
+    IN_PROGRESS: { variant: "info", label: "In uitvoering" },
+    WAITING_FOR_CLIENT: { variant: "warning", label: "Wacht op klant" },
     REVIEW: { variant: "purple", label: "Review" },
-    COMPLETED: { variant: "success", label: "Completed" },
-    MAINTENANCE: { variant: "default", label: "Maintenance" },
-    PAUSED: { variant: "default", label: "Paused" },
+    COMPLETED: { variant: "success", label: "Afgerond" },
+    MAINTENANCE: { variant: "default", label: "Onderhoud" },
+    PAUSED: { variant: "default", label: "Gepauzeerd" },
   };
 
   const { variant, label } = map[status] ?? { variant: "default", label: status };
@@ -29,12 +29,12 @@ export function ChangeRequestStatusBadge({
   status: ChangeRequestStatus;
 }) {
   const map: Record<ChangeRequestStatus, { variant: Parameters<typeof Badge>[0]["variant"]; label: string }> = {
-    NEW: { variant: "info", label: "New" },
-    REVIEWED: { variant: "purple", label: "Reviewed" },
-    PLANNED: { variant: "warning", label: "Planned" },
-    IN_PROGRESS: { variant: "info", label: "In Progress" },
-    WAITING_FOR_FEEDBACK: { variant: "warning", label: "Waiting for Feedback" },
-    DONE: { variant: "success", label: "Done" },
+    NEW: { variant: "info", label: "Nieuw" },
+    REVIEWED: { variant: "purple", label: "Beoordeeld" },
+    PLANNED: { variant: "warning", label: "Gepland" },
+    IN_PROGRESS: { variant: "info", label: "In uitvoering" },
+    WAITING_FOR_FEEDBACK: { variant: "warning", label: "Wacht op feedback" },
+    DONE: { variant: "success", label: "Afgerond" },
   };
 
   const { variant, label } = map[status] ?? { variant: "default", label: status };
@@ -43,10 +43,10 @@ export function ChangeRequestStatusBadge({
 
 export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
   const map: Record<InvoiceStatus, { variant: Parameters<typeof Badge>[0]["variant"]; label: string }> = {
-    DRAFT: { variant: "default", label: "Draft" },
-    SENT: { variant: "info", label: "Sent" },
-    PAID: { variant: "success", label: "Paid" },
-    OVERDUE: { variant: "danger", label: "Overdue" },
+    DRAFT: { variant: "default", label: "Concept" },
+    SENT: { variant: "info", label: "Verzonden" },
+    PAID: { variant: "success", label: "Betaald" },
+    OVERDUE: { variant: "danger", label: "Achterstallig" },
   };
 
   const { variant, label } = map[status] ?? { variant: "default", label: status };
@@ -55,9 +55,9 @@ export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
 
 export function PriorityBadge({ priority }: { priority: ProjectPriority }) {
   const map: Record<ProjectPriority, { variant: Parameters<typeof Badge>[0]["variant"]; label: string }> = {
-    LOW: { variant: "default", label: "Low" },
-    MEDIUM: { variant: "info", label: "Medium" },
-    HIGH: { variant: "warning", label: "High" },
+    LOW: { variant: "default", label: "Laag" },
+    MEDIUM: { variant: "info", label: "Gemiddeld" },
+    HIGH: { variant: "warning", label: "Hoog" },
     URGENT: { variant: "danger", label: "Urgent" },
   };
 
@@ -67,9 +67,9 @@ export function PriorityBadge({ priority }: { priority: ProjectPriority }) {
 
 export function ImpactBadge({ impact }: { impact: ChangeRequestImpact }) {
   const map: Record<ChangeRequestImpact, { variant: Parameters<typeof Badge>[0]["variant"]; label: string }> = {
-    SMALL: { variant: "success", label: "Small" },
-    MEDIUM: { variant: "warning", label: "Medium" },
-    LARGE: { variant: "danger", label: "Large" },
+    SMALL: { variant: "success", label: "Klein" },
+    MEDIUM: { variant: "warning", label: "Gemiddeld" },
+    LARGE: { variant: "danger", label: "Groot" },
   };
 
   const { variant, label } = map[impact] ?? { variant: "default", label: impact };

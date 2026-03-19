@@ -7,11 +7,11 @@ import { InvoiceStatusBadge } from "@/components/projects/status-badge";
 import { MarkPaidButton } from "./mark-paid-button";
 
 const STATUS_TABS = [
-  { label: "All", value: "" },
-  { label: "Draft", value: "DRAFT" },
-  { label: "Sent", value: "SENT" },
-  { label: "Paid", value: "PAID" },
-  { label: "Overdue", value: "OVERDUE" },
+  { label: "Alle", value: "" },
+  { label: "Concept", value: "DRAFT" },
+  { label: "Verzonden", value: "SENT" },
+  { label: "Betaald", value: "PAID" },
+  { label: "Achterstallig", value: "OVERDUE" },
 ];
 
 export default async function FinancePage({
@@ -39,7 +39,7 @@ export default async function FinancePage({
 
   const statCards = [
     {
-      label: "Total Revenue (paid)",
+      label: "Totale omzet (betaald)",
       value: formatCurrency(overview?.totalRevenue ?? 0),
       icon: TrendingUp,
       color: "border-green-500",
@@ -47,7 +47,7 @@ export default async function FinancePage({
       bg: "bg-green-50",
     },
     {
-      label: "Open Invoices",
+      label: "Openstaande facturen",
       value: formatCurrency(overview?.openAmount ?? 0),
       icon: Clock,
       color: "border-blue-500",
@@ -55,7 +55,7 @@ export default async function FinancePage({
       bg: "bg-blue-50",
     },
     {
-      label: "Overdue",
+      label: "Achterstallig",
       value: formatCurrency(overview?.overdueAmount ?? 0),
       icon: AlertTriangle,
       color: "border-red-500",
@@ -63,7 +63,7 @@ export default async function FinancePage({
       bg: "bg-red-50",
     },
     {
-      label: `Current Quarter Revenue`,
+      label: "Omzet huidig kwartaal",
       value: formatCurrency(currentQuarterRevenue),
       icon: Calendar,
       color: "border-purple-500",
@@ -75,10 +75,10 @@ export default async function FinancePage({
   return (
     <div className="space-y-6">
       <div className="page-header">
-        <h1 className="page-title">Finance</h1>
+        <h1 className="page-title">Financiën</h1>
         <Link href="/finance/invoices/new" className="btn-primary">
           <Plus className="h-4 w-4" />
-          New Invoice
+          Nieuwe factuur
         </Link>
       </div>
 
@@ -113,18 +113,18 @@ export default async function FinancePage({
           <div className="border-b border-gray-100 px-5 py-4 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
             <h2 className="font-semibold text-red-700">
-              Overdue Invoices ({overdueInvoices.length})
+              Achterstallige facturen ({overdueInvoices.length})
             </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-red-50 text-left">
-                  <th className="px-5 py-3 font-medium text-gray-600">Invoice</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Client</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Factuur</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Klant</th>
                   <th className="px-5 py-3 font-medium text-gray-600">Project</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Due</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Amount</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Vervaldatum</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Bedrag</th>
                   <th className="px-5 py-3 font-medium text-gray-600"></th>
                 </tr>
               </thead>
@@ -165,7 +165,7 @@ export default async function FinancePage({
       {/* All invoices */}
       <div className="card">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="font-semibold text-gray-900">All Invoices</h2>
+          <h2 className="font-semibold text-gray-900">Alle facturen</h2>
         </div>
 
         {/* Filter tabs */}
@@ -193,12 +193,12 @@ export default async function FinancePage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                  <th className="px-5 py-3 font-medium text-gray-600">Invoice</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Client</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Factuur</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Klant</th>
                   <th className="px-5 py-3 font-medium text-gray-600">Project</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Issue Date</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Due Date</th>
-                  <th className="px-5 py-3 font-medium text-gray-600">Amount</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Factuurdatum</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Vervaldatum</th>
+                  <th className="px-5 py-3 font-medium text-gray-600">Bedrag</th>
                   <th className="px-5 py-3 font-medium text-gray-600">Status</th>
                   <th className="px-5 py-3 font-medium text-gray-600"></th>
                 </tr>
@@ -246,7 +246,7 @@ export default async function FinancePage({
                         href={`/finance/invoices/${inv.id}`}
                         className="text-xs text-gray-500 hover:text-blue-600"
                       >
-                        View
+                        Bekijken
                       </Link>
                     </td>
                   </tr>
@@ -256,10 +256,10 @@ export default async function FinancePage({
           </div>
         ) : (
           <div className="px-5 py-10 text-center text-sm text-gray-400">
-            No invoices found.{" "}
+            Geen facturen gevonden.{" "}
             {!activeStatus && (
               <Link href="/finance/invoices/new" className="text-blue-600 hover:underline">
-                Create one
+                Maak er een aan
               </Link>
             )}
           </div>

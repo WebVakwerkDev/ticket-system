@@ -12,25 +12,25 @@ import {
 } from "@prisma/client";
 
 const STATUSES: { value: ChangeRequestStatus; label: string }[] = [
-  { value: "NEW", label: "New" },
-  { value: "REVIEWED", label: "Reviewed" },
-  { value: "PLANNED", label: "Planned" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "WAITING_FOR_FEEDBACK", label: "Waiting for Feedback" },
-  { value: "DONE", label: "Done" },
+  { value: "NEW", label: "Nieuw" },
+  { value: "REVIEWED", label: "Beoordeeld" },
+  { value: "PLANNED", label: "Gepland" },
+  { value: "IN_PROGRESS", label: "In uitvoering" },
+  { value: "WAITING_FOR_FEEDBACK", label: "Wacht op feedback" },
+  { value: "DONE", label: "Afgerond" },
 ];
 
 const IMPACTS: { value: ChangeRequestImpact; label: string }[] = [
-  { value: "SMALL", label: "Small" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "LARGE", label: "Large" },
+  { value: "SMALL", label: "Klein" },
+  { value: "MEDIUM", label: "Gemiddeld" },
+  { value: "LARGE", label: "Groot" },
 ];
 
 const SOURCE_TYPES: { value: ChangeRequestSource; label: string }[] = [
   { value: "EMAIL", label: "Email" },
-  { value: "CALL", label: "Phone Call" },
-  { value: "WEBSITE_FORM", label: "Website Form" },
-  { value: "INTERNAL", label: "Internal" },
+  { value: "CALL", label: "Telefoongesprek" },
+  { value: "WEBSITE_FORM", label: "Websiteformulier" },
+  { value: "INTERNAL", label: "Intern" },
 ];
 
 interface Props {
@@ -98,10 +98,10 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
       if (result.success) {
         onSuccess();
       } else {
-        setError(result.error ?? "Failed to create change request.");
+        setError(result.error ?? "Wijzigingsverzoek aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
 
       <div>
         <label htmlFor="cr-title" className="form-label">
-          Title <span className="text-red-500">*</span>
+          Titel <span className="text-red-500">*</span>
         </label>
         <input
           id="cr-title"
@@ -127,13 +127,13 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
           value={form.title}
           onChange={handleChange}
           className="form-input"
-          placeholder="Change request title…"
+          placeholder="Titel van wijzigingsverzoek…"
         />
       </div>
 
       <div>
         <label htmlFor="cr-description" className="form-label">
-          Description <span className="text-red-500">*</span>
+          Beschrijving <span className="text-red-500">*</span>
         </label>
         <textarea
           id="cr-description"
@@ -143,14 +143,14 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
           value={form.description}
           onChange={handleChange}
           className="form-textarea"
-          placeholder="Describe the requested change in detail…"
+          placeholder="Beschrijf de gevraagde wijziging in detail…"
         />
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label htmlFor="cr-sourceType" className="form-label">
-            Source
+            Bron
           </label>
           <select
             id="cr-sourceType"
@@ -206,7 +206,7 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
 
       <div>
         <label htmlFor="cr-assignedTo" className="form-label">
-          Assigned To
+          Toegewezen aan
         </label>
         <select
           id="cr-assignedTo"
@@ -215,7 +215,7 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
           onChange={handleChange}
           className="form-select"
         >
-          <option value="">Unassigned</option>
+          <option value="">Niet toegewezen</option>
           {users.map((u) => (
             <option key={u.id} value={u.id}>
               {u.name}
@@ -227,7 +227,7 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label htmlFor="cr-githubIssueUrl" className="form-label">
-            GitHub Issue URL
+            GitHub-issue-URL
           </label>
           <input
             id="cr-githubIssueUrl"
@@ -255,7 +255,7 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
         </div>
         <div>
           <label htmlFor="cr-githubPrUrl" className="form-label">
-            PR URL
+            PR-URL
           </label>
           <input
             id="cr-githubPrUrl"
@@ -273,11 +273,11 @@ export function ChangeRequestForm({ projectId, onSuccess }: Props) {
         <button type="submit" disabled={loading} className="btn-primary">
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving…
-            </>
-          ) : (
-            "Create Change Request"
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Bezig met opslaan…
+              </>
+            ) : (
+            "Wijzigingsverzoek aanmaken"
           )}
         </button>
       </div>

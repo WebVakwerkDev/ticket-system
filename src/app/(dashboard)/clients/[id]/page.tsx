@@ -38,7 +38,7 @@ export default async function ClientDetailPage({
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Clients
+            Terug naar klanten
           </Link>
           <h1 className="page-title">{client.companyName}</h1>
           {client.contactName && (
@@ -47,7 +47,7 @@ export default async function ClientDetailPage({
         </div>
         <Link href={`/clients/${client.id}/edit`} className="btn-secondary">
           <Pencil className="h-4 w-4" />
-          Edit Client
+          Klant bewerken
         </Link>
       </div>
 
@@ -58,7 +58,7 @@ export default async function ClientDetailPage({
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-gray-400" />
-              Contact Information
+              Contactinformatie
             </h2>
             <dl className="space-y-2 text-sm">
               {client.email && (
@@ -87,7 +87,7 @@ export default async function ClientDetailPage({
           {/* Company details */}
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-gray-900 mb-3">
-              Company Details
+              Bedrijfsgegevens
             </h2>
             <dl className="space-y-2 text-sm">
               {client.vatNumber && (
@@ -103,7 +103,7 @@ export default async function ClientDetailPage({
                 </div>
               )}
               <div>
-                <dt className="text-xs text-gray-400 uppercase tracking-wide">Client since</dt>
+                <dt className="text-xs text-gray-400 uppercase tracking-wide">Klant sinds</dt>
                 <dd className="text-gray-700">{formatDate(client.createdAt)}</dd>
               </div>
             </dl>
@@ -113,12 +113,12 @@ export default async function ClientDetailPage({
           {(client.notes || client.invoiceDetails) && (
             <div className="card p-5">
               <h2 className="text-sm font-semibold text-gray-900 mb-3">
-                Notes &amp; Billing
+                Notities &amp; facturatie
               </h2>
               {client.invoiceDetails && (
                 <div className="mb-3">
                   <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                    Invoice Details
+                    Factuurgegevens
                   </p>
                   <p className="text-sm text-gray-600 whitespace-pre-wrap">
                     {client.invoiceDetails}
@@ -128,7 +128,7 @@ export default async function ClientDetailPage({
               {client.notes && (
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                    Internal Notes
+                    Interne notities
                   </p>
                   <p className="text-sm text-gray-600 whitespace-pre-wrap">
                     {client.notes}
@@ -146,13 +146,13 @@ export default async function ClientDetailPage({
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
               <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                 <FolderKanban className="h-4 w-4 text-gray-400" />
-                Projects ({client.projects.length})
+                Projecten ({client.projects.length})
               </h2>
               <Link
                 href={`/projects/new?clientId=${client.id}`}
                 className="text-xs text-blue-600 hover:underline"
               >
-                + New Project
+                + Nieuw project
               </Link>
             </div>
             {client.projects.length > 0 ? (
@@ -169,7 +169,7 @@ export default async function ClientDetailPage({
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {project._count.communicationEntries} comm. &middot;{" "}
-                        {project._count.changeRequests} change requests
+                        {project._count.changeRequests} wijzigingsverzoeken
                       </p>
                     </div>
                     <ProjectStatusBadge status={project.status} />
@@ -178,12 +178,12 @@ export default async function ClientDetailPage({
               </div>
             ) : (
               <div className="px-5 py-8 text-center text-sm text-gray-400">
-                No projects yet.{" "}
+                Nog geen projecten.{" "}
                 <Link
                   href={`/projects/new?clientId=${client.id}`}
                   className="text-blue-600 hover:underline"
                 >
-                  Create one
+                  Maak er een aan
                 </Link>
               </div>
             )}
@@ -194,13 +194,13 @@ export default async function ClientDetailPage({
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
               <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-gray-400" />
-                Invoices ({client.invoices.length})
+                Facturen ({client.invoices.length})
               </h2>
               <Link
                 href={`/finance/invoices/new?clientId=${client.id}`}
                 className="text-xs text-blue-600 hover:underline"
               >
-                + New Invoice
+                + Nieuwe factuur
               </Link>
             </div>
             {client.invoices.length > 0 ? (
@@ -230,7 +230,7 @@ export default async function ClientDetailPage({
               </div>
             ) : (
               <div className="px-5 py-8 text-center text-sm text-gray-400">
-                No invoices yet.
+                Nog geen facturen.
               </div>
             )}
           </div>

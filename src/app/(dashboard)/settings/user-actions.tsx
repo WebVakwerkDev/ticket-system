@@ -9,8 +9,8 @@ import { Loader2, Trash2 } from "lucide-react";
 
 const ROLES: { value: UserRole; label: string }[] = [
   { value: "ADMIN", label: "Admin" },
-  { value: "EMPLOYEE", label: "Employee" },
-  { value: "FINANCE", label: "Finance" },
+  { value: "EMPLOYEE", label: "Medewerker" },
+  { value: "FINANCE", label: "Financiën" },
 ];
 
 interface Props {
@@ -38,7 +38,7 @@ export function UserActions({ userId, currentRole, isCurrentUser }: Props) {
 
   async function handleDelete() {
     if (!session?.user?.id) return;
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm("Weet je zeker dat je deze gebruiker wilt verwijderen?")) return;
     setDeleting(true);
     try {
       const result = await deleteUser(userId, session.user.id);
@@ -75,7 +75,7 @@ export function UserActions({ userId, currentRole, isCurrentUser }: Props) {
         onClick={handleDelete}
         disabled={deleting}
         className="text-gray-400 hover:text-red-600 transition-colors p-1"
-        title="Delete user"
+        title="Gebruiker verwijderen"
       >
         {deleting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />

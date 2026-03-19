@@ -44,10 +44,10 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
       if (result.success && result.briefing) {
         setBriefing(result.briefing);
       } else {
-        setError(result.error ?? "Failed to generate briefing.");
+        setError(result.error ?? "Briefing genereren mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setGenerating(false);
     }
@@ -70,10 +70,10 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } else {
-        setError(result.error ?? "Failed to save briefing.");
+        setError(result.error ?? "Briefing opslaan mislukt.");
       }
     } catch {
-      setError("Failed to save briefing.");
+      setError("Briefing opslaan mislukt.");
     } finally {
       setSaving(false);
     }
@@ -90,11 +90,11 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <Wand2 className="h-4 w-4 text-blue-600" />
-        <h3 className="font-semibold text-gray-900">Generate Developer Briefing</h3>
+        <h3 className="font-semibold text-gray-900">Developer briefing genereren</h3>
       </div>
       <p className="text-sm text-gray-500">
-        Generate a structured developer briefing document based on the project
-        details and optionally a specific change request.
+        Genereer een gestructureerde developer briefing op basis van de
+        projectgegevens en optioneel een specifiek wijzigingsverzoek.
       </p>
 
       {error && (
@@ -106,7 +106,7 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
       <div className="flex items-end gap-3">
         <div className="flex-1">
           <label htmlFor="briefing-cr" className="form-label">
-            Change Request (optional)
+            Wijzigingsverzoek (optioneel)
           </label>
           <select
             id="briefing-cr"
@@ -114,7 +114,7 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
             onChange={(e) => setSelectedCrId(e.target.value)}
             className="form-select"
           >
-            <option value="">General briefing (no specific CR)</option>
+            <option value="">Algemene briefing (geen specifiek WV)</option>
             {changeRequests
               .filter((cr) => cr.status !== "DONE")
               .map((cr) => (
@@ -132,12 +132,12 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
           {generating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Generating…
+              Bezig met genereren…
             </>
           ) : (
             <>
               <Wand2 className="h-4 w-4" />
-              Generate
+              Genereren
             </>
           )}
         </button>
@@ -151,7 +151,7 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
               onChange={(e) => setBriefing(e.target.value)}
               rows={20}
               className="form-textarea font-mono text-xs leading-relaxed"
-              placeholder="Generated briefing will appear here…"
+              placeholder="De gegenereerde briefing verschijnt hier…"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -162,12 +162,12 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
               {copied ? (
                 <>
                   <Check className="h-4 w-4 text-green-600" />
-                  Copied!
+                  Gekopieerd!
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  Copy to Clipboard
+                  Kopiëren naar klembord
                 </>
               )}
             </button>
@@ -179,17 +179,17 @@ export function BriefingGenerator({ projectId, changeRequests }: Props) {
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving…
+                  Bezig met opslaan…
                 </>
               ) : saved ? (
                 <>
                   <Check className="h-4 w-4" />
-                  Saved!
+                  Opgeslagen!
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Save &amp; Log
+                  Opslaan &amp; loggen
                 </>
               )}
             </button>

@@ -61,7 +61,7 @@ export function ProjectChangeRequestsTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-900">
-            Change Requests ({changeRequests.length})
+            Wijzigingsverzoeken ({changeRequests.length})
           </h3>
           {/* Filter */}
           <div className="flex gap-0.5 ml-3">
@@ -75,7 +75,7 @@ export function ProjectChangeRequestsTab({
                     : "text-gray-500 hover:text-gray-900"
                 }`}
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === "open" ? "Open" : f === "done" ? "Afgerond" : "Alle"}
               </button>
             ))}
           </div>
@@ -87,12 +87,12 @@ export function ProjectChangeRequestsTab({
           {showForm ? (
             <>
               <ChevronUp className="h-4 w-4" />
-              Cancel
+              Annuleren
             </>
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              Add CR
+              WV toevoegen
             </>
           )}
         </button>
@@ -101,7 +101,7 @@ export function ProjectChangeRequestsTab({
       {showForm && (
         <div className="card p-5">
           <h4 className="text-sm font-semibold text-gray-900 mb-4">
-            New Change Request
+            Nieuw wijzigingsverzoek
           </h4>
           <ChangeRequestForm projectId={projectId} onSuccess={handleSuccess} />
         </div>

@@ -31,7 +31,7 @@ export default async function InvoiceDetailPage({
         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-4"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Finance
+        Terug naar financiën
       </Link>
 
       {/* Invoice card */}
@@ -41,19 +41,19 @@ export default async function InvoiceDetailPage({
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-gray-900">
-                Invoice #{inv.invoiceNumber}
+                Factuur #{inv.invoiceNumber}
               </h1>
               <InvoiceStatusBadge status={inv.status} />
             </div>
             <div className="text-sm text-gray-500 space-x-3">
-              <span>Issued: {formatDate(inv.issueDate)}</span>
+              <span>Opgesteld: {formatDate(inv.issueDate)}</span>
               <span>&middot;</span>
-              <span>Due: {formatDate(inv.dueDate)}</span>
+              <span>Vervalt: {formatDate(inv.dueDate)}</span>
               {inv.paidAt && (
                 <>
                   <span>&middot;</span>
                   <span className="text-green-600">
-                    Paid: {formatDate(inv.paidAt)}
+                    Betaald: {formatDate(inv.paidAt)}
                   </span>
                 </>
               )}
@@ -66,10 +66,10 @@ export default async function InvoiceDetailPage({
             <button
               className="btn-secondary"
               disabled
-              title="Download (coming soon)"
+              title="Downloaden (binnenkort beschikbaar)"
             >
               <Download className="h-4 w-4" />
-              Download
+              Downloaden
             </button>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default async function InvoiceDetailPage({
         <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-gray-100">
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-              Bill To
+              Factureren aan
             </p>
             <Link
               href={`/clients/${inv.client.id}`}
@@ -90,7 +90,7 @@ export default async function InvoiceDetailPage({
               <p className="text-sm text-gray-600 mt-1">{inv.client.address}</p>
             )}
             {inv.client.vatNumber && (
-              <p className="text-sm text-gray-500">VAT: {inv.client.vatNumber}</p>
+              <p className="text-sm text-gray-500">Btw: {inv.client.vatNumber}</p>
             )}
           </div>
           {inv.project && (
@@ -111,7 +111,7 @@ export default async function InvoiceDetailPage({
         {/* Description */}
         <div className="mb-8">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">
-            Description
+            Beschrijving
           </h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
             {inv.description}
@@ -123,7 +123,7 @@ export default async function InvoiceDetailPage({
           <table className="w-full text-sm">
             <tbody>
               <tr className="border-b border-gray-100">
-                <td className="px-4 py-3 text-gray-600">Subtotal</td>
+                <td className="px-4 py-3 text-gray-600">Subtotaal</td>
                 <td className="px-4 py-3 text-right font-medium text-gray-900">
                   {formatCurrency(subtotal)}
                 </td>
@@ -138,7 +138,7 @@ export default async function InvoiceDetailPage({
               </tr>
               <tr className="bg-gray-50">
                 <td className="px-4 py-3 font-semibold text-gray-900">
-                  Total
+                  Totaal
                 </td>
                 <td className="px-4 py-3 text-right text-lg font-bold text-gray-900">
                   {formatCurrency(totalAmount)}
@@ -152,7 +152,7 @@ export default async function InvoiceDetailPage({
         {inv.notes && (
           <div className="rounded-md bg-gray-50 border border-gray-200 px-4 py-3">
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-              Notes
+              Notities
             </p>
             <p className="text-sm text-gray-600 whitespace-pre-wrap">
               {inv.notes}

@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   if (!result.success || !result.stats) {
     return (
       <div className="text-red-600 text-sm">
-        Failed to load dashboard data. Please refresh.
+        Dashboardgegevens konden niet worden geladen. Ververs de pagina.
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
 
   const statCards = [
     {
-      label: "In Progress",
+      label: "In uitvoering",
       value: inProgress,
       icon: FolderKanban,
       borderColor: "border-blue-500",
@@ -42,7 +42,7 @@ export default async function DashboardPage() {
       bgColor: "bg-blue-50",
     },
     {
-      label: "Waiting for Client",
+      label: "Wacht op klant",
       value: waitingForClient,
       icon: Clock,
       borderColor: "border-yellow-500",
@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       bgColor: "bg-yellow-50",
     },
     {
-      label: "New Change Requests",
+      label: "Nieuwe wijzigingsverzoeken",
       value: newChangeRequests,
       icon: GitPullRequest,
       borderColor: "border-purple-500",
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       bgColor: "bg-purple-50",
     },
     {
-      label: "Overdue Invoices",
+      label: "Achterstallige facturen",
       value: overdueInvoices,
       icon: AlertTriangle,
       borderColor: "border-red-500",
@@ -89,10 +89,10 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <AlertTriangle className="h-4 w-4 flex-shrink-0" />
               <span>
-                <strong>{overdueInvoices}</strong> overdue invoice
-                {overdueInvoices !== 1 ? "s" : ""} require attention.{" "}
+                <strong>{overdueInvoices}</strong> achterstallige factuur
+                {overdueInvoices !== 1 ? "en" : ""} vereis{overdueInvoices !== 1 ? "en" : "t"} aandacht.{" "}
                 <Link href="/finance" className="font-medium underline">
-                  View finance
+                  Bekijk financiën
                 </Link>
               </span>
             </div>
@@ -101,8 +101,8 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
               <GitBranch className="h-4 w-4 flex-shrink-0" />
               <span>
-                <strong>{projectsWithoutRepo.length}</strong> active project
-                {projectsWithoutRepo.length !== 1 ? "s" : ""} without a linked
+                <strong>{projectsWithoutRepo.length}</strong> actief project
+                {projectsWithoutRepo.length !== 1 ? "en" : ""} zonder gekoppelde
                 repository.
               </span>
             </div>
@@ -140,13 +140,13 @@ export default async function DashboardPage() {
         <div className="card">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <h2 className="font-semibold text-gray-900">
-              Projects Without Repository
+              Projecten zonder repository
             </h2>
             <Link
               href="/projects"
               className="text-xs text-blue-600 hover:underline flex items-center gap-1"
             >
-              View all <ArrowRight className="h-3 w-3" />
+              Alles bekijken <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
@@ -168,8 +168,8 @@ export default async function DashboardPage() {
                 )
               )
             ) : (
-              <div className="px-5 py-6 text-center text-sm text-gray-400">
-                All active projects have repositories linked
+                <div className="px-5 py-6 text-center text-sm text-gray-400">
+                Alle actieve projecten hebben een gekoppelde repository
               </div>
             )}
           </div>
@@ -178,8 +178,8 @@ export default async function DashboardPage() {
         {/* Upcoming deadlines */}
         <div className="card">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-            <h2 className="font-semibold text-gray-900">Upcoming Deadlines</h2>
-            <span className="text-xs text-gray-400">Next 14 days</span>
+            <h2 className="font-semibold text-gray-900">Aankomende deadlines</h2>
+            <span className="text-xs text-gray-400">Volgende 14 dagen</span>
           </div>
           <div className="divide-y divide-gray-50">
             {upcomingDeadlines.length > 0 ? (
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
                           </p>
                           {p.dueDate && (
                             <p className="text-xs text-gray-500">
-                              Due {formatDate(p.dueDate)}
+                              Deadline {formatDate(p.dueDate)}
                             </p>
                           )}
                         </div>
@@ -228,8 +228,8 @@ export default async function DashboardPage() {
                       >
                         {daysLeft !== null
                           ? daysLeft === 0
-                            ? "Today"
-                            : `${daysLeft}d left`
+                            ? "Vandaag"
+                            : `Nog ${daysLeft} d`
                           : "—"}
                       </span>
                     </Link>
@@ -238,7 +238,7 @@ export default async function DashboardPage() {
               )
             ) : (
               <div className="px-5 py-6 text-center text-sm text-gray-400">
-                No upcoming deadlines in the next 14 days
+                Geen aankomende deadlines in de komende 14 dagen
               </div>
             )}
           </div>
@@ -249,6 +249,7 @@ export default async function DashboardPage() {
       <div className="card">
         <div className="border-b border-gray-100 px-5 py-4">
           <h2 className="font-semibold text-gray-900">Recent Activity</h2>
+          
         </div>
         <div className="divide-y divide-gray-50">
           {recentActivity.length > 0 ? (
@@ -258,8 +259,8 @@ export default async function DashboardPage() {
                   <div className="mt-1.5 h-2 w-2 rounded-full bg-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-700">
-                      <span className="font-medium">
-                        {log.actor?.name ?? "System"}
+                        <span className="font-medium">
+                        {log.actor?.name ?? "Systeem"}
                       </span>{" "}
                       {formatAction(log.action, log.metadataJson as Record<string, unknown> | null)}
                     </p>
@@ -271,8 +272,8 @@ export default async function DashboardPage() {
               )
             )
           ) : (
-            <div className="px-5 py-6 text-center text-sm text-gray-400">
-              No recent activity
+              <div className="px-5 py-6 text-center text-sm text-gray-400">
+              Geen recente activiteit
             </div>
           )}
         </div>
@@ -287,17 +288,17 @@ function formatAction(
 ): string {
   switch (action) {
     case "CREATE":
-      return "created a record";
+      return "heeft een item aangemaakt";
     case "UPDATE":
-      return "updated a record";
+      return "heeft een item bijgewerkt";
     case "DELETE":
-      return "deleted a record";
+      return "heeft een item verwijderd";
     case "MARK_PAID":
-      return `marked invoice ${String(metadata?.invoiceNumber ?? "")} as paid`;
+      return `heeft factuur ${String(metadata?.invoiceNumber ?? "")} als betaald gemarkeerd`;
     case "GENERATE_BRIEFING":
-      return "generated a developer briefing";
+      return "heeft een developer briefing gegenereerd";
     case "SAVE":
-      return "saved an agent run";
+      return "heeft een agent-run opgeslagen";
     default:
       return action.toLowerCase().replace(/_/g, " ");
   }

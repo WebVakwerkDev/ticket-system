@@ -81,7 +81,7 @@ export function ProjectGithubTab({
 
   async function handleDelete(repoId: string) {
     if (!session?.user?.id) return;
-    if (!confirm("Remove this repository from the project?")) return;
+    if (!confirm("Deze repository uit het project verwijderen?")) return;
     setDeleting(repoId);
     try {
       await deleteRepository(repoId, projectId, session.user.id);
@@ -110,7 +110,7 @@ export function ProjectGithubTab({
       if (result.success && result.info) {
         setRepoInfo((prev) => ({ ...prev, [repoId]: result.info }));
       } else {
-        setError(result.error ?? "Failed to fetch repo info");
+        setError(result.error ?? "Repository-informatie ophalen mislukt");
       }
     } finally {
       setLoadingInfo(null);
@@ -130,7 +130,7 @@ export function ProjectGithubTab({
       if (result.success && result.copilot) {
         setCopilotStatus((prev) => ({ ...prev, [repoId]: result.copilot }));
       } else {
-        setError(result.error ?? "Failed to check Copilot agent");
+        setError(result.error ?? "Copilot-agent controleren mislukt");
       }
     } finally {
       setLoadingCopilot(null);
@@ -154,7 +154,7 @@ export function ProjectGithubTab({
           [crId]: { number: result.issue.number, url: result.issue.url },
         }));
       } else {
-        setError(result.error ?? "Failed to create issue");
+        setError(result.error ?? "Issue aanmaken mislukt");
       }
     } finally {
       setCreatingIssue(null);
@@ -191,12 +191,12 @@ export function ProjectGithubTab({
             {showForm ? (
               <>
                 <ChevronUp className="h-4 w-4" />
-                Cancel
+                Annuleren
               </>
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                Add Repository
+                Repository toevoegen
               </>
             )}
           </button>
@@ -205,7 +205,7 @@ export function ProjectGithubTab({
         {showForm && (
           <div className="card p-5 mb-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-4">
-              Link Repository
+              Repository koppelen
             </h4>
             <RepositoryForm projectId={projectId} onSuccess={handleRepoAdded} />
           </div>
@@ -240,7 +240,7 @@ export function ProjectGithubTab({
                             rel="noopener noreferrer"
                             className="text-blue-500 hover:underline"
                           >
-                            Issue Board
+                            Issueboard
                           </a>
                         </>
                       )}
@@ -251,20 +251,20 @@ export function ProjectGithubTab({
                       onClick={() => handleCheckRepo(repo.id)}
                       disabled={loadingInfo === repo.id}
                       className="btn-secondary text-xs"
-                      title="Check repository"
+                      title="Controleer repository"
                     >
                       {loadingInfo === repo.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <RefreshCw className="h-3.5 w-3.5" />
                       )}
-                      Check
+                      Controleren
                     </button>
                     <button
                       onClick={() => handleCheckCopilot(repo.id)}
                       disabled={loadingCopilot === repo.id}
                       className="btn-secondary text-xs"
-                      title="Check Copilot agent"
+                      title="Controleer Copilot-agent"
                     >
                       {loadingCopilot === repo.id ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -277,7 +277,7 @@ export function ProjectGithubTab({
                       onClick={() => handleDelete(repo.id)}
                       disabled={deleting === repo.id}
                       className="text-gray-400 hover:text-red-600 transition-colors p-1"
-                      title="Remove repository"
+                      title="Repository verwijderen"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -289,14 +289,14 @@ export function ProjectGithubTab({
                   <div className="px-5 py-3 bg-gray-50/50 border-b border-gray-50">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                       <div>
-                        <span className="text-gray-400 block">Visibility</span>
+                        <span className="text-gray-400 block">Zichtbaarheid</span>
                         <span className="font-medium text-gray-700">
                           {repoInfo[repo.id].visibility}
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-400 block flex items-center gap-1">
-                          <CircleDot className="h-3 w-3" /> Open Issues
+                          <CircleDot className="h-3 w-3" /> Open issues
                         </span>
                         <span className="font-medium text-gray-700">
                           {repoInfo[repo.id].openIssuesCount}
@@ -304,14 +304,14 @@ export function ProjectGithubTab({
                       </div>
                       <div>
                         <span className="text-gray-400 block flex items-center gap-1">
-                          <GitPullRequest className="h-3 w-3" /> Open PRs
+                          <GitPullRequest className="h-3 w-3" /> Open PR's
                         </span>
                         <span className="font-medium text-gray-700">
                           {repoInfo[repo.id].openPrCount}
                         </span>
                       </div>
                       <div>
-                        <span className="text-gray-400 block">Default Branch</span>
+                        <span className="text-gray-400 block">Standaardbranch</span>
                         <span className="font-medium text-gray-700">
                           {repoInfo[repo.id].defaultBranch}
                         </span>
@@ -319,13 +319,13 @@ export function ProjectGithubTab({
                     </div>
                     {repoInfo[repo.id].latestCommit && (
                       <div className="mt-2 text-xs text-gray-500">
-                        <span className="text-gray-400">Latest commit: </span>
+                        <span className="text-gray-400">Laatste commit: </span>
                         <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px]">
                           {repoInfo[repo.id].latestCommit!.sha}
                         </code>{" "}
                         {repoInfo[repo.id].latestCommit!.message}{" "}
                         <span className="text-gray-400">
-                          by {repoInfo[repo.id].latestCommit!.author}
+                          door {repoInfo[repo.id].latestCommit!.author}
                         </span>
                       </div>
                     )}
@@ -336,14 +336,14 @@ export function ProjectGithubTab({
                 {copilotStatus[repo.id] && (
                   <div className="px-5 py-2.5 bg-gray-50/50 border-b border-gray-50 flex items-center gap-2 text-xs">
                     <Bot className="h-3.5 w-3.5 text-gray-400" />
-                    <span className="text-gray-500">Copilot Coding Agent:</span>
+                    <span className="text-gray-500">Copilot coding agent:</span>
                     {copilotStatus[repo.id].available ? (
                       <span className="text-green-600 font-medium flex items-center gap-1">
-                        <Check className="h-3.5 w-3.5" /> Available
+                        <Check className="h-3.5 w-3.5" /> Beschikbaar
                       </span>
                     ) : (
                       <span className="text-gray-400 font-medium flex items-center gap-1">
-                        <X className="h-3.5 w-3.5" /> Not available
+                        <X className="h-3.5 w-3.5" /> Niet beschikbaar
                       </span>
                     )}
                   </div>
@@ -353,7 +353,7 @@ export function ProjectGithubTab({
                 {changeRequests.length > 0 && (
                   <div className="px-5 py-3">
                     <span className="text-xs font-medium text-gray-500 block mb-2">
-                      Create GitHub Issue from Change Request
+                      Maak GitHub-issue vanuit wijzigingsverzoek
                     </span>
                     <div className="space-y-1.5">
                       {changeRequests
@@ -380,7 +380,7 @@ export function ProjectGithubTab({
                                   <Check className="h-3 w-3" />
                                   {"number" in existingIssue
                                     ? `#${existingIssue.number}`
-                                    : "View Issue"}
+                                    : "Issue bekijken"}
                                   <ExternalLink className="h-3 w-3" />
                                 </a>
                               ) : (
@@ -394,7 +394,7 @@ export function ProjectGithubTab({
                                   ) : (
                                     <Plus className="h-3 w-3" />
                                   )}
-                                  Create Issue
+                                  Issue aanmaken
                                 </button>
                               )}
                             </div>
@@ -408,7 +408,7 @@ export function ProjectGithubTab({
           </div>
         ) : (
           <div className="text-center py-8 text-sm text-gray-400 card">
-            No repositories linked. Add one above.
+            Geen repositories gekoppeld. Voeg er hierboven een toe.
           </div>
         )}
       </div>

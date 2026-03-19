@@ -25,12 +25,12 @@ interface Props {
 
 const TYPE_LABELS: Record<CommunicationType, string> = {
   EMAIL: "Email",
-  CALL: "Call",
+  CALL: "Gesprek",
   MEETING: "Meeting",
   WHATSAPP: "WhatsApp",
   DM: "DM",
-  INTERNAL: "Internal",
-  OTHER: "Other",
+  INTERNAL: "Intern",
+  OTHER: "Overig",
 };
 
 const TYPE_VARIANTS: Record<
@@ -61,7 +61,7 @@ function EntryCard({ entry }: { entry: CommunicationEntry }) {
           {entry.isInternal && (
             <Badge variant="default">
               <Lock className="h-2.5 w-2.5 mr-1" />
-              Internal
+              Intern
             </Badge>
           )}
         </div>
@@ -75,11 +75,11 @@ function EntryCard({ entry }: { entry: CommunicationEntry }) {
       <div className="text-xs text-gray-500 mb-2">
         {entry.externalSenderName ? (
           <span>
-            From: <strong>{entry.externalSenderName}</strong>
+            Van: <strong>{entry.externalSenderName}</strong>
             {entry.externalSenderEmail && ` <${entry.externalSenderEmail}>`}
           </span>
         ) : (
-          <span>Logged by: {entry.author.name}</span>
+          <span>Gelogd door: {entry.author.name}</span>
         )}
       </div>
 
@@ -94,11 +94,11 @@ function EntryCard({ entry }: { entry: CommunicationEntry }) {
         >
           {expanded ? (
             <>
-              <ChevronUp className="h-3.5 w-3.5" /> Show less
+              <ChevronUp className="h-3.5 w-3.5" /> Minder tonen
             </>
           ) : (
             <>
-              <ChevronDown className="h-3.5 w-3.5" /> Show full content
+              <ChevronDown className="h-3.5 w-3.5" /> Toon volledige inhoud
             </>
           )}
         </button>
@@ -128,7 +128,7 @@ export function CommunicationList({ entries }: Props) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-10 text-sm text-gray-400">
-        No communication entries yet. Add one above.
+        Nog geen communicatie-items. Voeg er hierboven een toe.
       </div>
     );
   }

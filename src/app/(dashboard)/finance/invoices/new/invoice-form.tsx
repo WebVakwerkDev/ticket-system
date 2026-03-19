@@ -29,10 +29,10 @@ interface Props {
 }
 
 const STATUSES: { value: InvoiceStatus; label: string }[] = [
-  { value: "DRAFT", label: "Draft" },
-  { value: "SENT", label: "Sent" },
-  { value: "PAID", label: "Paid" },
-  { value: "OVERDUE", label: "Overdue" },
+  { value: "DRAFT", label: "Concept" },
+  { value: "SENT", label: "Verzonden" },
+  { value: "PAID", label: "Betaald" },
+  { value: "OVERDUE", label: "Achterstallig" },
 ];
 
 export function InvoiceForm({
@@ -120,10 +120,10 @@ export function InvoiceForm({
       if (result.success) {
         router.push("/finance");
       } else {
-        setError(result.error ?? "Failed to create invoice.");
+        setError(result.error ?? "Factuur aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -141,12 +141,12 @@ export function InvoiceForm({
         {/* Invoice info */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Invoice Details
+            Factuurgegevens
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="inv-client" className="form-label">
-                Client <span className="text-red-500">*</span>
+                Klant <span className="text-red-500">*</span>
               </label>
               <select
                 id="inv-client"
@@ -156,7 +156,7 @@ export function InvoiceForm({
                 onChange={handleChange}
                 className="form-select"
               >
-                <option value="">Select client…</option>
+                <option value="">Selecteer klant…</option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.companyName}
@@ -175,7 +175,7 @@ export function InvoiceForm({
                 onChange={handleChange}
                 className="form-select"
               >
-                <option value="">No project</option>
+                <option value="">Geen project</option>
                 {filteredProjects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -185,7 +185,7 @@ export function InvoiceForm({
             </div>
             <div>
               <label htmlFor="inv-number" className="form-label">
-                Invoice Number <span className="text-red-500">*</span>
+                Factuurnummer <span className="text-red-500">*</span>
               </label>
               <input
                 id="inv-number"
@@ -217,7 +217,7 @@ export function InvoiceForm({
             </div>
             <div>
               <label htmlFor="inv-issueDate" className="form-label">
-                Issue Date <span className="text-red-500">*</span>
+                Factuurdatum <span className="text-red-500">*</span>
               </label>
               <input
                 id="inv-issueDate"
@@ -231,7 +231,7 @@ export function InvoiceForm({
             </div>
             <div>
               <label htmlFor="inv-dueDate" className="form-label">
-                Due Date <span className="text-red-500">*</span>
+                Vervaldatum <span className="text-red-500">*</span>
               </label>
               <input
                 id="inv-dueDate"
@@ -249,12 +249,12 @@ export function InvoiceForm({
         {/* Amounts */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Amounts
+            Bedragen
           </h2>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label htmlFor="inv-subtotal" className="form-label">
-                Subtotal (excl. VAT) <span className="text-red-500">*</span>
+                Subtotaal (excl. btw) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
@@ -276,7 +276,7 @@ export function InvoiceForm({
             </div>
             <div>
               <label htmlFor="inv-vatRate" className="form-label">
-                VAT Rate (%)
+                Btw-tarief (%)
               </label>
               <input
                 id="inv-vatRate"
@@ -297,14 +297,15 @@ export function InvoiceForm({
             <div className="rounded-md bg-gray-50 border border-gray-200 p-4 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
+                
                 <span>{formatCurrency(subtotalNum)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>VAT ({vatRateNum}%)</span>
+                <span>Btw ({vatRateNum}%)</span>
                 <span>{formatCurrency(vatAmount)}</span>
               </div>
               <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-200">
-                <span>Total</span>
+                <span>Totaal</span>
                 <span>{formatCurrency(totalAmount)}</span>
               </div>
             </div>
@@ -314,12 +315,12 @@ export function InvoiceForm({
         {/* Description */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Description &amp; Notes
+            Beschrijving &amp; notities
           </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="inv-description" className="form-label">
-                Description <span className="text-red-500">*</span>
+                Beschrijving <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="inv-description"
@@ -329,12 +330,12 @@ export function InvoiceForm({
                 value={form.description}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="What does this invoice cover?"
+                placeholder="Waar heeft deze factuur betrekking op?"
               />
             </div>
             <div>
               <label htmlFor="inv-notes" className="form-label">
-                Notes
+                Notities
               </label>
               <textarea
                 id="inv-notes"
@@ -343,7 +344,7 @@ export function InvoiceForm({
                 value={form.notes}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="Payment instructions, terms, etc."
+                placeholder="Betaalinstructies, voorwaarden, enz."
               />
             </div>
           </div>
@@ -354,14 +355,14 @@ export function InvoiceForm({
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating…
+                Bezig met aanmaken…
               </>
             ) : (
-              "Create Invoice"
+              "Factuur aanmaken"
             )}
           </button>
           <Link href="/finance" className="btn-secondary">
-            Cancel
+            Annuleren
           </Link>
         </div>
       </form>

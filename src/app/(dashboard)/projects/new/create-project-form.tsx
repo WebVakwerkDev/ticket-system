@@ -26,29 +26,29 @@ interface Props {
 }
 
 const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
-  { value: "NEW_WEBSITE", label: "New Website" },
-  { value: "REDESIGN", label: "Redesign" },
-  { value: "MAINTENANCE", label: "Maintenance" },
-  { value: "LANDING_PAGE", label: "Landing Page" },
+  { value: "NEW_WEBSITE", label: "Nieuwe website" },
+  { value: "REDESIGN", label: "Herontwerp" },
+  { value: "MAINTENANCE", label: "Onderhoud" },
+  { value: "LANDING_PAGE", label: "Landingspagina" },
   { value: "WEBSHOP", label: "Webshop" },
-  { value: "OTHER", label: "Other" },
+  { value: "OTHER", label: "Overig" },
 ];
 
 const PROJECT_STATUSES: { value: ProjectStatus; label: string }[] = [
   { value: "LEAD", label: "Lead" },
   { value: "INTAKE", label: "Intake" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "WAITING_FOR_CLIENT", label: "Waiting for Client" },
+  { value: "IN_PROGRESS", label: "In uitvoering" },
+  { value: "WAITING_FOR_CLIENT", label: "Wacht op klant" },
   { value: "REVIEW", label: "Review" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "MAINTENANCE", label: "Maintenance" },
-  { value: "PAUSED", label: "Paused" },
+  { value: "COMPLETED", label: "Afgerond" },
+  { value: "MAINTENANCE", label: "Onderhoud" },
+  { value: "PAUSED", label: "Gepauzeerd" },
 ];
 
 const PROJECT_PRIORITIES: { value: ProjectPriority; label: string }[] = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
+  { value: "LOW", label: "Laag" },
+  { value: "MEDIUM", label: "Gemiddeld" },
+  { value: "HIGH", label: "Hoog" },
   { value: "URGENT", label: "Urgent" },
 ];
 
@@ -110,10 +110,10 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
       if (result.success && result.project) {
         router.push(`/projects/${result.project.id}`);
       } else {
-        setError(result.error ?? "Failed to create project.");
+        setError(result.error ?? "Project aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -131,12 +131,12 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
         {/* Basic info */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Project Details
+            Projectgegevens
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label htmlFor="name" className="form-label">
-                Project Name <span className="text-red-500">*</span>
+                Projectnaam <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
@@ -146,12 +146,12 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 value={form.name}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Website redesign for Acme"
+                placeholder="Website-herontwerp voor Acme"
               />
             </div>
             <div>
               <label htmlFor="clientId" className="form-label">
-                Client <span className="text-red-500">*</span>
+                Klant <span className="text-red-500">*</span>
               </label>
               <select
                 id="clientId"
@@ -161,7 +161,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 onChange={handleChange}
                 className="form-select"
               >
-                <option value="">Select a client…</option>
+                <option value="">Selecteer een klant…</option>
                 {clients.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.companyName}
@@ -171,7 +171,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div>
               <label htmlFor="projectType" className="form-label">
-                Project Type
+                Projecttype
               </label>
               <select
                 id="projectType"
@@ -207,7 +207,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div>
               <label htmlFor="priority" className="form-label">
-                Priority
+                Prioriteit
               </label>
               <select
                 id="priority"
@@ -225,7 +225,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div>
               <label htmlFor="ownerUserId" className="form-label">
-                Project Owner
+                Projecteigenaar
               </label>
               <select
                 id="ownerUserId"
@@ -234,7 +234,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 onChange={handleChange}
                 className="form-select"
               >
-                <option value="">No owner assigned</option>
+                <option value="">Geen eigenaar toegewezen</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -244,7 +244,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div>
               <label htmlFor="startDate" className="form-label">
-                Start Date
+                Startdatum
               </label>
               <input
                 id="startDate"
@@ -257,7 +257,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div>
               <label htmlFor="dueDate" className="form-label">
-                Due Date
+                Einddatum
               </label>
               <input
                 id="dueDate"
@@ -272,7 +272,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
               <label htmlFor="tags" className="form-label">
                 Tags{" "}
                 <span className="font-normal text-gray-400">
-                  (comma-separated)
+                  (kommagescheiden)
                 </span>
               </label>
               <input
@@ -286,7 +286,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             </div>
             <div className="col-span-2">
               <label htmlFor="description" className="form-label">
-                Description
+                Beschrijving
               </label>
               <textarea
                 id="description"
@@ -295,7 +295,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 value={form.description}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="Short description of the project…"
+                placeholder="Korte beschrijving van het project…"
               />
             </div>
           </div>
@@ -304,12 +304,12 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
         {/* Technical & scope */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Technical Details &amp; Scope
+            Technische details &amp; scope
           </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="intakeSummary" className="form-label">
-                Intake Summary
+                Intake-samenvatting
               </label>
               <textarea
                 id="intakeSummary"
@@ -318,7 +318,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 value={form.intakeSummary}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="Summary from the intake meeting…"
+                placeholder="Samenvatting van het intakegesprek…"
               />
             </div>
             <div>
@@ -332,13 +332,13 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                 value={form.scope}
                 onChange={handleChange}
                 className="form-textarea"
-                placeholder="What is and isn't included in this project…"
+                placeholder="Wat wel en niet binnen dit project valt…"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="techStack" className="form-label">
-                  Tech Stack
+                  Tech stack
                 </label>
                 <input
                   id="techStack"
@@ -352,7 +352,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
               </div>
               <div>
                 <label htmlFor="domainName" className="form-label">
-                  Domain
+                  Domein
                 </label>
                 <input
                   id="domainName"
@@ -366,7 +366,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
               </div>
               <div className="col-span-2">
                 <label htmlFor="hostingInfo" className="form-label">
-                  Hosting Info
+                  Hostinginformatie
                 </label>
                 <input
                   id="hostingInfo"
@@ -375,7 +375,7 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
                   value={form.hostingInfo}
                   onChange={handleChange}
                   className="form-input"
-                  placeholder="Vercel, AWS, Cloudflare, etc."
+                  placeholder="Vercel, AWS, Cloudflare, enz."
                 />
               </div>
             </div>
@@ -388,14 +388,14 @@ export function CreateProjectForm({ clients, users, defaultClientId }: Props) {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating…
+                Bezig met aanmaken…
               </>
             ) : (
-              "Create Project"
+              "Project aanmaken"
             )}
           </button>
           <Link href="/projects" className="btn-secondary">
-            Cancel
+            Annuleren
           </Link>
         </div>
       </form>

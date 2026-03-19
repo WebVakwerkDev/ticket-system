@@ -29,17 +29,17 @@ function formatActionDescription(
 ): string {
   switch (action) {
     case "CREATE":
-      return `${entityType.replace(/([A-Z])/g, " $1").trim()} created`;
+      return `${entityType.replace(/([A-Z])/g, " $1").trim()} aangemaakt`;
     case "UPDATE":
-      return `${entityType.replace(/([A-Z])/g, " $1").trim()} updated`;
+      return `${entityType.replace(/([A-Z])/g, " $1").trim()} bijgewerkt`;
     case "DELETE":
-      return `${entityType.replace(/([A-Z])/g, " $1").trim()} deleted`;
+      return `${entityType.replace(/([A-Z])/g, " $1").trim()} verwijderd`;
     case "MARK_PAID":
-      return `Invoice ${String(metadata?.invoiceNumber ?? "")} marked as paid`;
+      return `Factuur ${String(metadata?.invoiceNumber ?? "")} als betaald gemarkeerd`;
     case "GENERATE_BRIEFING":
-      return "Developer briefing generated";
+      return "Developer briefing gegenereerd";
     case "SAVE":
-      return "Agent run saved";
+      return "Agent-run opgeslagen";
     default:
       return action.replace(/_/g, " ").toLowerCase();
   }
@@ -49,7 +49,7 @@ export function TimelineList({ auditLogs }: Props) {
   if (auditLogs.length === 0) {
     return (
       <div className="text-center py-10 text-sm text-gray-400">
-        No timeline activity yet.
+        Nog geen tijdlijnactiviteit.
       </div>
     );
   }
@@ -84,7 +84,7 @@ export function TimelineList({ auditLogs }: Props) {
                   <div className="min-w-0 flex-1 pt-0.5">
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">
-                        {log.actor?.name ?? "System"}
+                        {log.actor?.name ?? "Systeem"}
                       </span>{" "}
                       {formatActionDescription(
                         log.action,

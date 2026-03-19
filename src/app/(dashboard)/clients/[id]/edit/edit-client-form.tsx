@@ -55,10 +55,10 @@ export function EditClientForm({ client }: { client: Client }) {
       if (result.success) {
         router.push(`/clients/${client.id}`);
       } else {
-        setError(result.error ?? "Failed to update client.");
+        setError(result.error ?? "Klant bijwerken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -76,12 +76,12 @@ export function EditClientForm({ client }: { client: Client }) {
         {/* Contact Information */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Contact Information
+            Contactinformatie
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label htmlFor="companyName" className="form-label">
-                Company Name <span className="text-red-500">*</span>
+                Bedrijfsnaam <span className="text-red-500">*</span>
               </label>
               <input
                 id="companyName"
@@ -95,7 +95,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="contactName" className="form-label">
-                Contact Person
+                Contactpersoon
               </label>
               <input
                 id="contactName"
@@ -108,7 +108,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="email" className="form-label">
-                Email Address
+                E-mailadres
               </label>
               <input
                 id="email"
@@ -121,7 +121,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="phone" className="form-label">
-                Phone
+                Telefoon
               </label>
               <input
                 id="phone"
@@ -134,7 +134,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="address" className="form-label">
-                Address
+                Adres
               </label>
               <input
                 id="address"
@@ -151,12 +151,12 @@ export function EditClientForm({ client }: { client: Client }) {
         {/* Company Details */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Company Details
+            Bedrijfsgegevens
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="vatNumber" className="form-label">
-                VAT Number
+                Btw-nummer
               </label>
               <input
                 id="vatNumber"
@@ -169,7 +169,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="chamberOfCommerceNumber" className="form-label">
-                Chamber of Commerce
+                Kamer van Koophandel
               </label>
               <input
                 id="chamberOfCommerceNumber"
@@ -186,12 +186,12 @@ export function EditClientForm({ client }: { client: Client }) {
         {/* Notes & Billing */}
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            Notes &amp; Billing
+            Notities &amp; facturatie
           </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="invoiceDetails" className="form-label">
-                Invoice Details
+                Factuurgegevens
               </label>
               <textarea
                 id="invoiceDetails"
@@ -204,7 +204,7 @@ export function EditClientForm({ client }: { client: Client }) {
             </div>
             <div>
               <label htmlFor="notes" className="form-label">
-                Internal Notes
+                Interne notities
               </label>
               <textarea
                 id="notes"
@@ -224,14 +224,14 @@ export function EditClientForm({ client }: { client: Client }) {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Saving…
+                Bezig met opslaan…
               </>
             ) : (
-              "Save Changes"
+              "Wijzigingen opslaan"
             )}
           </button>
           <Link href={`/clients/${client.id}`} className="btn-secondary">
-            Cancel
+            Annuleren
           </Link>
         </div>
       </form>

@@ -37,12 +37,12 @@ interface Props {
 }
 
 const STATUSES: { value: ChangeRequestStatus; label: string }[] = [
-  { value: "NEW", label: "New" },
-  { value: "REVIEWED", label: "Reviewed" },
-  { value: "PLANNED", label: "Planned" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "WAITING_FOR_FEEDBACK", label: "Waiting for Feedback" },
-  { value: "DONE", label: "Done" },
+  { value: "NEW", label: "Nieuw" },
+  { value: "REVIEWED", label: "Beoordeeld" },
+  { value: "PLANNED", label: "Gepland" },
+  { value: "IN_PROGRESS", label: "In uitvoering" },
+  { value: "WAITING_FOR_FEEDBACK", label: "Wacht op feedback" },
+  { value: "DONE", label: "Afgerond" },
 ];
 
 function CRCard({
@@ -114,11 +114,11 @@ function CRCard({
         >
           {expanded ? (
             <>
-              <ChevronUp className="h-3.5 w-3.5" /> Less
+              <ChevronUp className="h-3.5 w-3.5" /> Minder
             </>
           ) : (
             <>
-              <ChevronDown className="h-3.5 w-3.5" /> More
+              <ChevronDown className="h-3.5 w-3.5" /> Meer
             </>
           )}
         </button>
@@ -126,13 +126,13 @@ function CRCard({
 
       <div className="mt-3 flex items-center justify-between">
         <div className="text-xs text-gray-400 space-x-2">
-          <span>By {cr.createdBy.name}</span>
+          <span>Door {cr.createdBy.name}</span>
           <span>&middot;</span>
           <span>{formatDate(cr.createdAt)}</span>
           {cr.assignedTo && (
             <>
               <span>&middot;</span>
-              <span>Assigned: {cr.assignedTo.name}</span>
+              <span>Toegewezen: {cr.assignedTo.name}</span>
             </>
           )}
           <span>&middot;</span>
@@ -189,7 +189,7 @@ function CRCard({
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600"
             >
               <RotateCcw className="h-3 w-3" />
-              Reopen
+              Heropenen
             </button>
           )}
 
@@ -200,7 +200,7 @@ function CRCard({
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-600"
             >
               <XCircle className="h-3 w-3" />
-              Close
+              Sluiten
             </button>
           )}
         </div>
@@ -213,7 +213,7 @@ export function ChangeRequestList({ changeRequests, projectId, onUpdate }: Props
   if (changeRequests.length === 0) {
     return (
       <div className="text-center py-10 text-sm text-gray-400">
-        No change requests yet. Add one above.
+        Nog geen wijzigingsverzoeken. Voeg er hierboven een toe.
       </div>
     );
   }

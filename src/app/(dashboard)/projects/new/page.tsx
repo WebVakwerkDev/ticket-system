@@ -28,9 +28,9 @@ export default async function NewProjectPage({
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Projects
+            Terug naar projecten
           </Link>
-          <h1 className="page-title">New Project</h1>
+          <h1 className="page-title">Nieuw project</h1>
         </div>
       </div>
       <CreateProjectForm

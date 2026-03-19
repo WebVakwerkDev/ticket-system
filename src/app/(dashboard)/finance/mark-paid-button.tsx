@@ -13,7 +13,7 @@ export function MarkPaidButton({ invoiceId }: { invoiceId: string }) {
 
   async function handleClick() {
     if (!session?.user?.id) return;
-    if (!confirm("Mark this invoice as paid?")) return;
+    if (!confirm("Deze factuur als betaald markeren?")) return;
     setLoading(true);
     try {
       await markInvoicePaid(invoiceId, session.user.id);
@@ -34,7 +34,7 @@ export function MarkPaidButton({ invoiceId }: { invoiceId: string }) {
       ) : (
         <Check className="h-3.5 w-3.5" />
       )}
-      Mark Paid
+      Markeer als betaald
     </button>
   );
 }

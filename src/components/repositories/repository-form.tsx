@@ -53,10 +53,10 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
         });
         onSuccess();
       } else {
-        setError(result.error ?? "Failed to add repository.");
+        setError(result.error ?? "Repository toevoegen mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="repo-name" className="form-label">
-            Repository Name <span className="text-red-500">*</span>
+            Repositorynaam <span className="text-red-500">*</span>
           </label>
           <input
             id="repo-name"
@@ -88,7 +88,7 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
         </div>
         <div>
           <label htmlFor="repo-branch" className="form-label">
-            Default Branch
+            Standaardbranch
           </label>
           <input
             id="repo-branch"
@@ -102,7 +102,7 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
         </div>
         <div>
           <label htmlFor="repo-url" className="form-label">
-            Repository URL <span className="text-red-500">*</span>
+            Repository-URL <span className="text-red-500">*</span>
           </label>
           <input
             id="repo-url"
@@ -117,7 +117,7 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
         </div>
         <div>
           <label htmlFor="repo-issue-board" className="form-label">
-            Issue Board URL
+            Issueboard-URL
           </label>
           <input
             id="repo-issue-board"
@@ -136,10 +136,10 @@ export function RepositoryForm({ projectId, onSuccess }: Props) {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Adding…
+              Bezig met toevoegen…
             </>
           ) : (
-            "Add Repository"
+            "Repository toevoegen"
           )}
         </button>
       </div>

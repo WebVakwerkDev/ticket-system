@@ -12,17 +12,17 @@ const ROLES: { value: UserRole; label: string; description: string }[] = [
   {
     value: "ADMIN",
     label: "Admin",
-    description: "Full access to all features and settings",
+    description: "Volledige toegang tot alle functies en instellingen",
   },
   {
     value: "EMPLOYEE",
-    label: "Employee",
-    description: "Access to projects, clients, and communication",
+    label: "Medewerker",
+    description: "Toegang tot projecten, klanten en communicatie",
   },
   {
     value: "FINANCE",
-    label: "Finance",
-    description: "Access to invoices and financial data",
+    label: "Financiën",
+    description: "Toegang tot facturen en financiële gegevens",
   },
 ];
 
@@ -65,10 +65,10 @@ export default function NewUserPage() {
       if (result.success) {
         router.push("/settings");
       } else {
-        setError(result.error ?? "Failed to create user.");
+        setError(result.error ?? "Gebruiker aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -83,9 +83,9 @@ export default function NewUserPage() {
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Settings
+            Terug naar instellingen
           </Link>
-          <h1 className="page-title">New User</h1>
+          <h1 className="page-title">Nieuwe gebruiker</h1>
         </div>
       </div>
 
@@ -98,12 +98,12 @@ export default function NewUserPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="card p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-            User Details
+            Gebruikersgegevens
           </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="form-label">
-                Full Name <span className="text-red-500">*</span>
+                Volledige naam <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
@@ -118,7 +118,7 @@ export default function NewUserPage() {
             </div>
             <div>
               <label htmlFor="email" className="form-label">
-                Email Address <span className="text-red-500">*</span>
+                E-mailadres <span className="text-red-500">*</span>
               </label>
               <input
                 id="email"
@@ -133,7 +133,7 @@ export default function NewUserPage() {
             </div>
             <div>
               <label htmlFor="password" className="form-label">
-                Password <span className="text-red-500">*</span>
+                Wachtwoord <span className="text-red-500">*</span>
               </label>
               <input
                 id="password"
@@ -144,12 +144,12 @@ export default function NewUserPage() {
                 value={form.password}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Min. 8 characters"
+                placeholder="Min. 8 tekens"
               />
             </div>
             <div>
               <label htmlFor="role" className="form-label">
-                Role
+                Rol
               </label>
               <select
                 id="role"
@@ -176,14 +176,14 @@ export default function NewUserPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating…
+                Bezig met aanmaken…
               </>
             ) : (
-              "Create User"
+              "Gebruiker aanmaken"
             )}
           </button>
           <Link href="/settings" className="btn-secondary">
-            Cancel
+            Annuleren
           </Link>
         </div>
       </form>

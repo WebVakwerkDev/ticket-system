@@ -21,9 +21,9 @@ export default async function SettingsPage() {
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Settings</h1>
+          <h1 className="page-title">Instellingen</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Manage users and application settings
+            Beheer gebruikers en applicatie-instellingen
           </p>
         </div>
       </div>
@@ -32,14 +32,14 @@ export default async function SettingsPage() {
       <div className="card">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div>
-            <h2 className="font-semibold text-gray-900">Users</h2>
+            <h2 className="font-semibold text-gray-900">Gebruikers</h2>
             <p className="text-sm text-gray-500">
-              {users.length} user{users.length !== 1 ? "s" : ""}
+              {users.length} gebruiker{users.length !== 1 ? "s" : ""}
             </p>
           </div>
           <Link href="/settings/users/new" className="btn-primary">
             <Plus className="h-4 w-4" />
-            Invite User
+            Gebruiker uitnodigen
           </Link>
         </div>
 
@@ -47,12 +47,12 @@ export default async function SettingsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                <th className="px-5 py-3 font-medium text-gray-600">Name</th>
-                <th className="px-5 py-3 font-medium text-gray-600">Email</th>
-                <th className="px-5 py-3 font-medium text-gray-600">Role</th>
-                <th className="px-5 py-3 font-medium text-gray-600">Member since</th>
+                <th className="px-5 py-3 font-medium text-gray-600">Naam</th>
+                <th className="px-5 py-3 font-medium text-gray-600">E-mail</th>
+                <th className="px-5 py-3 font-medium text-gray-600">Rol</th>
+                <th className="px-5 py-3 font-medium text-gray-600">Lid sinds</th>
                 <th className="px-5 py-3 font-medium text-gray-600 text-right">
-                  Actions
+                  Acties
                 </th>
               </tr>
             </thead>
@@ -75,7 +75,7 @@ export default async function SettingsPage() {
                         {user.name}
                       </span>
                       {user.id === session.user.id && (
-                        <span className="text-xs text-gray-400">(you)</span>
+                        <span className="text-xs text-gray-400">(jij)</span>
                       )}
                     </div>
                   </td>

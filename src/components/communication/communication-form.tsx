@@ -8,12 +8,12 @@ import { CommunicationType } from "@prisma/client";
 
 const COMMUNICATION_TYPES: { value: CommunicationType; label: string }[] = [
   { value: "EMAIL", label: "Email" },
-  { value: "CALL", label: "Phone Call" },
+  { value: "CALL", label: "Telefoongesprek" },
   { value: "MEETING", label: "Meeting" },
   { value: "WHATSAPP", label: "WhatsApp" },
-  { value: "DM", label: "Direct Message" },
-  { value: "INTERNAL", label: "Internal Note" },
-  { value: "OTHER", label: "Other" },
+  { value: "DM", label: "Privébericht" },
+  { value: "INTERNAL", label: "Interne notitie" },
+  { value: "OTHER", label: "Overig" },
 ];
 
 interface Props {
@@ -84,10 +84,10 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
       if (result.success) {
         onSuccess();
       } else {
-        setError(result.error ?? "Failed to create entry.");
+        setError(result.error ?? "Item aanmaken mislukt.");
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError("Er is een onverwachte fout opgetreden.");
     } finally {
       setLoading(false);
     }
@@ -124,7 +124,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
         </div>
         <div>
           <label htmlFor="comm-occurredAt" className="form-label">
-            Date &amp; Time
+            Datum &amp; tijd
           </label>
           <input
             id="comm-occurredAt"
@@ -140,7 +140,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
 
       <div>
         <label htmlFor="comm-subject" className="form-label">
-          Subject <span className="text-red-500">*</span>
+          Onderwerp <span className="text-red-500">*</span>
         </label>
         <input
           id="comm-subject"
@@ -150,7 +150,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
           value={form.subject}
           onChange={handleChange}
           className="form-input"
-          placeholder="What was this communication about?"
+          placeholder="Waar ging deze communicatie over?"
         />
       </div>
 
@@ -158,7 +158,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="comm-senderName" className="form-label">
-              Sender Name
+              Naam afzender
             </label>
             <input
               id="comm-senderName"
@@ -172,7 +172,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
           </div>
           <div>
             <label htmlFor="comm-senderEmail" className="form-label">
-              Sender Email
+              E-mail afzender
             </label>
             <input
               id="comm-senderEmail"
@@ -189,7 +189,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
 
       <div>
         <label htmlFor="comm-content" className="form-label">
-          Content <span className="text-red-500">*</span>
+          Inhoud <span className="text-red-500">*</span>
         </label>
         <textarea
           id="comm-content"
@@ -199,14 +199,14 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
           value={form.content}
           onChange={handleChange}
           className="form-textarea"
-          placeholder="Paste the full email, call notes, or meeting summary here…"
+          placeholder="Plak hier de volledige e-mail, gespreksnotities of samenvatting van de meeting…"
         />
       </div>
 
       <div>
         <label htmlFor="comm-links" className="form-label">
           Links{" "}
-          <span className="font-normal text-gray-400">(comma-separated)</span>
+          <span className="font-normal text-gray-400">(kommagescheiden)</span>
         </label>
         <input
           id="comm-links"
@@ -229,7 +229,7 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
         <label htmlFor="comm-isInternal" className="text-sm text-gray-700">
-          Internal only (not shared with client)
+          Alleen intern (niet gedeeld met de klant)
         </label>
       </div>
 
@@ -237,11 +237,11 @@ export function CommunicationForm({ projectId, onSuccess }: Props) {
         <button type="submit" disabled={loading} className="btn-primary">
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving…
-            </>
-          ) : (
-            "Save Entry"
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Bezig met opslaan…
+              </>
+            ) : (
+            "Item opslaan"
           )}
         </button>
       </div>
