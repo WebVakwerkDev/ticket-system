@@ -99,6 +99,12 @@ enum ProposalDraftStatus {
   SENT_TO_N8N
 }
 
+enum EmailStatus {
+  SENDING
+  SENT
+  FAILED
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -219,6 +225,7 @@ model ChangeRequest {
   communications CommunicationEntry[] @relation("CommunicationChangeRequests")
   notes         InternalNote[]
   agentRuns     AgentRun[]
+  emails        Email[]
 
   @@map("change_requests")
 }
@@ -376,6 +383,28 @@ model BusinessSettings {
   updatedAt             DateTime @updatedAt
 
   @@map("business_settings")
+}
+
+model Email {
+  id                String      @id @default(cuid())
+  changeRequestId   String?
+  fromEmail         String
+  fromName          String?
+  toAddresses       String[]
+  ccAddresses       String[]    @default([])
+  subject           String
+  bodyText          String
+  status            EmailStatus @default(SENT)
+  providerMessageId String?
+  errorMessage      String?
+  attachmentsMeta   Json?
+  sentAt            DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  changeRequest ChangeRequest? @relation(fields: [changeRequestId], references: [id], onDelete: SetNull)
+
+  @@map("emails")
 }
 
 model AuditLog {

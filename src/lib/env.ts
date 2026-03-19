@@ -63,3 +63,20 @@ export function getN8nWebhookUrl() {
 export function getN8nInvoiceWebhookUrl() {
   return parseOptional("N8N_WEBHOOK_INVOICE_URL", UrlStringSchema);
 }
+
+// Mailjet
+export function getMailjetApiKey() {
+  return parseOptional("MAILJET_API_KEY", NonEmptyStringSchema);
+}
+
+export function getMailjetApiSecret() {
+  return parseOptional("MAILJET_API_SECRET", NonEmptyStringSchema);
+}
+
+export function getMailjetSenderEmail() {
+  return parseOptional("MAILJET_SENDER_EMAIL", NonEmptyStringSchema);
+}
+
+export function getMailjetSenderName() {
+  return parseOptional("MAILJET_SENDER_NAME", NonEmptyStringSchema);
+}
