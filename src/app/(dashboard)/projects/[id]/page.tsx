@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getProject } from "@/actions/projects";
 import { getCommunicationEntries } from "@/actions/communication";
+import { getOutgoingEmails } from "@/actions/outgoing-emails";
 import { getRepositories } from "@/actions/repositories";
 import { getProposalDrafts } from "@/actions/proposals";
 import { getInvoices } from "@/actions/invoices";
@@ -55,12 +56,13 @@ export default async function ProjectDetailPage({
   const project = projectResult.project;
   const n8nEnabled = Boolean(getN8nWebhookUrl());
 
-  const [commResult, reposResult, proposalsResult, invoicesResult, businessSettings] = await Promise.all([
+  const [commResult, reposResult, proposalsResult, invoicesResult, businessSettings, outgoingEmailsResult] = await Promise.all([
     getCommunicationEntries(id),
     getRepositories(id),
     getProposalDrafts(id),
     getInvoices({ projectId: id }),
     getResolvedBusinessSettings(),
+    getOutgoingEmails(id),
   ]);
 
   const communications = commResult.success ? commResult.entries ?? [] : [];
@@ -86,6 +88,22 @@ export default async function ProjectDetailPage({
         status: inv.status,
         issueDate: inv.issueDate,
         dueDate: inv.dueDate,
+      }))
+    : [];
+
+  const outgoingEmails = outgoingEmailsResult.success
+    ? (outgoingEmailsResult.emails ?? []).map((email) => ({
+        id: email.id,
+        toAddresses: email.toAddresses,
+        ccAddresses: email.ccAddresses,
+        subject: email.subject,
+        bodyText: email.bodyText,
+        status: email.status,
+        providerError: email.providerError,
+        sentAt: email.sentAt,
+        createdAt: email.createdAt,
+        sender: email.sender,
+        attachments: email.attachments,
       }))
     : [];
 
@@ -192,7 +210,15 @@ export default async function ProjectDetailPage({
       )}
 
       {activeTab === "logbook" && (
-        <ProjectCommunicationTab projectId={id} initialEntries={communications} />
+        <ProjectCommunicationTab
+          projectId={id}
+          initialEntries={communications}
+          initialEmails={outgoingEmails}
+          client={{
+            email: project.client.email,
+            contactName: project.client.contactName,
+          }}
+        />
       )}
 
       {activeTab === "github" && (

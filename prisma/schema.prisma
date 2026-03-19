@@ -99,6 +99,12 @@ enum ProposalDraftStatus {
   SENT_TO_N8N
 }
 
+enum OutgoingEmailStatus {
+  DRAFT
+  SENT
+  FAILED
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -117,6 +123,7 @@ model User {
   internalNotes          InternalNote[]
   agentRuns              AgentRun[]
   auditLogs              AuditLog[]
+  sentEmails             OutgoingEmail[]      @relation("OutgoingEmailSender")
 
   @@map("users")
 }
@@ -170,6 +177,7 @@ model ProjectWorkspace {
   agentRuns            AgentRun[]
   invoices             Invoice[]
   proposalDrafts       ProposalDraft[]
+  outgoingEmails       OutgoingEmail[]
 
   @@map("project_workspaces")
 }
@@ -377,6 +385,50 @@ model BusinessSettings {
   updatedAt             DateTime @updatedAt
 
   @@map("business_settings")
+}
+
+model OutgoingEmail {
+  id                String              @id @default(cuid())
+  projectId         String?
+  senderUserId      String
+  replyToEmailId    String?
+  fromEmail         String
+  fromName          String?
+  toAddresses       String[]
+  ccAddresses       String[]            @default([])
+  subject           String
+  bodyText          String
+  bodyHtml          String?
+  status            OutgoingEmailStatus @default(DRAFT)
+  provider          String
+  providerMessageId String?
+  providerError     String?
+  sentAt            DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  project     ProjectWorkspace?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  sender      User                  @relation("OutgoingEmailSender", fields: [senderUserId], references: [id])
+  replyTo     OutgoingEmail?        @relation("OutgoingEmailReply", fields: [replyToEmailId], references: [id], onDelete: SetNull)
+  replies     OutgoingEmail[]       @relation("OutgoingEmailReply")
+  attachments OutgoingEmailAttachment[]
+
+  @@index([projectId, createdAt])
+  @@index([status, createdAt])
+  @@map("outgoing_emails")
+}
+
+model OutgoingEmailAttachment {
+  id         String   @id @default(cuid())
+  emailId    String
+  fileName   String
+  mimeType   String
+  fileSize   Int
+  createdAt  DateTime @default(now())
+
+  email OutgoingEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@map("outgoing_email_attachments")
 }
 
 model AuditLog {
