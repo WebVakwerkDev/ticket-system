@@ -3,8 +3,12 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { FileText, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { FileText, Plus, X, Receipt } from "lucide-react";
 import { createProposalDraft, sendProposalToN8n } from "@/actions/proposals";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { InvoiceStatusBadge } from "@/components/projects/status-badge";
+import { InvoiceStatus } from "@prisma/client";
 
 interface Proposal {
   id: string;
@@ -14,6 +18,16 @@ interface Proposal {
   deliveryTime: string | null;
   createdAt: Date | string;
   status: string;
+}
+
+interface ProjectInvoice {
+  id: string;
+  invoiceNumber: string;
+  description: string;
+  totalAmount: number;
+  status: InvoiceStatus;
+  issueDate: Date | string;
+  dueDate: Date | string;
 }
 
 interface Props {
@@ -31,10 +45,11 @@ interface Props {
     scope: string | null;
   };
   proposals: Proposal[];
+  invoices: ProjectInvoice[];
   n8nEnabled: boolean;
 }
 
-export function ProjectProposalsPanel({ client, project, proposals, n8nEnabled }: Props) {
+export function ProjectProposalsPanel({ client, project, proposals, invoices, n8nEnabled }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -120,12 +135,12 @@ export function ProjectProposalsPanel({ client, project, proposals, n8nEnabled }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-900">Offertes</h3>
+          <h3 className="font-semibold text-gray-900">Offertes & Facturen</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Maak hier een offerteconcept aan en stuur het daarna door naar n8n.
+            Maak offerteconcepten aan of maak direct een factuur op basis van dit project.
           </p>
           {!n8nEnabled && (
             <p className="mt-2 text-xs text-amber-700">
@@ -133,17 +148,26 @@ export function ProjectProposalsPanel({ client, project, proposals, n8nEnabled }
             </p>
           )}
         </div>
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => {
-            resetForm();
-            setOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          Nieuwe offerte
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/finance/invoices/new?clientId=${client.id}&projectId=${project.id}`}
+            className="btn-secondary"
+          >
+            <Receipt className="h-4 w-4" />
+            Nieuwe factuur
+          </Link>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              resetForm();
+              setOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Nieuwe offerte
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -229,50 +253,96 @@ export function ProjectProposalsPanel({ client, project, proposals, n8nEnabled }
         </div>
       )}
 
-      {proposals.length > 0 ? (
-        <div className="space-y-3">
-          {proposals.map((proposal) => (
-            <div key={proposal.id} className="card p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-400" />
-                    <h4 className="font-medium text-gray-900">{proposal.title}</h4>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Offertes</h4>
+        {proposals.length > 0 ? (
+          <div className="space-y-3">
+            {proposals.map((proposal) => (
+              <div key={proposal.id} className="card p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                      <h4 className="font-medium text-gray-900">{proposal.title}</h4>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">{proposal.summary}</p>
+                    <p className="mt-2 text-xs text-gray-400">
+                      {proposal.deliveryTime ?? "Geen doorlooptijd ingevuld"} · {proposal.status}
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">{proposal.summary}</p>
-                  <p className="mt-2 text-xs text-gray-400">
-                    {proposal.deliveryTime ?? "Geen doorlooptijd ingevuld"} · {proposal.status}
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  {proposal.amount && (
-                    <span className="text-sm font-semibold text-gray-700">
-                      €{typeof proposal.amount === "object" ? proposal.amount.toNumber().toFixed(2) : proposal.amount.toFixed(2)}
-                    </span>
-                  )}
-                  {proposal.status !== "SENT_TO_N8N" ? (
-                    <button
-                      type="button"
-                      className="btn-primary text-xs"
-                      disabled={sendingId === proposal.id || !n8nEnabled}
-                      onClick={() => handleSendToN8n(proposal.id)}
-                      title={!n8nEnabled ? "n8n webhook is nog niet ingesteld" : undefined}
-                    >
-                      {!n8nEnabled ? "n8n niet ingesteld" : sendingId === proposal.id ? "Bezig…" : "PDF via n8n"}
-                    </button>
-                  ) : (
-                    <span className="text-xs text-green-600 font-medium">✓ Verstuurd naar n8n</span>
-                  )}
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    {proposal.amount && (
+                      <span className="text-sm font-semibold text-gray-700">
+                        €{typeof proposal.amount === "object" ? proposal.amount.toNumber().toFixed(2) : proposal.amount.toFixed(2)}
+                      </span>
+                    )}
+                    {proposal.status !== "SENT_TO_N8N" ? (
+                      <button
+                        type="button"
+                        className="btn-primary text-xs"
+                        disabled={sendingId === proposal.id || !n8nEnabled}
+                        onClick={() => handleSendToN8n(proposal.id)}
+                        title={!n8nEnabled ? "n8n webhook is nog niet ingesteld" : undefined}
+                      >
+                        {!n8nEnabled ? "n8n niet ingesteld" : sendingId === proposal.id ? "Bezig…" : "PDF via n8n"}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-green-600 font-medium">✓ Verstuurd naar n8n</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="card p-8 text-sm text-gray-400">
-          Nog geen offerteconcepten voor dit project.
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="card p-6 text-sm text-gray-400">
+            Nog geen offerteconcepten voor dit project.
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Facturen</h4>
+        {invoices.length > 0 ? (
+          <div className="space-y-3">
+            {invoices.map((inv) => (
+              <div key={inv.id} className="card p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="h-4 w-4 text-gray-400" />
+                      <Link
+                        href={`/finance/invoices/${inv.id}`}
+                        className="font-medium text-gray-900 hover:text-blue-600"
+                      >
+                        #{inv.invoiceNumber}
+                      </Link>
+                      <InvoiceStatusBadge status={inv.status} />
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">{inv.description}</p>
+                    <p className="mt-1 text-xs text-gray-400">
+                      Vervalt {formatDate(inv.dueDate)}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 shrink-0">
+                    {formatCurrency(inv.totalAmount)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="card p-6 text-sm text-gray-400">
+            Nog geen facturen voor dit project.{" "}
+            <Link
+              href={`/finance/invoices/new?clientId=${client.id}&projectId=${project.id}`}
+              className="text-blue-600 hover:underline"
+            >
+              Maak er een aan.
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

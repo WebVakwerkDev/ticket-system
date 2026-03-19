@@ -5,12 +5,13 @@ import { getProject } from "@/actions/projects";
 import { getCommunicationEntries } from "@/actions/communication";
 import { getRepositories } from "@/actions/repositories";
 import { getProposalDrafts } from "@/actions/proposals";
+import { getInvoices } from "@/actions/invoices";
 import { getN8nWebhookUrl } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
 import {
   ArrowLeft,
   MessageSquare,
-  Github,
+  GitBranch,
   Receipt,
   ExternalLink,
 } from "lucide-react";
@@ -30,7 +31,7 @@ const TABS = [
   { id: "overview", label: "Overzicht" },
   { id: "logbook", label: "Logboek" },
   { id: "github", label: "Techniek" },
-  { id: "invoices", label: "Offertes" },
+  { id: "invoices", label: "Financieel" },
   { id: "timeline", label: "Tijdlijn" },
 ];
 
@@ -53,10 +54,11 @@ export default async function ProjectDetailPage({
   const project = projectResult.project;
   const n8nEnabled = Boolean(getN8nWebhookUrl());
 
-  const [commResult, reposResult, proposalsResult] = await Promise.all([
+  const [commResult, reposResult, proposalsResult, invoicesResult] = await Promise.all([
     getCommunicationEntries(id),
     getRepositories(id),
     getProposalDrafts(id),
+    getInvoices({ projectId: id }),
   ]);
 
   const communications = commResult.success ? commResult.entries ?? [] : [];
@@ -70,6 +72,18 @@ export default async function ProjectDetailPage({
         deliveryTime: proposal.deliveryTime,
         createdAt: proposal.createdAt,
         status: proposal.status,
+      }))
+    : [];
+
+  const projectInvoices = invoicesResult.success
+    ? (invoicesResult.invoices ?? []).map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        description: inv.description,
+        totalAmount: Number(inv.totalAmount),
+        status: inv.status,
+        issueDate: inv.issueDate,
+        dueDate: inv.dueDate,
       }))
     : [];
 
@@ -103,7 +117,7 @@ export default async function ProjectDetailPage({
   const tabs = TABS.map((t) => {
     if (t.id === "logbook") return { ...t, count: communications.length };
     if (t.id === "github") return { ...t, count: repositories.length };
-    if (t.id === "invoices") return { ...t, count: proposals.length };
+    if (t.id === "invoices") return { ...t, count: proposals.length + projectInvoices.length };
     return t;
   });
 
@@ -151,7 +165,7 @@ export default async function ProjectDetailPage({
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <Github className="h-4 w-4 text-gray-400" />
+            <GitBranch className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
               {repositories.length} repo{repositories.length !== 1 ? "'s" : ""}
             </span>
@@ -159,7 +173,7 @@ export default async function ProjectDetailPage({
           <div className="flex items-center gap-2 text-sm">
             <Receipt className="h-4 w-4 text-gray-400" />
             <span className="text-gray-600">
-              {proposals.length} offerteconcept{proposals.length !== 1 ? "en" : ""}
+              {proposals.length} offerte{proposals.length !== 1 ? "s" : ""}{projectInvoices.length > 0 ? `, ${projectInvoices.length} factuur${projectInvoices.length !== 1 ? "en" : ""}` : ""}
             </span>
           </div>
         </div>
@@ -199,6 +213,7 @@ export default async function ProjectDetailPage({
             scope: project.scope,
           }}
           proposals={proposals}
+          invoices={projectInvoices}
           n8nEnabled={n8nEnabled}
         />
       )}
