@@ -43,7 +43,17 @@ export async function getInvoice(id: string) {
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
-        client: true,
+        client: {
+          select: {
+            id: true,
+            companyName: true,
+            contactName: true,
+            email: true,
+            phone: true,
+            address: true,
+            invoiceDetails: true,
+          },
+        },
         project: {
           select: { id: true, name: true, slug: true },
         },
@@ -275,70 +285,60 @@ export async function sendInvoiceToN8n(invoiceId: string, actorUserId: string) {
     if (!res.ok) {
       return { success: false, error: `n8n webhook fout: ${res.status}` };
     }
-  } catch {
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { status: InvoiceStatus.SENT },
+    });
+
+    await createAuditLog({
+      actorUserId,
+      entityType: "Invoice",
+      entityId: invoiceId,
+      action: "UPDATE",
+      metadata: { status: "SENT", sentViaN8n: true },
+    });
+
+    return { success: true };
+  } catch (error) {
+    logger.error("sendInvoiceToN8n error:", error, { invoiceId });
     return { success: false, error: "n8n webhook niet bereikbaar." };
   }
-
-  await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: { status: InvoiceStatus.SENT },
-  });
-
-  await createAuditLog({
-    actorUserId,
-    entityType: "Invoice",
-    entityId: invoiceId,
-    action: "UPDATE",
-    metadata: { status: "SENT", sentViaN8n: true },
-  });
-
-  return { success: true };
 }
 
 export async function getFinanceOverview() {
   try {
-    const [paidInvoices, sentInvoices, overdueInvoices] = await Promise.all([
+    const [revenueAgg, openAgg, overdueAgg, paidForVat] = await Promise.all([
+      prisma.invoice.aggregate({
+        where: { status: InvoiceStatus.PAID },
+        _sum: { totalAmount: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { status: InvoiceStatus.SENT },
+        _sum: { totalAmount: true },
+      }),
+      prisma.invoice.aggregate({
+        where: { status: InvoiceStatus.OVERDUE },
+        _sum: { totalAmount: true },
+      }),
+      // Only fetch what's needed for quarter grouping
       prisma.invoice.findMany({
         where: { status: InvoiceStatus.PAID },
-        select: { totalAmount: true, vatAmount: true, issueDate: true },
-      }),
-      prisma.invoice.findMany({
-        where: { status: InvoiceStatus.SENT },
-        select: { totalAmount: true },
-      }),
-      prisma.invoice.findMany({
-        where: { status: InvoiceStatus.OVERDUE },
-        select: { totalAmount: true },
+        select: { issueDate: true, vatAmount: true, totalAmount: true },
+        orderBy: { issueDate: "asc" },
       }),
     ]);
 
-    const totalRevenue = paidInvoices.reduce(
-      (sum, inv) => sum + Number(inv.totalAmount),
-      0
-    );
-
-    const openAmount = sentInvoices.reduce(
-      (sum, inv) => sum + Number(inv.totalAmount),
-      0
-    );
-
-    const overdueAmount = overdueInvoices.reduce(
-      (sum, inv) => sum + Number(inv.totalAmount),
-      0
-    );
+    const totalRevenue = Number(revenueAgg._sum.totalAmount ?? 0);
+    const openAmount = Number(openAgg._sum.totalAmount ?? 0);
+    const overdueAmount = Number(overdueAgg._sum.totalAmount ?? 0);
 
     // Group VAT by quarter
-    const vatByQuarterMap = new Map<
-      string,
-      { vatAmount: number; revenue: number }
-    >();
-
-    for (const inv of paidInvoices) {
+    const vatByQuarterMap = new Map<string, { vatAmount: number; revenue: number }>();
+    for (const inv of paidForVat) {
       const date = new Date(inv.issueDate);
-      const year = date.getFullYear();
       const quarter = Math.ceil((date.getMonth() + 1) / 3);
-      const key = `${year}-Q${quarter}`;
-
+      const key = `${date.getFullYear()}-Q${quarter}`;
       const existing = vatByQuarterMap.get(key) ?? { vatAmount: 0, revenue: 0 };
       vatByQuarterMap.set(key, {
         vatAmount: existing.vatAmount + Number(inv.vatAmount),
@@ -352,12 +352,7 @@ export async function getFinanceOverview() {
 
     return {
       success: true,
-      overview: {
-        totalRevenue,
-        openAmount,
-        overdueAmount,
-        vatByQuarter,
-      },
+      overview: { totalRevenue, openAmount, overdueAmount, vatByQuarter },
     };
   } catch (error) {
     logger.error("getFinanceOverview error:", error);

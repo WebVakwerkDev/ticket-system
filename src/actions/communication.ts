@@ -8,11 +8,12 @@ import {
 } from "@/lib/validations/communication";
 import { logger } from "@/lib/logger";
 
-export async function getCommunicationEntries(projectId: string) {
+export async function getCommunicationEntries(projectId: string, limit = 100) {
   try {
     const entries = await prisma.communicationEntry.findMany({
       where: { projectId },
       orderBy: { occurredAt: "desc" },
+      take: limit,
       include: {
         author: {
           select: { id: true, name: true },

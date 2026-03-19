@@ -192,6 +192,8 @@ model CommunicationEntry {
   author         User             @relation(fields: [authorUserId], references: [id])
   changeRequests ChangeRequest[]  @relation("CommunicationChangeRequests")
 
+  @@index([projectId])
+  @@index([occurredAt])
   @@map("communication_entries")
 }
 
@@ -219,6 +221,9 @@ model ChangeRequest {
   communications CommunicationEntry[] @relation("CommunicationChangeRequests")
   notes         InternalNote[]
   agentRuns     AgentRun[]
+
+  @@index([projectId])
+  @@index([status])
   @@map("change_requests")
 }
 
@@ -250,6 +255,7 @@ model ProjectRepository {
 
   project ProjectWorkspace @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@index([projectId])
   @@map("project_repositories")
 }
 
@@ -271,6 +277,7 @@ model AgentRun {
   changeRequest ChangeRequest?   @relation(fields: [changeRequestId], references: [id])
   initiatedBy   User             @relation(fields: [initiatedByUserId], references: [id])
 
+  @@index([projectId])
   @@map("agent_runs")
 }
 
@@ -296,6 +303,9 @@ model Invoice {
   client  Client            @relation(fields: [clientId], references: [id])
   project ProjectWorkspace? @relation(fields: [projectId], references: [id])
 
+  @@index([clientId])
+  @@index([projectId])
+  @@index([status])
   @@map("invoices")
 }
 

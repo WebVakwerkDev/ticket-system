@@ -92,25 +92,25 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
     if (!res.ok) {
       return { success: false, error: `n8n webhook fout: ${res.status}` };
     }
+
+    await prisma.proposalDraft.update({
+      where: { id: proposalId },
+      data: { status: "SENT_TO_N8N" },
+    });
+
+    await createAuditLog({
+      actorUserId,
+      entityType: "ProposalDraft",
+      entityId: proposalId,
+      action: "UPDATE",
+      metadata: { status: "SENT_TO_N8N" },
+    });
+
+    return { success: true };
   } catch (error) {
     logger.error("Failed to send proposal to n8n", error, { proposalId });
     return { success: false, error: "n8n webhook niet bereikbaar." };
   }
-
-  await prisma.proposalDraft.update({
-    where: { id: proposalId },
-    data: { status: "SENT_TO_N8N" },
-  });
-
-  await createAuditLog({
-    actorUserId,
-    entityType: "ProposalDraft",
-    entityId: proposalId,
-    action: "UPDATE",
-    metadata: { status: "SENT_TO_N8N" },
-  });
-
-  return { success: true };
 }
 
 export async function createProposalDraft(data: {

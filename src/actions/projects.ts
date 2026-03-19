@@ -4,8 +4,30 @@ import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { ProjectFormSchema, type ProjectFormData } from "@/lib/validations/project";
 import { generateSlug } from "@/lib/utils";
-import { CommunicationType, ProjectStatus, InvoiceStatus } from "@prisma/client";
+import { CommunicationType, ProjectStatus, InvoiceStatus, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
+import { revalidatePath } from "next/cache";
+
+const projectDetailInclude = {
+  client: true,
+  owner: {
+    select: { id: true, name: true, email: true },
+  },
+  repositories: true,
+  communicationEntries: {
+    orderBy: { occurredAt: "desc" } as const,
+    take: 10,
+    include: {
+      author: { select: { id: true, name: true } },
+    },
+  },
+  invoices: {
+    orderBy: { issueDate: "desc" } as const,
+  },
+  _count: {
+    select: { communicationEntries: true },
+  },
+} as const;
 
 export async function getProjects(filters?: {
   status?: ProjectStatus;
@@ -42,26 +64,7 @@ export async function getProject(id: string) {
   try {
     const project = await prisma.projectWorkspace.findUnique({
       where: { id },
-      include: {
-        client: true,
-        owner: {
-          select: { id: true, name: true, email: true },
-        },
-        repositories: true,
-        communicationEntries: {
-          orderBy: { occurredAt: "desc" },
-          take: 10,
-          include: {
-            author: { select: { id: true, name: true } },
-          },
-        },
-        invoices: {
-          orderBy: { issueDate: "desc" },
-        },
-        _count: {
-          select: { communicationEntries: true },
-        },
-      },
+      include: projectDetailInclude,
     });
 
     if (!project) {
@@ -79,26 +82,7 @@ export async function getProjectBySlug(slug: string) {
   try {
     const project = await prisma.projectWorkspace.findUnique({
       where: { slug },
-      include: {
-        client: true,
-        owner: {
-          select: { id: true, name: true, email: true },
-        },
-        repositories: true,
-        communicationEntries: {
-          orderBy: { occurredAt: "desc" },
-          take: 10,
-          include: {
-            author: { select: { id: true, name: true } },
-          },
-        },
-        invoices: {
-          orderBy: { issueDate: "desc" },
-        },
-        _count: {
-          select: { communicationEntries: true },
-        },
-      },
+      include: projectDetailInclude,
     });
 
     if (!project) {
@@ -116,32 +100,40 @@ export async function createProject(data: ProjectFormData, actorUserId: string) 
   try {
     const validated = ProjectFormSchema.parse(data);
 
-    // Generate a unique slug
-    let slug = generateSlug(validated.name);
-    const existing = await prisma.projectWorkspace.findUnique({ where: { slug } });
-    if (existing) {
-      slug = `${slug}-${Date.now()}`;
-    }
+    const baseSlug = generateSlug(validated.name);
 
-    const project = await prisma.projectWorkspace.create({
-      data: {
-        name: validated.name,
-        slug,
-        clientId: validated.clientId,
-        projectType: validated.projectType,
-        status: validated.status,
-        priority: validated.priority,
-        description: validated.description ?? null,
-        intakeSummary: validated.intakeSummary ?? null,
-        scope: validated.scope ?? null,
-        techStack: validated.techStack ?? null,
-        domainName: validated.domainName ?? null,
-        hostingInfo: validated.hostingInfo ?? null,
-        startDate: validated.startDate ? new Date(validated.startDate) : null,
-        ownerUserId: validated.ownerUserId ?? null,
-        tags: validated.tags,
-      },
-    });
+    const project = await (async () => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const slug = attempt === 0 ? baseSlug : `${baseSlug}-${Date.now()}`;
+        try {
+          return await prisma.projectWorkspace.create({
+            data: {
+              name: validated.name,
+              slug,
+              clientId: validated.clientId,
+              projectType: validated.projectType,
+              status: validated.status,
+              priority: validated.priority,
+              description: validated.description ?? null,
+              intakeSummary: validated.intakeSummary ?? null,
+              scope: validated.scope ?? null,
+              techStack: validated.techStack ?? null,
+              domainName: validated.domainName ?? null,
+              hostingInfo: validated.hostingInfo ?? null,
+              startDate: validated.startDate ? new Date(validated.startDate) : null,
+              ownerUserId: validated.ownerUserId ?? null,
+              tags: validated.tags,
+            },
+          });
+        } catch (err) {
+          if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+            continue;
+          }
+          throw err;
+        }
+      }
+      throw new Error("Failed to generate unique slug after 5 attempts");
+    })();
 
     await createAuditLog({
       actorUserId,
@@ -151,6 +143,7 @@ export async function createProject(data: ProjectFormData, actorUserId: string) 
       metadata: { name: project.name, slug: project.slug },
     });
 
+    revalidatePath("/projects");
     return { success: true, project };
   } catch (error) {
     logger.error("Failed to create project", error);
@@ -214,6 +207,8 @@ export async function updateProject(
       });
     }
 
+    revalidatePath("/projects");
+    revalidatePath(`/projects/${id}`);
     return { success: true };
   } catch (error) {
     logger.error("Failed to update project", error, { projectId: id });
