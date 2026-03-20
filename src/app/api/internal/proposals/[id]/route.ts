@@ -3,6 +3,10 @@ import { prisma } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/api-auth";
 import { logger } from "@/lib/logger";
 import { ProposalDraftStatus } from "@prisma/client";
+import {
+  clientContactSelect,
+  projectProposalSelect,
+} from "@/lib/prisma-selects";
 
 // GET /api/internal/proposals/[id] — ophalen offertedata voor n8n
 export async function GET(
@@ -20,16 +24,10 @@ export async function GET(
     where: { id },
     include: {
       client: {
-        select: {
-          id: true,
-          companyName: true,
-          contactName: true,
-          email: true,
-          address: true,
-        },
+        select: clientContactSelect,
       },
       project: {
-        select: { id: true, name: true, description: true },
+        select: projectProposalSelect,
       },
     },
   });

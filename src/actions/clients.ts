@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { ClientFormSchema, type ClientFormData } from "@/lib/validations/client";
 import { logger } from "@/lib/logger";
+import { toFieldErrors } from "@/lib/validation-errors";
 import { ZodError } from "zod";
 
 export async function getClients() {
@@ -58,15 +59,7 @@ export async function createClient(data: ClientFormData, actorUserId: string) {
     const validated = ClientFormSchema.parse(data);
 
     const client = await prisma.client.create({
-      data: {
-        companyName: validated.companyName,
-        contactName: validated.contactName,
-        email: validated.email,
-        phone: validated.phone ?? null,
-        address: validated.address ?? null,
-        notes: validated.notes ?? null,
-        invoiceDetails: validated.invoiceDetails ?? null,
-      },
+      data: buildClientWriteData(validated),
     });
 
     await createAuditLog({
@@ -81,7 +74,7 @@ export async function createClient(data: ClientFormData, actorUserId: string) {
   } catch (error) {
     logger.error("Failed to create client", error);
     if (error instanceof ZodError) {
-      const fieldErrors = error.errors.map(err => ({ field: err.path.join('.'), message: err.message }));
+      const fieldErrors = toFieldErrors(error);
       return { success: false as const, error: "Validatiefout", fieldErrors };
     }
     return { success: false as const, error: "Klant aanmaken mislukt" };
@@ -98,15 +91,7 @@ export async function updateClient(
 
     const client = await prisma.client.update({
       where: { id },
-      data: {
-        companyName: validated.companyName,
-        contactName: validated.contactName,
-        email: validated.email,
-        phone: validated.phone ?? null,
-        address: validated.address ?? null,
-        notes: validated.notes ?? null,
-        invoiceDetails: validated.invoiceDetails ?? null,
-      },
+      data: buildClientWriteData(validated),
     });
 
     await createAuditLog({
@@ -121,7 +106,7 @@ export async function updateClient(
   } catch (error) {
     logger.error("Failed to update client", error, { clientId: id });
     if (error instanceof ZodError) {
-      const fieldErrors = error.errors.map(err => ({ field: err.path.join('.'), message: err.message }));
+      const fieldErrors = toFieldErrors(error);
       return { success: false as const, error: "Validatiefout", fieldErrors };
     }
     return { success: false as const, error: "Klant bijwerken mislukt" };
@@ -158,4 +143,16 @@ export async function deleteClient(id: string, actorUserId: string) {
     logger.error("Failed to delete client", error, { clientId: id });
     return { success: false, error: "Failed to delete client" };
   }
+}
+
+function buildClientWriteData(data: ClientFormData) {
+  return {
+    companyName: data.companyName,
+    contactName: data.contactName,
+    email: data.email,
+    phone: data.phone ?? null,
+    address: data.address ?? null,
+    notes: data.notes ?? null,
+    invoiceDetails: data.invoiceDetails ?? null,
+  };
 }

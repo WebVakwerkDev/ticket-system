@@ -7,6 +7,8 @@ import {
   type CommunicationFormData,
 } from "@/lib/validations/communication";
 import { logger } from "@/lib/logger";
+import { toFieldErrors } from "@/lib/validation-errors";
+import { ZodError } from "zod";
 
 export async function getCommunicationEntries(projectId: string, limit = 100) {
   try {
@@ -68,7 +70,7 @@ export async function createCommunicationEntry(
       projectId: data.projectId,
     });
     if (error instanceof ZodError) {
-      const fieldErrors = error.errors.map(err => ({ field: err.path.join('.'), message: err.message }));
+      const fieldErrors = toFieldErrors(error);
       return { success: false as const, error: "Validatiefout", fieldErrors };
     }
     return { success: false as const, error: "Communicatie aanmaken mislukt" };

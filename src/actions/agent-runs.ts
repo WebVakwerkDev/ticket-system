@@ -74,7 +74,6 @@ export async function generateDeveloperBriefing(
         initiatedByUserId: actorUserId,
         promptSnapshot: briefing,
         status: AgentRunStatus.COMPLETED,
-        
       },
     });
 
@@ -111,7 +110,6 @@ export async function saveAgentRun(data: {
         initiatedByUserId: data.actorUserId,
         promptSnapshot: data.promptSnapshot,
         status: AgentRunStatus.COMPLETED,
-        
       },
     });
 

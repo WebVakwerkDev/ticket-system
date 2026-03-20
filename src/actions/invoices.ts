@@ -7,6 +7,11 @@ import { InvoiceStatus } from "@prisma/client";
 import { getN8nInvoiceWebhookUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getResolvedBusinessSettings } from "@/lib/settings";
+import { calculateInvoiceTotals } from "@/lib/invoice-utils";
+import {
+  clientInvoiceSelect,
+  projectSummarySelect,
+} from "@/lib/prisma-selects";
 
 export async function getInvoices(filters?: {
   clientId?: string;
@@ -26,7 +31,7 @@ export async function getInvoices(filters?: {
           select: { id: true, companyName: true },
         },
         project: {
-          select: { id: true, name: true, slug: true },
+          select: projectSummarySelect,
         },
       },
     });
@@ -44,18 +49,10 @@ export async function getInvoice(id: string) {
       where: { id },
       include: {
         client: {
-          select: {
-            id: true,
-            companyName: true,
-            contactName: true,
-            email: true,
-            phone: true,
-            address: true,
-            invoiceDetails: true,
-          },
+          select: clientInvoiceSelect,
         },
         project: {
-          select: { id: true, name: true, slug: true },
+          select: projectSummarySelect,
         },
       },
     });
@@ -75,8 +72,10 @@ export async function createInvoice(data: InvoiceFormData, actorUserId: string) 
   try {
     const validated = InvoiceFormSchema.parse(data);
 
-    const vatAmount = validated.subtotal * (validated.vatRate / 100);
-    const totalAmount = validated.subtotal + vatAmount;
+    const { vatAmount, totalAmount } = calculateInvoiceTotals(
+      validated.subtotal,
+      validated.vatRate,
+    );
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -136,8 +135,7 @@ export async function updateInvoice(
       data.vatRate !== undefined ? data.vatRate : Number(existing.vatRate);
 
     if (data.subtotal !== undefined || data.vatRate !== undefined) {
-      vatAmount = newSubtotal * (newVatRate / 100);
-      totalAmount = newSubtotal + vatAmount;
+      ({ vatAmount, totalAmount } = calculateInvoiceTotals(newSubtotal, newVatRate));
     }
 
     const invoice = await prisma.invoice.update({

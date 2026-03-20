@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { generateSlug } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import type { ProjectCreateApiInput } from "@/lib/validations/api";
+import { normalizeEmail } from "@/lib/normalizers";
 
 export interface ProjectCreateResult {
   client: {
@@ -57,7 +58,7 @@ export async function createProjectViaApi(
       clientCompanyName = existing.companyName;
     } else if (input.client) {
       // Try duplicate detection: exact match on email or companyName
-      const normalizedEmail = input.client.email.toLowerCase().trim();
+      const normalizedEmail = normalizeEmail(input.client.email);
       const match = await tx.client.findFirst({
         where: {
           OR: [

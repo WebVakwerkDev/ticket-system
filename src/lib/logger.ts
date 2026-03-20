@@ -9,7 +9,7 @@ const REDACTED_KEYS = [
   "token",
   "apiKey",
   "key",
-];
+] as const;
 
 type LogLevel = "info" | "warn" | "error";
 

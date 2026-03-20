@@ -7,19 +7,25 @@ import { generateSlug } from "@/lib/utils";
 import { CommunicationType, ProjectStatus, InvoiceStatus, Prisma } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
+import { toFieldErrors } from "@/lib/validation-errors";
+import {
+  projectSummarySelect,
+  userBasicSelect,
+  userIdNameSelect,
+} from "@/lib/prisma-selects";
 import { ZodError } from "zod";
 
 const projectDetailInclude = {
   client: true,
   owner: {
-    select: { id: true, name: true, email: true },
+    select: userBasicSelect,
   },
   repositories: true,
   communicationEntries: {
     orderBy: { occurredAt: "desc" } as const,
     take: 10,
     include: {
-      author: { select: { id: true, name: true } },
+      author: { select: userIdNameSelect },
     },
   },
   invoices: {
@@ -46,7 +52,7 @@ export async function getProjects(filters?: {
           select: { id: true, companyName: true },
         },
         owner: {
-          select: { id: true, name: true },
+          select: userIdNameSelect,
         },
         _count: {
           select: { communicationEntries: true },
@@ -149,7 +155,7 @@ export async function createProject(data: ProjectFormData, actorUserId: string) 
   } catch (error) {
     logger.error("Failed to create project", error);
     if (error instanceof ZodError) {
-      const fieldErrors = error.errors.map(err => ({ field: err.path.join('.'), message: err.message }));
+      const fieldErrors = toFieldErrors(error);
       return { success: false as const, error: "Validatiefout", fieldErrors };
     }
     return { success: false as const, error: "Project aanmaken mislukt" };
@@ -254,7 +260,7 @@ export async function getDashboardStats() {
         take: 10,
         include: {
           actor: {
-            select: { id: true, name: true },
+            select: userIdNameSelect,
           },
         },
       }),
@@ -263,7 +269,7 @@ export async function getDashboardStats() {
           status: { in: [ProjectStatus.IN_PROGRESS, ProjectStatus.REVIEW] },
           repositories: { none: {} },
         },
-        select: { id: true, name: true, slug: true, status: true },
+        select: { ...projectSummarySelect, status: true },
         orderBy: { updatedAt: "desc" },
         take: 5,
       }),

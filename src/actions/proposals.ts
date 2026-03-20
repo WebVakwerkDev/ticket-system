@@ -6,6 +6,10 @@ import { getN8nWebhookUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getResolvedBusinessSettings } from "@/lib/settings";
 import { ProposalDraftStatus } from "@prisma/client";
+import {
+  clientContactSelect,
+  projectProposalSelect,
+} from "@/lib/prisma-selects";
 
 export async function getProposalDrafts(projectId: string) {
   try {
@@ -14,7 +18,7 @@ export async function getProposalDrafts(projectId: string) {
       orderBy: { createdAt: "desc" },
       include: {
         client: {
-          select: { id: true, companyName: true, contactName: true, email: true, address: true },
+          select: clientContactSelect,
         },
       },
     });
@@ -37,10 +41,10 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
       where: { id: proposalId },
       include: {
         client: {
-          select: { id: true, companyName: true, contactName: true, email: true, address: true },
+          select: clientContactSelect,
         },
         project: {
-          select: { id: true, name: true, description: true },
+          select: projectProposalSelect,
         },
       },
     }),

@@ -5,6 +5,7 @@ import { createAuditLog } from "@/lib/audit";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
+import { normalizeEmail } from "@/lib/normalizers";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -39,8 +40,10 @@ export async function createUser(
   actorUserId: string
 ) {
   try {
+    const normalizedEmail = normalizeEmail(data.email);
+
     const existingUser = await prisma.user.findUnique({
-      where: { email: data.email.toLowerCase().trim() },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -52,7 +55,7 @@ export async function createUser(
     const user = await prisma.user.create({
       data: {
         name: data.name,
-        email: data.email.toLowerCase().trim(),
+        email: normalizedEmail,
         passwordHash,
         role: data.role,
       },
