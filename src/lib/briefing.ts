@@ -101,11 +101,6 @@ ${acceptanceCriteria}
 ## Technical Notes
 ${techNotes}
 
-## Repository Context
-- Repo: ${primaryRepo?.repoUrl ?? "N/A"}
-- Branch: ${primaryRepo?.defaultBranch ?? "N/A"}
-- Issues: ${primaryRepo?.issueBoardUrl ?? "N/A"}
-
 ## Risks
 ${risks}
 

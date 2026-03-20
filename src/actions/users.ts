@@ -6,6 +6,8 @@ import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
 
+const BCRYPT_ROUNDS = 12;
+
 export async function getUsers() {
   try {
     const users = await prisma.user.findMany({
@@ -45,7 +47,7 @@ export async function createUser(
       return { success: false, error: "A user with this email already exists" };
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 12);
+    const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
 
     const user = await prisma.user.create({
       data: {

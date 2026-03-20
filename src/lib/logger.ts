@@ -18,9 +18,11 @@ function shouldRedact(key: string) {
   return REDACTED_KEYS.some((candidate) => normalizedKey.includes(candidate.toLowerCase()));
 }
 
-function sanitizeValue(value: unknown): unknown {
+function sanitizeValue(value: unknown, depth = 0): unknown {
+  if (depth > 5) return "[truncated]";
+
   if (Array.isArray(value)) {
-    return value.map(sanitizeValue);
+    return value.map((v) => sanitizeValue(v, depth + 1));
   }
 
   if (!value || typeof value !== "object") {
@@ -34,7 +36,7 @@ function sanitizeValue(value: unknown): unknown {
   return Object.fromEntries(
     Object.entries(value).map(([key, entryValue]) => [
       key,
-      shouldRedact(key) ? "[redacted]" : sanitizeValue(entryValue),
+      shouldRedact(key) ? "[redacted]" : sanitizeValue(entryValue, depth + 1),
     ]),
   );
 }

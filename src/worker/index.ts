@@ -8,22 +8,10 @@
  * In production: runs as a separate Docker container
  */
 import { Worker, type Job } from "bullmq";
-import { type JobName, type JobData } from "@/lib/queue";
-import { getRedisUrl, getDatabaseUrl } from "@/lib/env";
+import { type JobName, type JobData, QUEUE_NAME, getRedisConnection } from "@/lib/queue";
 import { logger } from "@/lib/logger";
 import { processAgentBriefing } from "./jobs/agent-briefing";
 import { processGitHubSync } from "./jobs/github-sync";
-
-const QUEUE_NAME = "agency-jobs";
-
-function getRedisConnection() {
-  const parsed = new URL(getRedisUrl());
-  return {
-    host: parsed.hostname,
-    port: Number(parsed.port) || 6379,
-    password: parsed.password || undefined,
-  };
-}
 
 // ─── Job router ───────────────────────────────────────────────────────────────
 
@@ -76,15 +64,7 @@ function startWorker() {
     logger.error("Worker process error", err);
   });
 
-  const redisUrl = new URL(getRedisUrl());
-  const databaseUrl = new URL(getDatabaseUrl());
-  logger.info("Worker started", {
-    queueName: QUEUE_NAME,
-    redisHost: redisUrl.hostname,
-    redisPort: redisUrl.port || "6379",
-    databaseHost: databaseUrl.hostname,
-    databasePort: databaseUrl.port || "5432",
-  });
+  logger.info("Worker started", { queueName: QUEUE_NAME });
 
   // Graceful shutdown
   const shutdown = async () => {

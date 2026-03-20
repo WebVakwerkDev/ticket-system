@@ -27,6 +27,8 @@ declare module "next-auth/jwt" {
   }
 }
 
+const SESSION_MAX_AGE = 8 * 60 * 60; // 8 hours in seconds
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -58,7 +60,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
-    maxAge: 28800, // 8 hours
+    maxAge: SESSION_MAX_AGE,
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -79,7 +81,7 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   secret: getNextAuthSecret(),
-  ...(getNextAuthUrl() ? { debug: false } : {}),
+  debug: false,
 };
 
 export async function getSession() {

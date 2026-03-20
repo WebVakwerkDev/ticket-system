@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/api-auth";
 import { logger } from "@/lib/logger";
+import { ProposalDraftStatus } from "@prisma/client";
 
 // GET /api/internal/proposals/[id] — ophalen offertedata voor n8n
 export async function GET(
@@ -52,17 +53,22 @@ export async function PATCH(
 
   const { id } = await params;
 
-  let body: { driveUrl?: string; driveFileId?: string; status?: string };
+  let body: { driveUrl?: string; driveFileId?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ success: false, error: "Invalid JSON" }, { status: 400 });
   }
 
+  const existing = await prisma.proposalDraft.findUnique({ where: { id }, select: { id: true } });
+  if (!existing) {
+    return NextResponse.json({ success: false, error: "Offerte niet gevonden" }, { status: 404 });
+  }
+
   const updated = await prisma.proposalDraft.update({
     where: { id },
     data: {
-      status: "SENT_TO_N8N",
+      status: ProposalDraftStatus.SENT_TO_N8N,
       payloadJson: {
         driveUrl: body.driveUrl ?? null,
         driveFileId: body.driveFileId ?? null,

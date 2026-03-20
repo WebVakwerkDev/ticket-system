@@ -5,6 +5,7 @@ import { createAuditLog } from "@/lib/audit";
 import { getN8nWebhookUrl } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { getResolvedBusinessSettings } from "@/lib/settings";
+import { ProposalDraftStatus } from "@prisma/client";
 
 export async function getProposalDrafts(projectId: string) {
   try {
@@ -95,7 +96,7 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
 
     await prisma.proposalDraft.update({
       where: { id: proposalId },
-      data: { status: "SENT_TO_N8N" },
+      data: { status: ProposalDraftStatus.SENT_TO_N8N },
     });
 
     await createAuditLog({
@@ -103,7 +104,7 @@ export async function sendProposalToN8n(proposalId: string, actorUserId: string)
       entityType: "ProposalDraft",
       entityId: proposalId,
       action: "UPDATE",
-      metadata: { status: "SENT_TO_N8N" },
+      metadata: { status: ProposalDraftStatus.SENT_TO_N8N },
     });
 
     return { success: true };

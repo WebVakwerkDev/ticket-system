@@ -44,7 +44,7 @@ export type JobName =
 
 // ─── Redis connection ─────────────────────────────────────────────────────────
 
-function getRedisConnection(): ConnectionOptions {
+export function getRedisConnection(): ConnectionOptions {
   const parsed = new URL(getRedisUrl());
   return {
     host: parsed.hostname,
@@ -56,7 +56,7 @@ function getRedisConnection(): ConnectionOptions {
 
 // ─── Queue singleton ──────────────────────────────────────────────────────────
 
-const QUEUE_NAME = "agency-jobs";
+export const QUEUE_NAME = "agency-jobs";
 
 let _queue: Queue | null = null;
 

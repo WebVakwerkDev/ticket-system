@@ -8,15 +8,7 @@ import {
   ChangeRequestStatus,
   ChangeRequestImpact,
 } from "@prisma/client";
-
-const optionalTrimmedString = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") return value;
-    const trimmed = value.trim();
-    return trimmed === "" ? undefined : trimmed;
-  },
-  z.string().optional(),
-);
+import { optionalTrimmedString } from "@/lib/validations/shared";
 
 // ─── Client (inline or by reference) ─────────────────────────────────────────
 
@@ -55,14 +47,7 @@ const ApiCommunicationSchema = z.object({
   subject: z.string().trim().min(1, "Subject is required"),
   content: z.string().trim().min(1, "Content is required"),
   externalSenderName: optionalTrimmedString,
-  externalSenderEmail: z.preprocess(
-    (value) => {
-      if (typeof value !== "string") return value;
-      const trimmed = value.trim();
-      return trimmed === "" ? undefined : trimmed;
-    },
-    z.string().email().optional(),
-  ),
+  externalSenderEmail: optionalTrimmedString.pipe(z.string().email().optional()),
   occurredAt: z.string().trim().datetime({ offset: true }).optional(),
 });
 
