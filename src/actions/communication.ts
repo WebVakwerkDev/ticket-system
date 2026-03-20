@@ -9,7 +9,6 @@ import {
 } from "@/lib/validations/communication";
 import { logger } from "@/lib/logger";
 import { toFieldErrors } from "@/lib/validation-errors";
-import { ZodError } from "zod";
 
 export async function getCommunicationEntries(projectId: string, limit = 100) {
   try {
