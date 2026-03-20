@@ -22,6 +22,7 @@ import { getRepositories, deleteRepository } from "@/actions/repositories";
 import {
   getProjectRepoInfo,
   checkProjectCopilotAgent,
+  promptGithubAgent,
 } from "@/actions/github";
 import type { GitHubRepoInfo, CopilotAgentCheck } from "@/services/githubService";
 
@@ -53,6 +54,9 @@ export function ProjectGithubTab({
   const [loadingInfo, setLoadingInfo] = useState<string | null>(null);
   const [loadingCopilot, setLoadingCopilot] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [promptText, setPromptText] = useState<Record<string, string>>({});
+  const [submittingPrompt, setSubmittingPrompt] = useState<string | null>(null);
+  const [promptResults, setPromptResults] = useState<Record<string, { url: string; number: number }>>({});
 
   async function handleRepoAdded() {
     setShowForm(false);
@@ -119,6 +123,27 @@ export function ProjectGithubTab({
       }
     } finally {
       setLoadingCopilot(null);
+    }
+  }
+
+  async function handlePromptAgent(repoId: string) {
+    if (!session?.user?.id) return;
+    const text = promptText[repoId]?.trim();
+    if (!text) return;
+
+    setError(null);
+    setSubmittingPrompt(repoId);
+
+    try {
+      const result = await promptGithubAgent(projectId, repoId, text, session.user.id);
+      if (result.success) {
+        setPromptResults((prev) => ({ ...prev, [repoId]: { url: result.issue.url, number: result.issue.number } }));
+        setPromptText((prev) => ({ ...prev, [repoId]: "" }));
+      } else {
+        setError(result.error ?? "Agent prompt versturen mislukt");
+      }
+    } finally {
+      setSubmittingPrompt(null);
     }
   }
 
@@ -304,6 +329,47 @@ export function ProjectGithubTab({
                     )}
                   </div>
                 )}
+
+                <div className="border-t border-gray-50 px-5 py-4">
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                    <Bot className="h-3.5 w-3.5" />
+                    Prompt naar Copilot agent
+                  </p>
+                  <textarea
+                    className="form-textarea text-sm"
+                    rows={3}
+                    placeholder="Beschrijf wat de agent moet doen, bijv. 'Voeg een dark mode toggle toe aan de navbar'"
+                    value={promptText[repo.id] ?? ""}
+                    onChange={(e) =>
+                      setPromptText((prev) => ({ ...prev, [repo.id]: e.target.value }))
+                    }
+                  />
+                  <div className="mt-2 flex items-center gap-3">
+                    <button
+                      onClick={() => handlePromptAgent(repo.id)}
+                      disabled={submittingPrompt === repo.id || !promptText[repo.id]?.trim()}
+                      className="btn-primary text-xs"
+                    >
+                      {submittingPrompt === repo.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Bot className="h-3.5 w-3.5" />
+                      )}
+                      Versturen
+                    </button>
+                    {promptResults[repo.id] && (
+                      <a
+                        href={promptResults[repo.id].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Issue #{promptResults[repo.id].number} geopend
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
