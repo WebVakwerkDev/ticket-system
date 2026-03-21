@@ -387,6 +387,9 @@ model BusinessSettings {
   quoteFooterText       String?
   invoiceFooterText     String?
   defaultTermsText      String?
+  docsRepoName          String?
+  docsRepoBranch        String?
+  docsBasePath          String?
   updatedAt             DateTime @updatedAt
 
   @@map("business_settings")

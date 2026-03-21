@@ -5,11 +5,28 @@ import { createAuditLog } from "@/lib/audit";
 import { DocScope } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { loadGeneralDocsContent } from "@/lib/content";
+import { getResolvedBusinessSettings } from "@/lib/settings";
+import {
+  createClientDocInRepository,
+  createGeneralDocFolderInRepository,
+  createGeneralDocInRepository,
+  deleteDocFromRepository,
+  getClientDocsFromRepository,
+  getGeneralDocsFromRepository,
+  type DocsRepositoryConfig,
+  updateDocInRepository,
+} from "@/services/docs-storage-service";
 
 const CLIENT_DOCS_FOLDER_NAME = "__client_docs__";
 
 export async function getDocFolders(scope: DocScope, clientId?: string) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (scope === DocScope.GENERAL && docsRepository) {
+      const folders = await getGeneralDocsFromRepository(docsRepository);
+      return { success: true as const, folders };
+    }
+
     const folders = await prisma.docFolder.findMany({
       where: {
         scope,
@@ -32,6 +49,11 @@ export async function getDocFolders(scope: DocScope, clientId?: string) {
 
 export async function ensureGeneralDocs() {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      return { success: true as const };
+    }
+
     const docs = await loadGeneralDocsContent();
 
     for (const doc of docs) {
@@ -75,6 +97,12 @@ export async function ensureGeneralDocs() {
 
 export async function getClientDocs(clientId: string) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      const docs = await getClientDocsFromRepository(docsRepository, clientId);
+      return { success: true as const, docs };
+    }
+
     const docs = await prisma.docEntry.findMany({
       where: {
         folder: {
@@ -106,6 +134,26 @@ export async function createDocFolder(data: {
   actorUserId: string;
 }) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository && data.scope === DocScope.GENERAL) {
+      const folder = await createGeneralDocFolderInRepository(docsRepository, data.name);
+
+      await createAuditLog({
+        actorUserId: data.actorUserId,
+        entityType: "DocFolder",
+        entityId: folder.id,
+        action: "CREATE",
+        metadata: {
+          scope: data.scope,
+          clientId: data.clientId,
+          name: folder.name,
+          storage: "github",
+        },
+      });
+
+      return { success: true as const, folder };
+    }
+
     const folder = await prisma.docFolder.create({
       data: {
         name: data.name,
@@ -143,6 +191,26 @@ export async function createDocEntry(data: {
   actorUserId: string;
 }) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      const entry = await createGeneralDocInRepository(
+        docsRepository,
+        data.folderId,
+        data.title,
+        data.content,
+      );
+
+      await createAuditLog({
+        actorUserId: data.actorUserId,
+        entityType: "DocEntry",
+        entityId: entry.id,
+        action: "CREATE",
+        metadata: { folderId: data.folderId, title: data.title, storage: "github" },
+      });
+
+      return { success: true as const, entry };
+    }
+
     const entry = await prisma.docEntry.create({
       data: {
         folderId: data.folderId,
@@ -173,6 +241,26 @@ export async function createClientDoc(data: {
   actorUserId: string;
 }) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      const entry = await createClientDocInRepository(
+        docsRepository,
+        data.clientId,
+        data.title,
+        data.content,
+      );
+
+      await createAuditLog({
+        actorUserId: data.actorUserId,
+        entityType: "DocEntry",
+        entityId: entry.id,
+        action: "CREATE",
+        metadata: { clientId: data.clientId, title: data.title, storage: "github" },
+      });
+
+      return { success: true as const, entry };
+    }
+
     const folder = await getOrCreateDocFolder({
       scope: DocScope.CLIENT,
       clientId: data.clientId,
@@ -209,6 +297,26 @@ export async function updateDocEntry(data: {
   actorUserId: string;
 }) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      const entry = await updateDocInRepository(
+        docsRepository,
+        data.id,
+        data.title,
+        data.content,
+      );
+
+      await createAuditLog({
+        actorUserId: data.actorUserId,
+        entityType: "DocEntry",
+        entityId: entry.id,
+        action: "UPDATE",
+        metadata: { title: data.title, storage: "github" },
+      });
+
+      return { success: true as const, entry };
+    }
+
     const entry = await prisma.docEntry.update({
       where: { id: data.id },
       data: {
@@ -234,6 +342,21 @@ export async function updateDocEntry(data: {
 
 export async function deleteDocEntry(id: string, actorUserId: string) {
   try {
+    const docsRepository = await getDocsRepositoryConfig();
+    if (docsRepository) {
+      await deleteDocFromRepository(docsRepository, id);
+
+      await createAuditLog({
+        actorUserId,
+        entityType: "DocEntry",
+        entityId: id,
+        action: "DELETE",
+        metadata: { storage: "github" },
+      });
+
+      return { success: true as const };
+    }
+
     const existing = await prisma.docEntry.findUnique({
       where: { id },
       select: { id: true, title: true, folderId: true },
@@ -284,4 +407,18 @@ async function getOrCreateDocFolder(data: {
       name: data.name,
     },
   });
+}
+
+async function getDocsRepositoryConfig(): Promise<DocsRepositoryConfig | null> {
+  const settings = await getResolvedBusinessSettings();
+
+  if (!settings.docsRepoName) {
+    return null;
+  }
+
+  return {
+    repoName: settings.docsRepoName,
+    branch: settings.docsRepoBranch ?? "main",
+    basePath: settings.docsBasePath ?? "docs",
+  };
 }

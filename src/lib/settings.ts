@@ -20,6 +20,9 @@ export const DEFAULT_BUSINESS_SETTINGS = {
   quoteFooterText: null,
   invoiceFooterText: null,
   defaultTermsText: null,
+  docsRepoName: null,
+  docsRepoBranch: "main",
+  docsBasePath: "docs",
 } as const;
 
 export async function getResolvedBusinessSettings() {
@@ -49,5 +52,8 @@ export async function getResolvedBusinessSettings() {
     quoteFooterText: settings.quoteFooterText,
     invoiceFooterText: settings.invoiceFooterText,
     defaultTermsText: settings.defaultTermsText,
+    docsRepoName: settings.docsRepoName,
+    docsRepoBranch: settings.docsRepoBranch ?? "main",
+    docsBasePath: settings.docsBasePath ?? "docs",
   };
 }
