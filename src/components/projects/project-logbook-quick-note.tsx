@@ -17,6 +17,11 @@ export function ProjectLogbookQuickNote({ projectId }: Props) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function getFieldError(name: string) {
+    return fieldErrors[name];
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +29,7 @@ export function ProjectLogbookQuickNote({ projectId }: Props) {
 
     setLoading(true);
     setError(null);
+    setFieldErrors({});
 
     try {
       const result = await createCommunicationEntry(
@@ -42,6 +48,13 @@ export function ProjectLogbookQuickNote({ projectId }: Props) {
       );
 
       if (!result.success) {
+        if ("fieldErrors" in result && Array.isArray(result.fieldErrors)) {
+          const nextFieldErrors: Record<string, string> = {};
+          result.fieldErrors.forEach((fieldError) => {
+            nextFieldErrors[fieldError.field] = fieldError.message;
+          });
+          setFieldErrors(nextFieldErrors);
+        }
         setError(result.error ?? "Notitie opslaan mislukt.");
         return;
       }
@@ -76,20 +89,44 @@ export function ProjectLogbookQuickNote({ projectId }: Props) {
       <input
         type="text"
         value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-        className="form-input"
+        onChange={(e) => {
+          setSubject(e.target.value);
+          if (fieldErrors.subject) {
+            setFieldErrors((prev) => {
+              const next = { ...prev };
+              delete next.subject;
+              return next;
+            });
+          }
+        }}
+        className={`form-input ${getFieldError("subject") ? "border-red-500 bg-red-50" : ""}`}
         placeholder="Titel van de notitie"
         required
       />
+      {getFieldError("subject") && (
+        <p className="text-sm text-red-600">{getFieldError("subject")}</p>
+      )}
 
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(e) => {
+          setContent(e.target.value);
+          if (fieldErrors.content) {
+            setFieldErrors((prev) => {
+              const next = { ...prev };
+              delete next.content;
+              return next;
+            });
+          }
+        }}
         rows={5}
-        className="form-textarea"
+        className={`form-textarea ${getFieldError("content") ? "border-red-500 bg-red-50" : ""}`}
         placeholder="Bijvoorbeeld: klant akkoord op homepage, header aangepast, feedback verwerkt, nog wachten op teksten…"
         required
       />
+      {getFieldError("content") && (
+        <p className="text-sm text-red-600">{getFieldError("content")}</p>
+      )}
 
       <div className="flex items-center justify-end">
         <button type="submit" disabled={loading} className="btn-primary">
