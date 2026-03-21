@@ -156,7 +156,7 @@ export function BusinessSettingsForm({ initial }: Props) {
                 className="form-input"
                 value={form.iban}
                 onChange={handleChange}
-                placeholder="NL00BANK0000000000"
+                placeholder="NL91 ABNA 0417 1643 00 of BE68 5390 0754 7034"
               />
             </div>
 

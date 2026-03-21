@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Copy, FileText, FolderPlus, FilePlus2, Save, Trash2 } from "lucide-react";
-import { createDocEntry, createDocFolder, deleteDocEntry, updateDocEntry } from "@/actions/docs";
+import { Copy, FileText, FilePlus2, Save, Trash2 } from "lucide-react";
+import { createDocEntry, deleteDocEntry, updateDocEntry } from "@/actions/docs";
 import { renderMarkdown } from "@/lib/markdown";
-import { DocScope } from "@prisma/client";
 
 interface DocEntry {
   id: string;
@@ -26,8 +25,6 @@ interface Props {
   content: {
     title: string;
     description: string;
-    newFolderPlaceholder: string;
-    addFolderButton: string;
     emptyFolders: string;
     emptyFolderDocs: string;
     newDocumentPrefix: string;
@@ -50,7 +47,6 @@ export function GeneralDocsBrowser({ folders, content }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(folders[0]?.id ?? null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(folders[0]?.docs[0]?.id ?? null);
-  const [newFolderName, setNewFolderName] = useState("");
   const [newDocTitle, setNewDocTitle] = useState("");
   const [newDocContent, setNewDocContent] = useState("");
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
@@ -95,24 +91,6 @@ export function GeneralDocsBrowser({ folders, content }: Props) {
       setEditingDocId(null);
     }
   }, [selectedDoc, editingDocId]);
-
-  async function handleCreateFolder(e: React.FormEvent) {
-    e.preventDefault();
-    if (!session?.user?.id || !newFolderName.trim()) return;
-
-    const result = await createDocFolder({
-      name: newFolderName.trim(),
-      scope: DocScope.GENERAL,
-      actorUserId: session.user.id,
-    });
-
-    if (result.success && result.folder) {
-      setNewFolderName("");
-      setSelectedFolderId(result.folder.id);
-      setSelectedDocId(null);
-      refresh();
-    }
-  }
 
   async function handleCreateDoc(e: React.FormEvent) {
     e.preventDefault();
@@ -184,21 +162,7 @@ export function GeneralDocsBrowser({ folders, content }: Props) {
 
       <div className="grid grid-cols-[320px_minmax(0,1fr)] gap-6">
         <aside className="card p-4">
-          <form onSubmit={handleCreateFolder} className="space-y-3 border-b border-gray-100 pb-4">
-            <input
-              type="text"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              className="form-input"
-              placeholder={content.newFolderPlaceholder}
-            />
-            <button type="submit" className="btn-secondary w-full" disabled={isPending}>
-              <FolderPlus className="h-4 w-4" />
-              {content.addFolderButton}
-            </button>
-          </form>
-
-          <div className="mt-4 space-y-4">
+          <div className="space-y-4">
             {folders.length > 0 ? (
               folders.map((folder) => (
                 <div key={folder.id}>

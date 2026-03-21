@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+function isSupportedIbanFormat(value: string) {
+  const normalized = value.replace(/\s+/g, "").toUpperCase();
+  if (!normalized) {
+    return true;
+  }
+
+  const isDutchIban = /^NL\d{2}[A-Z]{4}\d{10}$/.test(normalized);
+  const isBelgianIban = /^BE\d{14}$/.test(normalized);
+
+  return isDutchIban || isBelgianIban;
+}
+
 export const BusinessSettingsSchema = z.object({
   companyName: z.string().trim().min(1, "Bedrijfsnaam is verplicht"),
   address: z.string().trim().optional(),
@@ -18,7 +30,10 @@ export const BusinessSettingsSchema = z.object({
   iban: z
     .string()
     .trim()
-    .regex(/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/, "Ongeldig IBAN-formaat")
+    .refine(
+      isSupportedIbanFormat,
+      "IBAN moet een geldig Nederlands (NL..) of Belgisch (BE..) rekeningnummer zijn",
+    )
     .optional()
     .or(z.literal("")),
   bankName: z.string().trim().optional(),
