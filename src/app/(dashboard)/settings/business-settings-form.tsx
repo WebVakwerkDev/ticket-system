@@ -199,11 +199,11 @@ export function BusinessSettingsForm({ initial }: Props) {
               <label className="form-label">Website URL</label>
               <input
                 name="websiteUrl"
-                type="url"
+                type="text"
                 className="form-input"
                 value={form.websiteUrl}
                 onChange={handleChange}
-                placeholder="https://bedrijf.nl"
+                placeholder="webvakwerk.nl"
               />
             </div>
 
