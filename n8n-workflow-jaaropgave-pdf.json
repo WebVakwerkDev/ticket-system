@@ -1,5 +1,4 @@
 {
-  "name": "Jaaropgave PDF → Google Drive",
   "nodes": [
     {
       "parameters": {
@@ -8,13 +7,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "71f17e33-12fd-4ca4-bdb0-8f1f48d77201",
+      "id": "642d8e2e-2316-4167-933d-d0209faf2a5b",
       "name": "Webhook – Ontvang jaaropgave",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        1220,
-        520
+        -160,
+        -304
       ],
       "webhookId": "jaaropgave-pdf-webhook-unique-id-001"
     },
@@ -22,13 +21,13 @@
       "parameters": {
         "jsCode": "const d = $input.first().json.body;\nconst esc = (v) => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;');\nconst euro = (v) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(Number(v ?? 0));\nconst dateFmt = (s) => s ? new Intl.DateTimeFormat('nl-NL', { dateStyle: 'long' }).format(new Date(s)) : '—';\nconst monthLabel = (label) => String(label ?? '').toUpperCase();\nconst vatRate = (v) => new Intl.NumberFormat('nl-NL', { minimumFractionDigits: Number.isInteger(Number(v ?? 0)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(v ?? 0));\nconst from = d.from ?? {};\nconst companyName = from.companyName ?? '';\nconst companyEmail = from.email ?? '';\nconst companyWeb = from.websiteUrl ?? '';\nconst companyAddr = from.address ?? '';\nconst companyKvk = from.kvkNumber ?? '';\nconst companyVat = from.vatNumber ?? '';\nconst companyIban = from.iban ?? '';\nconst companyPhone = from.phone ?? '';\nconst footerText = d.defaults?.footerText ?? '';\nconst termsText = d.defaults?.termsText ?? '';\nconst filterLabel = d.paidOnly ? 'Alleen betaalde facturen' : 'Alle facturen';\nconst dateBasisLabel = d.dateBasis === 'paidAt' ? 'Betaaldatum' : 'Factuurdatum';\nconst monthlyRows = Array.isArray(d.monthlyBreakdown) ? d.monthlyBreakdown.map((month) => `<tr><td>${esc(monthLabel(month.label))}</td><td>${esc(String(month.invoice_count ?? 0))}</td><td>${euro(month.total_ex_vat)}</td><td>${euro(month.total_vat)}</td><td>${euro(month.total_inc_vat)}</td></tr>`).join('') : '';\nconst vatRows = Array.isArray(d.vatBreakdown) && d.vatBreakdown.length > 0 ? d.vatBreakdown.map((entry) => `<tr><td>${esc(vatRate(entry.vat_rate))}%</td><td>${esc(String(entry.invoice_count ?? 0))}</td><td>${euro(entry.total_ex_vat)}</td><td>${euro(entry.total_vat)}</td><td>${euro(entry.total_inc_vat)}</td></tr>`).join('') : '<tr><td colspan=\"5\">Geen gegevens</td></tr>';\nconst invoiceRows = Array.isArray(d.invoices) && d.invoices.length > 0 ? d.invoices.map((invoice) => `<tr><td>${esc(invoice.invoice_number)}</td><td>${esc(invoice.client_name)}</td><td>${esc(invoice.project_name ?? '—')}</td><td>${esc(dateFmt(invoice.paid_at ?? invoice.report_date))}</td><td>${euro(invoice.subtotal)}</td><td>${euro(invoice.vat_amount)}</td><td>${euro(invoice.total_amount)}</td></tr>`).join('') : '<tr><td colspan=\"7\">Geen betaalde facturen in deze periode.</td></tr>';\nconst html = `<!DOCTYPE html><html lang=\"nl\"><head><meta charset=\"UTF-8\"/><style>*,*::before,*::after{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#1f2937;padding:36px;background:#fff}.header{display:flex;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:3px solid #111827;margin-bottom:24px}.brand{font-size:24px;font-weight:700;color:#111827}.muted{font-size:11px;color:#6b7280}.doc-title{font-size:28px;font-weight:800;color:#111827;text-align:right}.meta-table,.table{width:100%;border-collapse:collapse}.meta-table td{padding:2px 0;font-size:11px}.meta-table td:first-child{color:#6b7280;padding-right:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}.card{border:1px solid #e5e7eb;border-radius:10px;padding:14px;background:#f9fafb}.card .label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin-bottom:6px}.card .value{font-size:16px;font-weight:700;color:#111827}.section{margin-bottom:24px}.section h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4b5563;margin-bottom:10px}.note{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;margin-bottom:24px}.note div{font-size:12px}.table th,.table td{padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:left;vertical-align:top}.table th{background:#f9fafb;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}.table td:last-child,.table th:last-child{text-align:right}.table .total-row td{font-weight:700;border-top:2px solid #111827;background:#f9fafb}.footer{margin-top:28px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:10px;color:#6b7280;display:flex;justify-content:space-between;gap:24px}.footer .right{text-align:right}</style></head><body><div class=\"header\"><div><div class=\"brand\">${esc(companyName)}</div><div class=\"muted\">${esc(companyWeb)}${companyWeb && companyEmail ? ' · ' : ''}${esc(companyEmail)}</div></div><div><div class=\"doc-title\">Jaaropgave ${esc(String(d.year ?? ''))}</div><table class=\"meta-table\"><tr><td>Gegenereerd op</td><td>${esc(dateFmt(d.generatedAt))}</td></tr><tr><td>Filter</td><td>${esc(filterLabel)}</td></tr><tr><td>Periodebasis</td><td>${esc(dateBasisLabel)}</td></tr></table></div></div><div class=\"cards\"><div class=\"card\"><div class=\"label\">Aantal facturen</div><div class=\"value\">${esc(String(d.invoiceCount ?? 0))}</div></div><div class=\"card\"><div class=\"label\">Omzet ex BTW</div><div class=\"value\">${euro(d.totalExVat)}</div></div><div class=\"card\"><div class=\"label\">BTW</div><div class=\"value\">${euro(d.totalVat)}</div></div><div class=\"card\"><div class=\"label\">Omzet incl BTW</div><div class=\"value\">${euro(d.totalIncVat)}</div></div></div><div class=\"note\"><div><strong>Periode</strong><br/>${esc(d.period?.startDate ?? '')} t/m ${esc(d.period?.endDate ?? '')}</div><div><strong>Bedrijfsgegevens</strong><br/>${esc(companyName)}${companyIban ? `<br/>IBAN ${esc(companyIban)}` : ''}${companyKvk ? `<br/>KVK ${esc(companyKvk)}` : ''}${companyVat ? `<br/>BTW ${esc(companyVat)}` : ''}</div></div><div class=\"section\"><h2>Maandelijkse uitsplitsing</h2><table class=\"table\"><thead><tr><th>Maand</th><th>Aantal</th><th>Ex BTW</th><th>BTW</th><th>Incl BTW</th></tr></thead><tbody>${monthlyRows}<tr class=\"total-row\"><td>Totaal</td><td>${esc(String(d.invoiceCount ?? 0))}</td><td>${euro(d.totalExVat)}</td><td>${euro(d.totalVat)}</td><td>${euro(d.totalIncVat)}</td></tr></tbody></table></div><div class=\"section\"><h2>BTW-uitsplitsing</h2><table class=\"table\"><thead><tr><th>BTW-tarief</th><th>Aantal</th><th>Ex BTW</th><th>BTW</th><th>Incl BTW</th></tr></thead><tbody>${vatRows}</tbody></table></div><div class=\"section\"><h2>Factuurdetails</h2><table class=\"table\"><thead><tr><th>Factuur</th><th>Klant</th><th>Project</th><th>Betaaldatum</th><th>Ex BTW</th><th>BTW</th><th>Incl BTW</th></tr></thead><tbody>${invoiceRows}</tbody></table></div>${termsText ? `<div class=\"section\"><h2>Notities</h2><div class=\"muted\">${esc(termsText)}</div></div>` : ''}<div class=\"footer\"><div>${esc(companyName)}${companyAddr ? `<br/>${esc(companyAddr)}` : ''}<br/>${esc(companyEmail)}${companyPhone ? ` · ${esc(companyPhone)}` : ''}</div><div class=\"right\">${companyKvk ? `KVK ${esc(companyKvk)}<br/>` : ''}${companyVat ? `BTW ${esc(companyVat)}<br/>` : ''}Jaaropgave ${esc(String(d.year ?? ''))}${footerText ? `<br/>${esc(footerText)}` : ''}</div></div></body></html>`;\nreturn [{ json: { ...d, html } }];"
       },
-      "id": "a0b49058-d0a2-44f8-bb0d-f84933da4f90",
+      "id": "2af64917-565f-450b-87cc-08b2d23bf21d",
       "name": "Bouw HTML jaaropgave",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1460,
-        520
+        80,
+        -304
       ]
     },
     {
@@ -55,13 +54,13 @@
           }
         }
       },
-      "id": "d6f7f44f-a411-4664-804b-fbe1bd0f230e",
+      "id": "7e5a56dc-15ee-4671-916d-64a92938fb8d",
       "name": "HTML → PDF (html2pdf)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1700,
-        520
+        320,
+        -304
       ]
     },
     {
@@ -76,18 +75,18 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "https://drive.google.com/drive/u/0/folders/1e2bzWKRrxNWyBIgX5dgsum8Cx2k74xae",
+          "value": "https://drive.google.com/drive/u/0/folders/1BXSVXb0gE5loR4FDJczwwEgYrW8nUqcJ",
           "mode": "url"
         },
         "options": {}
       },
-      "id": "c2d122a7-5a2f-4af5-8e16-8cf532278632",
+      "id": "a0373542-b5de-4555-b35e-d32d1aacb945",
       "name": "Upload naar Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        1940,
-        520
+        560,
+        -304
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -102,13 +101,13 @@
         "responseBody": "={ \"ok\": true, \"driveUrl\": \"{{ $json.webViewLink }}\" }",
         "options": {}
       },
-      "id": "a3410f0f-3091-4e45-b96c-59685a3cfc88",
+      "id": "476dd0a1-e3e3-4846-a0cb-dab3204e4ba6",
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        2180,
-        520
+        800,
+        -304
       ]
     }
   ],

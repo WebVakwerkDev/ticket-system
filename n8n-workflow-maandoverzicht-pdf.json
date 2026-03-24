@@ -1,5 +1,4 @@
 {
-  "name": "Maandoverzicht PDF → Google Drive",
   "nodes": [
     {
       "parameters": {
@@ -8,13 +7,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "d1d0f5c4-959e-4922-9467-41842dfe4f20",
+      "id": "1a704a3a-2fe9-4174-9be2-efbf0bb4d155",
       "name": "Webhook – Ontvang maandoverzicht",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        1220,
-        700
+        -160,
+        -48
       ],
       "webhookId": "maandoverzicht-pdf-webhook-unique-id-001"
     },
@@ -22,13 +21,13 @@
       "parameters": {
         "jsCode": "const d = $input.first().json.body;\nconst esc = (v) => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;');\nconst euro = (v) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(Number(v ?? 0));\nconst dateFmt = (s) => s ? new Intl.DateTimeFormat('nl-NL', { dateStyle: 'long' }).format(new Date(s)) : '—';\nconst vatRate = (v) => new Intl.NumberFormat('nl-NL', { minimumFractionDigits: Number.isInteger(Number(v ?? 0)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(v ?? 0));\nconst from = d.from ?? {};\nconst companyName = from.companyName ?? '';\nconst companyEmail = from.email ?? '';\nconst companyWeb = from.websiteUrl ?? '';\nconst companyAddr = from.address ?? '';\nconst companyKvk = from.kvkNumber ?? '';\nconst companyVat = from.vatNumber ?? '';\nconst companyIban = from.iban ?? '';\nconst companyPhone = from.phone ?? '';\nconst footerText = d.defaults?.footerText ?? '';\nconst termsText = d.defaults?.termsText ?? '';\nconst vatRows = Array.isArray(d.vatBreakdown) && d.vatBreakdown.length > 0 ? d.vatBreakdown.map((entry) => `<tr><td>${esc(vatRate(entry.vat_rate))}%</td><td>${esc(String(entry.invoice_count ?? 0))}</td><td>${euro(entry.total_ex_vat)}</td><td>${euro(entry.total_vat)}</td><td>${euro(entry.total_inc_vat)}</td></tr>`).join('') : '<tr><td colspan=\"5\">Geen gegevens</td></tr>';\nconst invoiceRows = Array.isArray(d.invoices) && d.invoices.length > 0 ? d.invoices.map((invoice) => `<tr><td>${esc(invoice.invoice_number)}</td><td>${esc(invoice.client_name)}</td><td>${esc(invoice.project_name ?? '—')}</td><td>${esc(dateFmt(invoice.paid_at ?? invoice.report_date))}</td><td>${euro(invoice.subtotal)}</td><td>${euro(invoice.vat_amount)}</td><td>${euro(invoice.total_amount)}</td></tr>`).join('') : '<tr><td colspan=\"7\">Geen betaalde facturen in deze periode.</td></tr>';\nconst html = `<!DOCTYPE html><html lang=\"nl\"><head><meta charset=\"UTF-8\"/><style>*,*::before,*::after{box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#1f2937;padding:36px;background:#fff}.header{display:flex;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:3px solid #111827;margin-bottom:24px}.brand{font-size:24px;font-weight:700;color:#111827}.muted{font-size:11px;color:#6b7280}.doc-title{font-size:28px;font-weight:800;color:#111827;text-align:right}.meta-table,.table{width:100%;border-collapse:collapse}.meta-table td{padding:2px 0;font-size:11px}.meta-table td:first-child{color:#6b7280;padding-right:16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}.card{border:1px solid #e5e7eb;border-radius:10px;padding:14px;background:#f9fafb}.card .label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin-bottom:6px}.card .value{font-size:16px;font-weight:700;color:#111827}.note{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;margin-bottom:24px}.note div{font-size:12px}.section{margin-bottom:24px}.section h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4b5563;margin-bottom:10px}.table th,.table td{padding:8px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:left;vertical-align:top}.table th{background:#f9fafb;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}.table td:last-child,.table th:last-child{text-align:right}.footer{margin-top:28px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:10px;color:#6b7280;display:flex;justify-content:space-between;gap:24px}.footer .right{text-align:right}</style></head><body><div class=\"header\"><div><div class=\"brand\">${esc(companyName)}</div><div class=\"muted\">${esc(companyWeb)}${companyWeb && companyEmail ? ' · ' : ''}${esc(companyEmail)}</div></div><div><div class=\"doc-title\">Maandoverzicht ${esc(d.monthLabelLong ?? '')} ${esc(String(d.year ?? ''))}</div><table class=\"meta-table\"><tr><td>Gegenereerd op</td><td>${esc(dateFmt(d.generatedAt))}</td></tr><tr><td>Filter</td><td>Alleen betaalde facturen</td></tr><tr><td>Periodebasis</td><td>Betaaldatum</td></tr></table></div></div><div class=\"cards\"><div class=\"card\"><div class=\"label\">Aantal facturen</div><div class=\"value\">${esc(String(d.invoiceCount ?? 0))}</div></div><div class=\"card\"><div class=\"label\">Ontvangen ex BTW</div><div class=\"value\">${euro(d.totalExVat)}</div></div><div class=\"card\"><div class=\"label\">BTW</div><div class=\"value\">${euro(d.totalVat)}</div></div><div class=\"card\"><div class=\"label\">Ontvangen incl BTW</div><div class=\"value\">${euro(d.totalIncVat)}</div></div></div><div class=\"note\"><div><strong>Periode</strong><br/>${esc(d.period?.startDate ?? '')} t/m ${esc(d.period?.endDateExclusive ?? '')} (exclusief einddatum)</div><div><strong>Bedrijfsgegevens</strong><br/>${esc(companyName)}${companyIban ? `<br/>IBAN ${esc(companyIban)}` : ''}${companyKvk ? `<br/>KVK ${esc(companyKvk)}` : ''}${companyVat ? `<br/>BTW ${esc(companyVat)}` : ''}</div></div><div class=\"section\"><h2>BTW-uitsplitsing</h2><table class=\"table\"><thead><tr><th>BTW-tarief</th><th>Aantal</th><th>Ex BTW</th><th>BTW</th><th>Incl BTW</th></tr></thead><tbody>${vatRows}</tbody></table></div><div class=\"section\"><h2>Factuurdetails</h2><table class=\"table\"><thead><tr><th>Factuur</th><th>Klant</th><th>Project</th><th>Betaaldatum</th><th>Ex BTW</th><th>BTW</th><th>Incl BTW</th></tr></thead><tbody>${invoiceRows}</tbody></table></div>${termsText ? `<div class=\"section\"><h2>Notities</h2><div class=\"muted\">${esc(termsText)}</div></div>` : ''}<div class=\"footer\"><div>${esc(companyName)}${companyAddr ? `<br/>${esc(companyAddr)}` : ''}<br/>${esc(companyEmail)}${companyPhone ? ` · ${esc(companyPhone)}` : ''}</div><div class=\"right\">${companyKvk ? `KVK ${esc(companyKvk)}<br/>` : ''}${companyVat ? `BTW ${esc(companyVat)}<br/>` : ''}Maandoverzicht ${esc(d.monthLabelLong ?? '')} ${esc(String(d.year ?? ''))}${footerText ? `<br/>${esc(footerText)}` : ''}</div></div></body></html>`;\nreturn [{ json: { ...d, html } }];"
       },
-      "id": "31a6e7f7-8a6d-4d12-8ef8-ef515ef4209f",
+      "id": "966f2606-cd51-46f4-997b-1e8b9cac2a28",
       "name": "Bouw HTML maandoverzicht",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1460,
-        700
+        80,
+        -48
       ]
     },
     {
@@ -55,13 +54,13 @@
           }
         }
       },
-      "id": "0e7a6c60-fda4-4be4-a4e9-d1f0e5db5a75",
+      "id": "ef047ae3-26b7-4d4f-9da1-8e093902ccfb",
       "name": "HTML → PDF (html2pdf)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1700,
-        700
+        320,
+        -48
       ]
     },
     {
@@ -76,18 +75,18 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "https://drive.google.com/drive/u/0/folders/1e2bzWKRrxNWyBIgX5dgsum8Cx2k74xae",
+          "value": "https://drive.google.com/drive/u/0/folders/1lzgtSTCJursj7VmD5_uE9lsnA8nPGbB-",
           "mode": "url"
         },
         "options": {}
       },
-      "id": "6d1f0d8a-1547-4c7a-91b2-7bb3d5b97393",
+      "id": "05a606bc-2623-48c6-ab00-a9e4e3b3092f",
       "name": "Upload naar Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        1940,
-        700
+        560,
+        -48
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -102,13 +101,13 @@
         "responseBody": "={ \"ok\": true, \"driveUrl\": \"{{ $json.webViewLink }}\" }",
         "options": {}
       },
-      "id": "31d09a31-03a1-4ee8-b5f2-2c56a9537600",
+      "id": "c57edb61-dc58-4459-aa5b-a812ddb89ff3",
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        2180,
-        700
+        800,
+        -48
       ]
     }
   ],

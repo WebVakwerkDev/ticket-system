@@ -1,5 +1,4 @@
 {
-  "name": "Factuur PDF → Google Drive",
   "nodes": [
     {
       "parameters": {
@@ -8,26 +7,27 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-factuur",
+      "id": "a34790ad-feb4-4359-8c3f-5a49e1edaba4",
       "name": "Webhook – Ontvang factuur",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        240,
-        0
-      ]
+        2112,
+        -32
+      ],
+      "webhookId": "d7e66dfd-68e7-4db3-b9cd-44dad5553373"
     },
     {
       "parameters": {
-        "jsCode": "const d = $input.first().json.body;\n\nconst esc = (v) => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;');\nconst br  = (v) => esc(v).replace(/\\n/g,'<br/>');\nconst euro = (v) => new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(v??0));\nconst dateFmt = (v) => { try{ return new Intl.DateTimeFormat('nl-NL',{dateStyle:'long'}).format(new Date(v)); }catch(e){return String(v??'');} };\n\n// -- Aanpassen naar wens --\nconst rekeninghouder = esc(d.from?.accountName ?? d.from?.companyName ?? '');\n// -------------------------\n\nconst fromName  = esc(d.from?.companyName ?? '');\nconst fromEmail = esc(d.from?.email ?? '');\nconst fromWeb   = esc(d.from?.websiteUrl ?? '');\nconst fromAddr  = br(d.from?.address ?? '');\nconst fromVat   = esc(d.from?.vatNumber ?? '');\nconst fromKvk   = esc(d.from?.kvkNumber ?? '');\nconst fromIban  = esc(d.from?.iban ?? '');\nconst fromBank  = esc(d.from?.bankName ?? '');\nconst fromPhone = esc(d.from?.phone ?? '');\n\nconst factuurNr   = esc(d.invoiceNumber ?? 'ONBEKEND');\nconst vatRate     = Number(d.vatRate ?? 21);\nconst subtotal    = Number(d.subtotal ?? 0);\nconst vatAmount   = Number(d.vatAmount ?? subtotal * vatRate / 100);\nconst totalAmount = Number(d.totalAmount ?? subtotal + vatAmount);\nconst serviceDate = dateFmt(d.serviceDate ?? d.issueDate);\n\nconst clientName    = esc(d.client?.companyName ?? '');\nconst clientContact = esc(d.client?.contactName ?? '');\nconst clientAddr    = br(d.client?.address ?? '');\nconst clientEmail   = esc(d.client?.email ?? '');\n\nconst lineRows = Array.isArray(d.lineItems) && d.lineItems.length > 0\n  ? d.lineItems.map(item => `<tr>\n      <td>${esc(item.description ?? '')}${item.note ? `<div class=\"note\">${esc(item.note)}</div>` : ''}</td>\n      <td class=\"r\">${item.quantity != null ? esc(String(item.quantity)) + (item.unit ? '&nbsp;' + esc(item.unit) : '') : ''}</td>\n      <td class=\"r\">${item.unitPrice != null ? euro(item.unitPrice) : ''}</td>\n      <td class=\"r\">${euro(item.amount ?? item.subtotal ?? 0)}</td>\n    </tr>`).join('')\n  : `<tr>\n      <td>${esc(d.description ?? '')}${d.project ? `<div class=\"note\">${esc(d.project.name ?? d.project)}</div>` : ''}</td>\n      <td class=\"r\">${d.quantity != null ? esc(String(d.quantity)) + (d.unit ? '&nbsp;' + esc(d.unit) : '') : ''}</td>\n      <td class=\"r\">${d.unitPrice != null ? euro(d.unitPrice) : ''}</td>\n      <td class=\"r\">${euro(subtotal)}</td>\n    </tr>`;\n\nconst html = `<!DOCTYPE html>\n<html lang=\"nl\">\n<head>\n<meta charset=\"UTF-8\"/>\n<style>\n*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\nbody {\n  font-family: Arial, sans-serif;\n  font-size: 10.5px;\n  line-height: 1.5;\n  color: #1a1a1a;\n  background: #fff;\n  padding: 44px 52px;\n}\n\n/* Header */\n.header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  margin-bottom: 48px;\n}\n.brand { font-size: 18px; font-weight: 700; color: #111; letter-spacing: -.2px; }\n.brand-sub { font-size: 9.5px; color: #777; margin-top: 3px; }\n.header-info {\n  display: grid;\n  grid-template-columns: auto auto;\n  gap: 3px 20px;\n  font-size: 10px;\n  text-align: left;\n}\n.hi-lbl { font-weight: 700; color: #111; white-space: nowrap; }\n.hi-val { color: #444; }\n\n/* Ontvanger */\n.recipient {\n  margin-bottom: 36px;\n  font-size: 10.5px;\n  line-height: 1.75;\n  color: #1a1a1a;\n}\n.recipient strong { font-weight: 700; }\n.recipient .tav { color: #777; font-size: 10px; }\n\n/* Titel + meta */\n.doc-title {\n  font-size: 17px;\n  font-weight: 700;\n  letter-spacing: .5px;\n  color: #111;\n  margin-bottom: 14px;\n}\n.meta {\n  display: grid;\n  grid-template-columns: auto 1fr;\n  gap: 4px 16px;\n  font-size: 10.5px;\n  max-width: 340px;\n}\n.mk { font-weight: 700; color: #111; }\n.mv { color: #333; }\n.divider { border: none; border-top: 1px solid #d0d0d0; margin: 18px 0 0 0; }\n\n/* Regelitems */\n.items { width: 100%; border-collapse: collapse; margin-top: 0; }\n.items thead tr {\n  border-top: 1.5px solid #111;\n  border-bottom: 1.5px solid #111;\n}\n.items th {\n  font-size: 9px;\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: .04em;\n  color: #555;\n  padding: 7px 8px;\n  text-align: left;\n}\n.items th.r { text-align: right; }\n.items tbody td {\n  padding: 9px 8px;\n  font-size: 10.5px;\n  vertical-align: top;\n  border-bottom: 1px solid #ececec;\n  color: #1a1a1a;\n}\n.items tbody td.r {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n  white-space: nowrap;\n}\n.note { font-size: 9.5px; color: #888; margin-top: 2px; }\n\n/* Onderkant: BTW links, totalen rechts */\n.bottom {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  margin-top: 2px;\n  padding-bottom: 20px;\n  border-bottom: 1px solid #ddd;\n}\n.vat-tbl { border-collapse: collapse; font-size: 9.5px; margin-top: 14px; }\n.vat-tbl th {\n  font-weight: 700;\n  color: #555;\n  text-align: left;\n  padding: 5px 24px 4px 0;\n  border-bottom: 1px solid #ccc;\n}\n.vat-tbl td {\n  padding: 5px 24px 0 0;\n  color: #444;\n}\n.totals { border-collapse: collapse; min-width: 200px; font-size: 10.5px; }\n.totals td { padding: 4px 0 4px 24px; color: #555; }\n.totals td:last-child {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n  white-space: nowrap;\n}\n.totals .grand td {\n  font-size: 12px;\n  font-weight: 700;\n  color: #111;\n  border-top: 1.5px solid #111;\n  padding-top: 8px;\n  margin-top: 4px;\n}\n\n/* Betaling */\n.payment {\n  padding-top: 18px;\n  font-size: 10.5px;\n  color: #333;\n  line-height: 1.9;\n}\n\n/* Footer */\n.footer {\n  display: flex;\n  justify-content: space-between;\n  margin-top: 40px;\n  padding-top: 10px;\n  border-top: 1px solid #e5e5e5;\n  font-size: 9px;\n  color: #bbb;\n}\n</style>\n</head>\n<body>\n\n<div class=\"header\">\n  <div>\n    <div class=\"brand\">${fromName}</div>\n    ${fromWeb || fromEmail ? `<div class=\"brand-sub\">${fromWeb}${fromWeb && fromEmail ? ' &middot; ' : ''}${fromEmail}</div>` : ''}\n  </div>\n  <div class=\"header-info\">\n    ${fromAddr  ? `<span class=\"hi-lbl\">Adres</span><span class=\"hi-val\">${fromAddr}</span>` : ''}\n    ${fromPhone ? `<span class=\"hi-lbl\">Telefoon</span><span class=\"hi-val\">${fromPhone}</span>` : ''}\n    ${fromIban  ? `<span class=\"hi-lbl\">IBAN</span><span class=\"hi-val\">${fromIban}${fromBank ? ' &middot; ' + fromBank : ''}</span>` : ''}\n    ${fromKvk   ? `<span class=\"hi-lbl\">KVK</span><span class=\"hi-val\">${fromKvk}</span>` : ''}\n    ${fromVat   ? `<span class=\"hi-lbl\">BTW</span><span class=\"hi-val\">${fromVat}</span>` : ''}\n  </div>\n</div>\n\n<div class=\"recipient\">\n  <strong>${clientName}</strong><br/>\n  ${clientContact ? `<span class=\"tav\">T.a.v. ${clientContact}</span><br/>` : ''}\n  ${clientAddr}${clientEmail ? `<br/>${clientEmail}` : ''}\n</div>\n\n<div class=\"doc-title\">FACTUUR</div>\n<div class=\"meta\">\n  <span class=\"mk\">Factuurnummer</span><span class=\"mv\">${factuurNr}</span>\n  <span class=\"mk\">Factuurdatum</span><span class=\"mv\">${dateFmt(d.issueDate)}</span>\n<span class=\"mk\">Vervaldatum</span><span class=\"mv\">${dateFmt(d.dueDate)}</span>\n</div>\n<hr class=\"divider\"/>\n\n<table class=\"items\">\n  <thead>\n    <tr>\n      <th>Omschrijving</th>\n      <th class=\"r\">Aantal</th>\n      <th class=\"r\">Tarief</th>\n      <th class=\"r\">Bedrag excl. BTW</th>\n    </tr>\n  </thead>\n  <tbody>${lineRows}</tbody>\n</table>\n\n<div class=\"bottom\">\n  <table class=\"vat-tbl\">\n    <thead>\n      <tr>\n        <th>BTW-percentage</th>\n        <th>Grondslag</th>\n        <th>BTW-bedrag</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>${vatRate === 0 ? 'Vrijgesteld' : vatRate + '%'}</td>\n        <td>${euro(subtotal)}</td>\n        <td>${euro(vatAmount)}</td>\n      </tr>\n    </tbody>\n  </table>\n  <table class=\"totals\">\n    <tr><td>Subtotaal</td><td>${euro(subtotal)}</td></tr>\n    <tr><td>BTW ${vatRate}%</td><td>${euro(vatAmount)}</td></tr>\n    <tr class=\"grand\"><td>Totaal te voldoen</td><td>${euro(totalAmount)}</td></tr>\n  </table>\n</div>\n\n<div class=\"payment\">\n  ${fromIban ? `Betaal het bedrag voor de vervaldatum op <strong>${fromIban}</strong> t.n.v. <strong>${rekeninghouder}</strong> o.v.v. factuurnummer <strong>${factuurNr}</strong>.` : ''}\n  ${d.notes ? `<br/><br/>${br(d.notes)}` : ''}\n  ${fromEmail ? `<br/><br/>Vragen? Neem contact op via <strong>${fromEmail}</strong>.` : ''}\n</div>\n\n<div class=\"footer\">\n  <span>${fromName}${fromAddr ? ' &middot; ' + fromAddr.replace(/<br\\/>/g, ', ') : ''}</span>\n  <span>${fromKvk ? 'KVK: ' + fromKvk : ''}${fromKvk && fromVat ? ' &middot; ' : ''}${fromVat ? 'BTW: ' + fromVat : ''}</span>\n</div>\n\n</body>\n</html>`;\n\nreturn [{ json: { ...d, html } }];"
+        "jsCode": "const d = $input.first().json.body;\n\nconst esc = (v) => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;');\nconst br  = (v) => esc(v).replace(/\\n/g,'<br/>');\nconst euro = (v) => new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Number(v??0));\nconst dateFmt = (v) => { try{ return new Intl.DateTimeFormat('nl-NL',{dateStyle:'long'}).format(new Date(v)); }catch(e){return String(v??'');} };\n\n// -- Aanpassen naar wens --\nconst rekeninghouder = 'Stijn van de Pol';\n// -------------------------\n\nconst fromName  = esc(d.from?.companyName ?? '');\nconst fromEmail = esc(d.from?.email ?? '');\nconst fromWeb   = esc(d.from?.websiteUrl ?? '');\nconst fromAddr  = br(d.from?.address ?? '');\nconst fromVat   = esc(d.from?.vatNumber ?? '');\nconst fromKvk   = esc(d.from?.kvkNumber ?? '');\nconst fromIban  = esc(d.from?.iban ?? '');\nconst fromBank  = esc(d.from?.bankName ?? '');\nconst fromPhone = esc(d.from?.phone ?? '');\n\nconst factuurNr   = esc(d.invoiceNumber ?? 'ONBEKEND');\nconst vatRate     = Number(d.vatRate ?? 21);\nconst subtotal    = Number(d.subtotal ?? 0);\nconst vatAmount   = Number(d.vatAmount ?? subtotal * vatRate / 100);\nconst totalAmount = Number(d.totalAmount ?? subtotal + vatAmount);\n\nconst clientName    = esc(d.client?.companyName ?? '');\nconst clientContact = esc(d.client?.contactName ?? '');\nconst clientAddr    = br(d.client?.address ?? '');\nconst clientEmail   = esc(d.client?.email ?? '');\n\nconst lineRows = Array.isArray(d.lineItems) && d.lineItems.length > 0\n  ? d.lineItems.map(item => `<tr>\n      <td>${esc(item.description ?? '')}${item.note ? `<div class=\"note\">${esc(item.note)}</div>` : ''}</td>\n      <td class=\"r\">${item.quantity != null ? esc(String(item.quantity)) + (item.unit ? '&nbsp;' + esc(item.unit) : '') : ''}</td>\n      <td class=\"r\">${item.unitPrice != null ? euro(item.unitPrice) : ''}</td>\n      <td class=\"r\">${euro(item.amount ?? item.subtotal ?? 0)}</td>\n    </tr>`).join('')\n  : `<tr>\n      <td>${esc(d.description ?? '')}${d.project ? `<div class=\"note\">${esc(d.project.name ?? d.project)}</div>` : ''}</td>\n      <td class=\"r\">${d.quantity != null ? esc(String(d.quantity)) + (d.unit ? '&nbsp;' + esc(d.unit) : '') : ''}</td>\n      <td class=\"r\">${d.unitPrice != null ? euro(d.unitPrice) : ''}</td>\n      <td class=\"r\">${euro(subtotal)}</td>\n    </tr>`;\n\nconst html = `<!DOCTYPE html>\n<html lang=\"nl\">\n<head>\n<meta charset=\"UTF-8\"/>\n<style>\n*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\nbody {\n  font-family: Arial, sans-serif;\n  font-size: 10.5px;\n  line-height: 1.5;\n  color: #1a1a1a;\n  background: #fff;\n  padding: 44px 52px;\n}\n.header {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n  margin-bottom: 48px;\n}\n.brand { font-size: 18px; font-weight: 700; color: #111; letter-spacing: -.2px; }\n.brand-sub { font-size: 9.5px; color: #777; margin-top: 3px; }\n.header-info {\n  display: grid;\n  grid-template-columns: auto auto;\n  gap: 3px 20px;\n  font-size: 10px;\n  text-align: left;\n}\n.hi-lbl { font-weight: 700; color: #111; white-space: nowrap; }\n.hi-val { color: #444; }\n.recipient {\n  margin-bottom: 36px;\n  font-size: 10.5px;\n  line-height: 1.75;\n  color: #1a1a1a;\n}\n.recipient strong { font-weight: 700; }\n.recipient .tav { color: #777; font-size: 10px; }\n.doc-title {\n  font-size: 17px;\n  font-weight: 700;\n  letter-spacing: .5px;\n  color: #111;\n  margin-bottom: 14px;\n}\n.meta {\n  display: grid;\n  grid-template-columns: auto 1fr;\n  gap: 4px 16px;\n  font-size: 10.5px;\n  max-width: 340px;\n}\n.mk { font-weight: 700; color: #111; }\n.mv { color: #333; }\n.divider { border: none; border-top: 1px solid #d0d0d0; margin: 18px 0 0 0; }\n.items { width: 100%; border-collapse: collapse; margin-top: 0; }\n.items thead tr {\n  border-top: 1.5px solid #111;\n  border-bottom: 1.5px solid #111;\n}\n.items th {\n  font-size: 9px;\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: .04em;\n  color: #555;\n  padding: 7px 8px;\n  text-align: left;\n}\n.items th.r { text-align: right; }\n.items tbody td {\n  padding: 9px 8px;\n  font-size: 10.5px;\n  vertical-align: top;\n  border-bottom: 1px solid #ececec;\n  color: #1a1a1a;\n}\n.items tbody td.r {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n  white-space: nowrap;\n}\n.note { font-size: 9.5px; color: #888; margin-top: 2px; }\n.bottom {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  margin-top: 2px;\n  padding-bottom: 20px;\n  border-bottom: 1px solid #ddd;\n}\n.vat-tbl { border-collapse: collapse; font-size: 9.5px; margin-top: 14px; }\n.vat-tbl th {\n  font-weight: 700;\n  color: #555;\n  text-align: left;\n  padding: 5px 24px 4px 0;\n  border-bottom: 1px solid #ccc;\n}\n.vat-tbl td { padding: 5px 24px 0 0; color: #444; }\n.totals { border-collapse: collapse; min-width: 200px; font-size: 10.5px; }\n.totals td { padding: 4px 0 4px 24px; color: #555; }\n.totals td:last-child {\n  text-align: right;\n  font-variant-numeric: tabular-nums;\n  white-space: nowrap;\n}\n.totals .grand td {\n  font-size: 12px;\n  font-weight: 700;\n  color: #111;\n  border-top: 1.5px solid #111;\n  padding-top: 8px;\n}\n.payment {\n  padding-top: 18px;\n  font-size: 10.5px;\n  color: #333;\n  line-height: 1.9;\n}\n.footer {\n  display: flex;\n  justify-content: space-between;\n  margin-top: 40px;\n  padding-top: 10px;\n  border-top: 1px solid #e5e5e5;\n  font-size: 9px;\n  color: #bbb;\n}\n</style>\n</head>\n<body>\n\n<div class=\"header\">\n  <div>\n    <div class=\"brand\">${fromName}</div>\n    ${fromWeb || fromEmail ? `<div class=\"brand-sub\">${fromWeb}${fromWeb && fromEmail ? ' &middot; ' : ''}${fromEmail}</div>` : ''}\n  </div>\n  <div class=\"header-info\">\n    ${fromAddr  ? `<span class=\"hi-lbl\">Adres</span><span class=\"hi-val\">${fromAddr}</span>` : ''}\n    ${fromPhone ? `<span class=\"hi-lbl\">Telefoon</span><span class=\"hi-val\">${fromPhone}</span>` : ''}\n    ${fromIban  ? `<span class=\"hi-lbl\">IBAN</span><span class=\"hi-val\">${fromIban}${fromBank ? ' &middot; ' + fromBank : ''}</span>` : ''}\n    ${fromKvk   ? `<span class=\"hi-lbl\">KVK</span><span class=\"hi-val\">${fromKvk}</span>` : ''}\n    ${fromVat   ? `<span class=\"hi-lbl\">BTW</span><span class=\"hi-val\">${fromVat}</span>` : ''}\n  </div>\n</div>\n\n<div class=\"recipient\">\n  <strong>${clientName}</strong><br/>\n  ${clientContact ? `<span class=\"tav\">T.a.v. ${clientContact}</span><br/>` : ''}\n  ${clientAddr}${clientEmail ? `<br/>${clientEmail}` : ''}\n</div>\n\n<div class=\"doc-title\">FACTUUR</div>\n<div class=\"meta\">\n  <span class=\"mk\">Factuurnummer</span><span class=\"mv\">${factuurNr}</span>\n  <span class=\"mk\">Factuurdatum</span><span class=\"mv\">${dateFmt(d.issueDate)}</span>\n  <span class=\"mk\">Vervaldatum</span><span class=\"mv\">${dateFmt(d.dueDate)}</span>\n</div>\n<hr class=\"divider\"/>\n\n<table class=\"items\">\n  <thead>\n    <tr>\n      <th>Omschrijving</th>\n      <th class=\"r\">Aantal</th>\n      <th class=\"r\">Tarief</th>\n      <th class=\"r\">Bedrag excl. BTW</th>\n    </tr>\n  </thead>\n  <tbody>${lineRows}</tbody>\n</table>\n\n<div class=\"bottom\">\n  <table class=\"vat-tbl\">\n    <thead>\n      <tr>\n        <th>BTW-percentage</th>\n        <th>Grondslag</th>\n        <th>BTW-bedrag</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>${vatRate === 0 ? 'Vrijgesteld' : vatRate + '%'}</td>\n        <td>${euro(subtotal)}</td>\n        <td>${euro(vatAmount)}</td>\n      </tr>\n    </tbody>\n  </table>\n  <table class=\"totals\">\n    <tr><td>Subtotaal</td><td>${euro(subtotal)}</td></tr>\n    <tr><td>BTW ${vatRate}%</td><td>${euro(vatAmount)}</td></tr>\n    <tr class=\"grand\"><td>Totaal te voldoen</td><td>${euro(totalAmount)}</td></tr>\n  </table>\n</div>\n\n<div class=\"payment\">\n  ${fromIban ? `Betaal het bedrag voor de vervaldatum op <strong>${fromIban}</strong> t.n.v. <strong>${rekeninghouder}</strong> o.v.v. factuurnummer <strong>${factuurNr}</strong>.` : ''}\n  ${d.notes ? `<br/><br/>${br(d.notes)}` : ''}\n  ${fromEmail ? `<br/><br/>Vragen? Neem contact op via <strong>${fromEmail}</strong>.` : ''}\n</div>\n\n<div class=\"footer\">\n  <span>${fromName}${fromAddr ? ' &middot; ' + fromAddr.replace(/<br\\/>/g, ', ') : ''}</span>\n  <span>${fromKvk ? 'KVK: ' + fromKvk : ''}${fromKvk && fromVat ? ' &middot; ' : ''}${fromVat ? 'BTW: ' + fromVat : ''}</span>\n</div>\n\n</body>\n</html>`;\n\nreturn [{ json: { ...d, html } }];\n"
       },
-      "id": "bouw-html-factuur",
+      "id": "e753d78b-a655-461f-919e-dfa89cfe5cfc",
       "name": "Bouw HTML factuur",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
-        0
+        2352,
+        -32
       ]
     },
     {
@@ -45,16 +45,15 @@
           "value": "https://drive.google.com/drive/u/0/folders/1e2bzWKRrxNWyBIgX5dgsum8Cx2k74xae",
           "mode": "url"
         },
-        "inputDataFieldName": "data",
         "options": {}
       },
-      "id": "drive-upload-factuur",
+      "id": "1c7e15a6-3ff4-4989-9ee2-1d1be1103bb0",
       "name": "Upload naar Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        1200,
-        0
+        3072,
+        -32
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -66,13 +65,13 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "=https://portal.webvakwerk.nl/api/internal/invoices/{{ $('Bouw HTML factuur').item.json.invoiceId }}",
+        "url": "=http://172.16.2.14:3000/api/internal/invoices/{{ $('Bouw HTML factuur').item.json.invoiceId }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer 8VIluuOv8tilh6L7+bkAb6AsJW9oYplzCEMXKjeFUWo"
+              "value": "=Bearer HEA1TaPD0n1bH33rFNT3y2l4QqFK0oViQmHxJcy3LAXZiyqAj4Oto"
             },
             {
               "name": "Content-Type",
@@ -95,13 +94,13 @@
         },
         "options": {}
       },
-      "id": "callback-factuur",
+      "id": "1419729e-3bb4-47c3-865a-8fd9c3698955",
       "name": "Callback → Ticket systeem",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1440,
-        0
+        3312,
+        -32
       ]
     },
     {
@@ -110,13 +109,13 @@
         "responseBody": "={ \"ok\": true }",
         "options": {}
       },
-      "id": "webhook-response-factuur",
+      "id": "391cbe0a-2f8c-4948-be42-99f6956144ca",
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1680,
-        0
+        3552,
+        -32
       ]
     },
     {
@@ -143,13 +142,13 @@
           }
         }
       },
-      "id": "html2pdf-factuur",
+      "id": "1bcd6a29-51f6-40ab-be9e-265dc51d62cd",
       "name": "HTML → PDF (html2pdf)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
-        0
+        2592,
+        -32
       ]
     }
   ],
@@ -210,8 +209,69 @@
       ]
     }
   },
+  "pinData": {
+    "Webhook – Ontvang factuur": [
+      {
+        "headers": {
+          "host": "172.16.2.5:5678",
+          "connection": "keep-alive",
+          "content-type": "application/json",
+          "accept": "*/*",
+          "accept-language": "*",
+          "sec-fetch-mode": "cors",
+          "user-agent": "node",
+          "accept-encoding": "gzip, deflate",
+          "content-length": "907"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "invoiceId": "cmn09rgk5001fqm07ng7aqzl4",
+          "invoiceNumber": "2026-001",
+          "issueDate": "2026-03-21T00:00:00.000Z",
+          "serviceDate": "2026-03-21T00:00:00.000Z",
+          "dueDate": "2026-04-20T00:00:00.000Z",
+          "status": "DRAFT",
+          "description": "Ontwikkeling bedrijfswebsite",
+          "notes": null,
+          "subtotal": 499,
+          "vatRate": 21,
+          "vatAmount": 104.79,
+          "totalAmount": 603.79,
+          "client": {
+            "id": "cmn09n0ig000cqm07stspqoep",
+            "companyName": "Bakker Bart",
+            "contactName": "bart",
+            "email": "bart@mail.nl",
+            "address": "Amsterdam"
+          },
+          "project": {
+            "id": "cmn09n0im000fqm07a6t0is19",
+            "name": "Ontwerp en realisatie nieuwe website (demo)"
+          },
+          "from": {
+            "companyName": "Webvakwerk",
+            "email": "info@webvakwerk.nl",
+            "address": "Snavelbiesstraat 8, Landhorst",
+            "kvkNumber": "12345678",
+            "vatNumber": "NL000000000B00",
+            "iban": "NL98 RABO 0315 1178 26",
+            "bankName": "Rabobank",
+            "phone": "+31 6 57276443",
+            "websiteUrl": "Webvakwerk.nl"
+          },
+          "defaults": {
+            "invoiceFooterText": null,
+            "termsText": null,
+            "paymentTermDays": 30
+          }
+        },
+        "webhookUrl": "https://automation.stijnvandepol.nl/webhook/factuur-pdf",
+        "executionMode": "production"
+      }
+    ]
+  },
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "5f3df8f20b1b3e507874502c6b6a8ac02a4e70f4290a80feec850b51ed962a44"
   }
 }
