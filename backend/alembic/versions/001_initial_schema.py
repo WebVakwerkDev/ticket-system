@@ -253,7 +253,7 @@ def upgrade() -> None:
         sa.Column("kvk_number", sa.String(20), nullable=True),
         sa.Column("vat_number", sa.String(20), nullable=True),
         sa.Column("iban", sa.String(34), nullable=True),
-        sa.Column("bank_name", sa.String(100), nullable=True),
+        sa.Column("account_holder_name", sa.String(255), nullable=True),
         sa.Column("email", sa.String(255), nullable=False),
         sa.Column("phone", sa.String(50), nullable=True),
         sa.Column("logo_url", sa.String(500), nullable=True),

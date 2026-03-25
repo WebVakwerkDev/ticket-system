@@ -12,7 +12,7 @@
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">KVK-nummer</label><input v-model="settings.kvk_number" class="input font-mono" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">BTW-nummer</label><input v-model="settings.vat_number" class="input font-mono" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">IBAN</label><input v-model="settings.iban" class="input font-mono" /></div>
-          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bank</label><input v-model="settings.bank_name" class="input" /></div>
+          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">T.n.v.</label><input v-model="settings.account_holder_name" class="input" placeholder="Naam rekeninghouder" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Standaard BTW (%)</label><InputNumber v-model="settings.default_vat_rate" suffix="%" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Betalingstermijn (dagen)</label><InputNumber v-model="settings.payment_term_days" class="w-full" /></div>
         </div>
@@ -76,7 +76,7 @@ const auth = useAuthStore()
 const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
-const settings = ref<any>({ company_name: '', email: '', phone: '', website_url: '', address: '', kvk_number: '', vat_number: '', iban: '', bank_name: '', default_vat_rate: 21, payment_term_days: 30, default_quote_valid_days: 30, default_price_label: 'Projectprijs' })
+const settings = ref<any>({ company_name: '', email: '', phone: '', website_url: '', address: '', kvk_number: '', vat_number: '', iban: '', account_holder_name: '', default_vat_rate: 21, payment_term_days: 30, default_quote_valid_days: 30, default_price_label: 'Projectprijs' })
 const users = ref<any[]>([])
 const savingSettings = ref(false)
 const showUserDialog = ref(false)

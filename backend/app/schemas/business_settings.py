@@ -9,7 +9,7 @@ class BusinessSettingsUpdate(BaseModel):
     kvk_number: str | None = None
     vat_number: str | None = None
     iban: str | None = None
-    bank_name: str | None = None
+    account_holder_name: str | None = None
     email: EmailStr
     phone: str | None = None
     logo_url: str | None = None
@@ -51,7 +51,7 @@ class BusinessSettingsResponse(BaseModel):
     kvk_number: str | None
     vat_number: str | None
     iban: str | None
-    bank_name: str | None
+    account_holder_name: str | None
     email: str
     phone: str | None
     logo_url: str | None

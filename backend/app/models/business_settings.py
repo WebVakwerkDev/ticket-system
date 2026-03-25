@@ -13,7 +13,7 @@ class BusinessSettings(TimestampMixin, Base):
     kvk_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     vat_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     iban: Mapped[str | None] = mapped_column(String(34), nullable=True)
-    bank_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    account_holder_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

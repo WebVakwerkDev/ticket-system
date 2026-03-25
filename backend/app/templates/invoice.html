@@ -112,8 +112,7 @@
         <h3>Betalingsinformatie</h3>
         <p>Gelieve het totaalbedrag van {{ invoice.total_amount|currency }} over te maken naar:</p>
         <p><strong>IBAN:</strong> {{ settings.iban or 'N.v.t.' }}</p>
-        <p><strong>Bank:</strong> {{ settings.bank_name or 'N.v.t.' }}</p>
-        <p><strong>T.n.v.:</strong> {{ settings.company_name }}</p>
+        <p><strong>T.n.v.:</strong> {{ settings.account_holder_name or settings.company_name }}</p>
         <p><strong>Betalingstermijn:</strong> {{ settings.payment_term_days }} dagen</p>
     </div>
 
