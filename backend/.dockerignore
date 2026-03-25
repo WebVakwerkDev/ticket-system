@@ -6,5 +6,3 @@ __pycache__
 .vscode
 *.md
 .gitignore
-alembic/versions/*.py
-!alembic/versions/__init__.py
