@@ -28,7 +28,13 @@ def _format_date(value) -> str:
     return str(value)
 
 
+def _format_currency_plain(value: Decimal | float) -> str:
+    """Format as '1.500,00' (no € sign, Dutch notation)."""
+    return f"{float(value):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 _env.filters["currency"] = _format_currency
+_env.filters["currency_plain"] = _format_currency_plain
 _env.filters["date_nl"] = _format_date
 
 

@@ -49,6 +49,5 @@ class TimeEntryResponse(BaseModel):
 class TimeEntrySummary(BaseModel):
     year: int
     total_hours: Decimal
-    target_hours: Decimal = Decimal("1225")
     monthly: list[dict]
     by_project: list[dict]

@@ -3,69 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { size: A4; margin: 2cm; }
+    @page { size: A4; margin: 2cm 2.5cm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; color: #1a1a1a; line-height: 1.5; }
-    .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-    .company-info { text-align: right; font-size: 9pt; color: #555; }
-    .company-name { font-size: 16pt; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .invoice-title { font-size: 22pt; font-weight: 700; color: #2563eb; margin-bottom: 20px; }
-    .meta-grid { display: flex; justify-content: space-between; margin-bottom: 30px; }
-    .meta-block h3 { font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
-    .meta-block p { font-size: 10pt; margin-bottom: 2px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    thead th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #555; border-bottom: 2px solid #e2e8f0; }
-    tbody td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
-    .text-right { text-align: right; }
-    .totals { margin-left: auto; width: 280px; }
-    .totals tr td { padding: 6px 12px; }
-    .totals .total-row { font-weight: 700; font-size: 13pt; border-top: 2px solid #1a1a1a; }
-    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #888; }
-    .footer-grid { display: flex; justify-content: space-between; }
-    .payment-info { background: #f8fafc; padding: 16px; border-radius: 6px; margin-top: 20px; font-size: 9pt; }
-    .payment-info h3 { font-size: 9pt; font-weight: 600; margin-bottom: 6px; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #1a1a1a; line-height: 1.6; }
+
+    /* Header: company left, details right */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; }
+    .company-name { font-size: 18pt; font-weight: 700; letter-spacing: -0.5px; }
+    .company-details { text-align: right; font-size: 8.5pt; color: #333; line-height: 1.7; }
+    .company-details .label { color: #888; }
+
+    /* Client address block */
+    .client-block { margin-bottom: 45px; line-height: 1.7; }
+    .client-block .name { font-weight: 600; }
+
+    /* Title */
+    .invoice-title { font-size: 20pt; font-weight: 700; color: #1a1a1a; margin-bottom: 24px; letter-spacing: -0.3px; }
+
+    /* Meta info in clean label-value pairs */
+    .meta-table { margin-bottom: 40px; }
+    .meta-table td { padding: 2px 0; font-size: 9.5pt; }
+    .meta-table .label { font-weight: 600; padding-right: 24px; white-space: nowrap; }
+
+    /* Line items table */
+    .items { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .items thead th {
+        text-align: left; font-size: 9pt; font-weight: 600; color: #1a1a1a;
+        padding: 8px 0; border-bottom: 2px solid #1a1a1a;
+    }
+    .items thead th.right { text-align: right; }
+    .items tbody td { padding: 10px 0; border-bottom: 1px solid #e5e5e5; font-size: 9.5pt; }
+    .items tbody td.right { text-align: right; }
+    .items tbody td.desc-sub { font-size: 8.5pt; color: #666; padding-top: 0; border-bottom: none; }
+
+    /* Totals */
+    .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 30px; }
+    .totals { width: 250px; }
+    .totals tr td { padding: 4px 0; font-size: 9.5pt; }
+    .totals tr td.right { text-align: right; }
+    .totals .subtotal-line td { border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
+    .totals .total-line td { border-top: 2px solid #1a1a1a; padding-top: 8px; font-weight: 700; font-size: 11pt; }
+
+    /* BTW summary */
+    .vat-summary { margin-bottom: 30px; font-size: 8.5pt; }
+    .vat-summary td { padding: 3px 0; }
+    .vat-summary .label { font-weight: 600; }
+    .vat-summary td.right { text-align: right; }
+
+    /* Payment block */
+    .payment { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 9pt; line-height: 1.8; }
+    .payment p { margin-bottom: 2px; }
+
+    /* Notes */
+    .notes { margin-top: 20px; font-size: 8.5pt; color: #555; }
+
+    /* Footer */
+    .footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 0 2.5cm 1.2cm; font-size: 7.5pt; color: #999; }
+    .footer-line { display: flex; justify-content: space-between; border-top: 1px solid #e5e5e5; padding-top: 8px; }
 </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
         <div>
             <div class="company-name">{{ settings.company_name }}</div>
         </div>
-        <div class="company-info">
-            <p>{{ settings.address or '' }}</p>
-            <p>{{ settings.email }}</p>
-            <p>{{ settings.phone or '' }}</p>
-            {% if settings.kvk_number %}<p>KVK: {{ settings.kvk_number }}</p>{% endif %}
-            {% if settings.vat_number %}<p>BTW: {{ settings.vat_number }}</p>{% endif %}
+        <div class="company-details">
+            {{ settings.address or '' }}<br>
+            {{ settings.email }}<br>
+            {% if settings.phone %}{{ settings.phone }}<br>{% endif %}
+            {% if settings.iban %}<span class="label">IBAN:</span> {{ settings.iban }}<br>{% endif %}
+            {% if settings.kvk_number %}<span class="label">KVK:</span> {{ settings.kvk_number }}<br>{% endif %}
+            {% if settings.vat_number %}<span class="label">BTW:</span> {{ settings.vat_number }}{% endif %}
         </div>
     </div>
 
+    <!-- Client address -->
+    <div class="client-block">
+        <span class="name">{{ client.company_name }}</span><br>
+        {{ client.contact_name }}<br>
+        {% if client.address %}{{ client.address }}<br>{% endif %}
+        {{ client.email }}
+    </div>
+
+    <!-- Title -->
     <div class="invoice-title">FACTUUR</div>
 
-    <div class="meta-grid">
-        <div class="meta-block">
-            <h3>Factuur aan</h3>
-            <p><strong>{{ client.company_name }}</strong></p>
-            <p>{{ client.contact_name }}</p>
-            <p>{{ client.email }}</p>
-            {% if client.address %}<p>{{ client.address }}</p>{% endif %}
-        </div>
-        <div class="meta-block" style="text-align: right;">
-            <h3>Factuurgegevens</h3>
-            <p><strong>Factuurnummer:</strong> {{ invoice.invoice_number }}</p>
-            <p><strong>Factuurdatum:</strong> {{ invoice.issue_date|date_nl }}</p>
-            {% if invoice.service_date %}<p><strong>Leveringsdatum:</strong> {{ invoice.service_date|date_nl }}</p>{% endif %}
-            <p><strong>Vervaldatum:</strong> {{ invoice.due_date|date_nl }}</p>
-        </div>
-    </div>
+    <!-- Meta -->
+    <table class="meta-table">
+        <tr><td class="label">Factuurnummer:</td><td>{{ invoice.invoice_number }}</td></tr>
+        <tr><td class="label">Factuurdatum:</td><td>{{ invoice.issue_date|date_nl }}</td></tr>
+        <tr><td class="label">Vervaldatum:</td><td>{{ invoice.due_date|date_nl }}</td></tr>
+        {% if invoice.service_date %}<tr><td class="label">Leveringsdatum:</td><td>{{ invoice.service_date|date_nl }}</td></tr>{% endif %}
+        {% if settings.kvk_number %}<tr><td class="label">KvK nummer:</td><td>{{ settings.kvk_number }}</td></tr>{% endif %}
+    </table>
 
-    <table>
+    <!-- Line items -->
+    <table class="items">
         <thead>
             <tr>
-                <th style="width: 50%;">Omschrijving</th>
-                <th class="text-right">Aantal</th>
-                <th class="text-right">Prijs</th>
-                <th class="text-right">Totaal</th>
+                <th style="width:55%;">Omschrijving</th>
+                <th class="right">Aantal</th>
+                <th class="right">Tarief in &euro;</th>
+                <th class="right">Bedrag in &euro;</th>
+                <th class="right" style="width:40px;">Btw</th>
             </tr>
         </thead>
         <tbody>
@@ -73,57 +114,78 @@
                 {% for item in invoice.line_items %}
                 <tr>
                     <td>{{ item.description }}</td>
-                    <td class="text-right">{{ item.quantity }}</td>
-                    <td class="text-right">{{ item.unit_price|currency }}</td>
-                    <td class="text-right">{{ item.total|currency }}</td>
+                    <td class="right">{{ item.quantity }}</td>
+                    <td class="right">{{ item.unit_price|currency_plain }}</td>
+                    <td class="right">{{ item.total|currency_plain }}</td>
+                    <td class="right">{{ invoice.vat_rate }}%</td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="3">{{ invoice.description }}</td>
-                    <td class="text-right">{{ invoice.subtotal|currency }}</td>
+                    <td>{{ invoice.description }}</td>
+                    <td class="right">1</td>
+                    <td class="right">{{ invoice.subtotal|currency_plain }}</td>
+                    <td class="right">{{ invoice.subtotal|currency_plain }}</td>
+                    <td class="right">{{ invoice.vat_rate }}%</td>
                 </tr>
             {% endif %}
         </tbody>
     </table>
 
-    <table class="totals">
+    <!-- Totals -->
+    <div class="totals-wrapper">
+        <table class="totals">
+            <tr class="subtotal-line">
+                <td>Subtotaal</td>
+                <td class="right">{{ invoice.subtotal|currency_plain }}</td>
+            </tr>
+            <tr>
+                <td>Btw</td>
+                <td class="right">{{ invoice.vat_amount|currency_plain }}</td>
+            </tr>
+            <tr class="total-line">
+                <td>Totaal te voldoen</td>
+                <td class="right">{{ invoice.total_amount|currency_plain }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- BTW summary -->
+    <table class="vat-summary">
         <tr>
-            <td>Subtotaal</td>
-            <td class="text-right">{{ invoice.subtotal|currency }}</td>
+            <td class="label">BTW-percentage</td>
+            <td class="label" style="padding-left:24px;">Grondslag</td>
+            <td class="label" style="padding-left:24px;">BTW-bedrag</td>
         </tr>
         <tr>
-            <td>BTW ({{ invoice.vat_rate }}%)</td>
-            <td class="text-right">{{ invoice.vat_amount|currency }}</td>
-        </tr>
-        <tr class="total-row">
-            <td>Totaal</td>
-            <td class="text-right">{{ invoice.total_amount|currency }}</td>
+            <td>{{ invoice.vat_rate }}%</td>
+            <td style="padding-left:24px;">{{ invoice.subtotal|currency_plain }}</td>
+            <td style="padding-left:24px;">{{ invoice.vat_amount|currency_plain }}</td>
         </tr>
     </table>
 
+    <!-- Payment info -->
+    <div class="payment">
+        <p>Betaal het bedrag voor de vervaldatum op {{ settings.iban or 'N.v.t.' }} t.n.v. {{ settings.account_holder_name or settings.company_name }} o.v.v. het factuurnummer.</p>
+        <p><strong>Betalingstermijn:</strong> {{ settings.payment_term_days }} dagen</p>
+    </div>
+
     {% if invoice.notes %}
-    <div style="margin-top: 20px; font-size: 9pt; color: #555;">
+    <div class="notes">
         <strong>Opmerking:</strong> {{ invoice.notes }}
     </div>
     {% endif %}
 
-    <div class="payment-info">
-        <h3>Betalingsinformatie</h3>
-        <p>Gelieve het totaalbedrag van {{ invoice.total_amount|currency }} over te maken naar:</p>
-        <p><strong>IBAN:</strong> {{ settings.iban or 'N.v.t.' }}</p>
-        <p><strong>T.n.v.:</strong> {{ settings.account_holder_name or settings.company_name }}</p>
-        <p><strong>Betalingstermijn:</strong> {{ settings.payment_term_days }} dagen</p>
-    </div>
+    {% if settings.invoice_footer_text %}
+    <div class="notes" style="margin-top: 12px;">{{ settings.invoice_footer_text }}</div>
+    {% endif %}
 
+    <!-- Footer -->
     <div class="footer">
-        <div class="footer-grid">
-            <div>{{ settings.company_name }} | {{ settings.email }}</div>
-            <div>{% if settings.kvk_number %}KVK {{ settings.kvk_number }} | {% endif %}{% if settings.vat_number %}BTW {{ settings.vat_number }}{% endif %}</div>
+        <div class="footer-line">
+            <span>{{ settings.company_name }} | {{ settings.email }}{% if settings.phone %} | {{ settings.phone }}{% endif %}</span>
+            <span>{% if settings.kvk_number %}KVK {{ settings.kvk_number }}{% endif %}{% if settings.vat_number %} | BTW {{ settings.vat_number }}{% endif %}</span>
         </div>
-        {% if settings.invoice_footer_text %}
-        <p style="margin-top: 10px;">{{ settings.invoice_footer_text }}</p>
-        {% endif %}
     </div>
 </body>
 </html>
