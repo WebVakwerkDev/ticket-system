@@ -27,6 +27,7 @@ async def _generate_invoice_number(db: AsyncSession) -> str:
         .where(Invoice.invoice_number.like(f"{prefix}%"))
         .order_by(Invoice.invoice_number.desc())
         .limit(1)
+        .with_for_update()
     )
     last = result.scalar_one_or_none()
     if last:
@@ -268,7 +269,7 @@ async def download_invoice_pdf(
         "kvk_number": settings.kvk_number,
         "vat_number": settings.vat_number,
         "iban": settings.iban,
-        "bank_name": settings.bank_name,
+        "account_holder_name": settings.account_holder_name,
         "payment_term_days": settings.payment_term_days,
         "invoice_footer_text": settings.invoice_footer_text,
     }

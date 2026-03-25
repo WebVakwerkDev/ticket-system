@@ -53,7 +53,6 @@
 import { ref, onMounted } from 'vue'
 import { proposalsApi, clientsApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
-import { useToast } from 'primevue/usetoast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
@@ -62,7 +61,6 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import InputNumber from 'primevue/inputnumber'
 
-const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
 const { formatDate, formatCurrency, statusColor, downloadBlob } = useFormatting()
@@ -74,9 +72,23 @@ const saving = ref(false)
 const form = ref<any>({ title: '', client_id: '', amount: 0, recipient_name: '', recipient_email: '', recipient_company: '', delivery_time: '', scope: '' })
 
 onMounted(async () => {
-  try { const { data } = await clientsApi.list(); clientOptions.value = data.map((c: any) => ({ label: c.company_name, value: c.id })) } catch {}
+  await Promise.all([loadProposals(), loadClients()])
   loading.value = false
 })
+
+async function loadProposals() {
+  try {
+    const { data } = await proposalsApi.list()
+    proposals.value = data
+  } catch (err: any) { showError(err) }
+}
+
+async function loadClients() {
+  try {
+    const { data } = await clientsApi.list()
+    clientOptions.value = data.map((c: any) => ({ label: c.company_name, value: c.id }))
+  } catch (err: any) { showError(err) }
+}
 
 async function createProposal() {
   saving.value = true

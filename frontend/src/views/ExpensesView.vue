@@ -75,7 +75,7 @@ import InputNumber from 'primevue/inputnumber'
 
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
-const { formatDate, formatCurrency } = useFormatting()
+const { formatDate, formatCurrency, toISODate } = useFormatting()
 
 const expenses = ref<any[]>([])
 const showCreate = ref(false)
@@ -104,14 +104,10 @@ async function loadExpenses() {
   } catch {}
 }
 
-function fmtDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 async function createExpense() {
   saving.value = true
   try {
-    await expensesApi.create({ ...form.value, date: fmtDate(form.value.date) })
+    await expensesApi.create({ ...form.value, date: toISODate(form.value.date) })
     showCreate.value = false
     showSuccess('Uitgave toegevoegd')
     await loadExpenses()

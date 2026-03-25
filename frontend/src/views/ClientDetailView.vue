@@ -68,7 +68,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { clientsApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
-import { useToast } from 'primevue/usetoast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useConfirm } from 'primevue/useconfirm'
 import Dialog from 'primevue/dialog'
@@ -76,7 +75,6 @@ import Dialog from 'primevue/dialog'
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
 const { statusColor, statusDot } = useFormatting()

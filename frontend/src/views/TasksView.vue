@@ -82,7 +82,7 @@ import Calendar from 'primevue/calendar'
 
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
-const { formatDate } = useFormatting()
+const { formatDate, toISODate } = useFormatting()
 
 const tasks = ref<any[]>([])
 const upcomingTasks = ref<any[]>([])
@@ -132,10 +132,6 @@ async function loadUpcoming() {
   } catch {}
 }
 
-function fmtDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 function isOverdue(deadline: string): boolean {
   return new Date(deadline) < new Date(new Date().toDateString())
 }
@@ -145,7 +141,7 @@ async function createTask() {
   try {
     await tasksApi.create({
       ...form.value,
-      deadline: form.value.deadline ? fmtDate(form.value.deadline) : null,
+      deadline: form.value.deadline ? toISODate(form.value.deadline) : null,
     })
     showCreate.value = false
     showSuccess('Taak aangemaakt')

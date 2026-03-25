@@ -17,6 +17,17 @@ from app.schemas.proposal import ProposalCreate, ProposalUpdate, ProposalRespons
 router = APIRouter(prefix="/api/v1/proposals", tags=["proposals"])
 
 
+@router.get("", response_model=list[ProposalResponse])
+async def list_all_proposals(
+    current_user=Depends(require_role(Role.ADMIN, Role.EMPLOYEE)),
+    db: AsyncSession = Depends(get_db),
+) -> list[ProposalResponse]:
+    result = await db.execute(
+        select(ProposalDraft).order_by(ProposalDraft.created_at.desc())
+    )
+    return [ProposalResponse.model_validate(p) for p in result.scalars().all()]
+
+
 @router.get("/by-project/{project_id}", response_model=list[ProposalResponse])
 async def list_proposals(
     project_id: str,

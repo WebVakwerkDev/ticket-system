@@ -119,8 +119,11 @@ const pageTitles: Record<string, [string, string?]> = {
   'client-detail': ['Klant'],
   projects: ['Projecten', 'overzicht'],
   'project-detail': ['Project'],
+  tasks: ['Taken', 'overzicht'],
+  'time-entries': ['Uren', 'registratie'],
   invoices: ['Facturen', 'overzicht'],
   proposals: ['Offertes', 'overzicht'],
+  expenses: ['Uitgaven', 'overzicht'],
   finance: ['Financieel', 'overzicht'],
   settings: ['Instellingen', 'beheer'],
 }

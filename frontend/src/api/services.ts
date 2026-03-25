@@ -67,6 +67,7 @@ export const invoicesApi = {
 
 // Proposals
 export const proposalsApi = {
+  list: () => api.get('/proposals'),
   listByProject: (projectId: string) => api.get(`/proposals/by-project/${projectId}`),
   get: (id: string) => api.get(`/proposals/${id}`),
   create: (data: any) => api.post('/proposals', data),

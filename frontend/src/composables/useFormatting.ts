@@ -84,5 +84,9 @@ export function useFormatting() {
     window.URL.revokeObjectURL(url)
   }
 
-  return { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob }
+  function toISODate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
+  return { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob, toISODate }
 }

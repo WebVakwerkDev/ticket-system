@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from datetime import date, timedelta
 
 from app.database import get_db
@@ -78,6 +78,8 @@ async def update_task(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task.assigned_to_user_id and task.assigned_to_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your task")
 
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -98,4 +100,6 @@ async def delete_task(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task.assigned_to_user_id and task.assigned_to_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your task")
     await db.delete(task)

@@ -71,14 +71,12 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { clientsApi } from '@/api/services'
-import { useToast } from 'primevue/usetoast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 
 const auth = useAuthStore()
-const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
 const clients = ref<any[]>([])
 const loading = ref(true)

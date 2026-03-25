@@ -281,7 +281,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { projectsApi, communicationApi, notesApi, repositoriesApi, linksApi, invoicesApi, proposalsApi, tasksApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
-import { useToast } from 'primevue/usetoast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
@@ -290,9 +289,8 @@ import InputNumber from 'primevue/inputnumber'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
-const { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob } = useFormatting()
+const { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob, toISODate } = useFormatting()
 
 const project = ref<any>(null)
 const loading = ref(true)
@@ -440,10 +438,6 @@ function openInvoiceDialog() {
   showInvoiceDialog.value = true
 }
 
-function fmtDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 async function createInvoice() {
   saving.value = true
   try {
@@ -452,8 +446,8 @@ async function createInvoice() {
       project_id: project.value.id,
       subtotal: invoiceForm.value.subtotal,
       vat_rate: invoiceForm.value.vat_rate,
-      issue_date: fmtDate(invoiceForm.value.issue_date),
-      due_date: fmtDate(invoiceForm.value.due_date),
+      issue_date: toISODate(invoiceForm.value.issue_date),
+      due_date: toISODate(invoiceForm.value.due_date),
       description: invoiceForm.value.description,
       notes: invoiceForm.value.notes || undefined,
     })
@@ -488,7 +482,7 @@ async function addTask() {
     await tasksApi.create({
       title: newTaskTitle.value,
       project_id: project.value.id,
-      deadline: newTaskDeadline.value ? fmtDate(newTaskDeadline.value) : null,
+      deadline: newTaskDeadline.value ? toISODate(newTaskDeadline.value) : null,
     })
     newTaskTitle.value = ''
     newTaskDeadline.value = null

@@ -77,6 +77,8 @@ async def update_time_entry(
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Time entry not found")
+    if entry.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your time entry")
 
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -97,6 +99,8 @@ async def delete_time_entry(
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Time entry not found")
+    if entry.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your time entry")
     await db.delete(entry)
 
 

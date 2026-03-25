@@ -125,7 +125,8 @@ async def monthly_report(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Invoice)
+        select(Invoice, Client.company_name.label("client_name"))
+        .join(Client, Invoice.client_id == Client.id)
         .where(
             Invoice.status == InvoiceStatus.PAID.value,
             extract("year", Invoice.issue_date) == year,
@@ -133,23 +134,21 @@ async def monthly_report(
         )
         .order_by(Invoice.issue_date)
     )
-    invoices = result.scalars().all()
+    rows = result.all()
 
-    # Build invoice list with client names
-    invoice_list = []
-    for inv in invoices:
-        client_result = await db.execute(select(Client.company_name).where(Client.id == inv.client_id))
-        client_name = client_result.scalar() or "Unknown"
-        invoice_list.append({
+    invoice_list = [
+        {
             "invoice_number": inv.invoice_number,
-            "client_name": client_name,
+            "client_name": client_name or "Unknown",
             "issue_date": inv.issue_date,
             "subtotal": inv.subtotal,
             "vat_rate": inv.vat_rate,
             "vat_amount": inv.vat_amount,
             "total_amount": inv.total_amount,
             "status": inv.status,
-        })
+        }
+        for inv, client_name in rows
+    ]
 
     # VAT breakdown
     vat_result = await db.execute(

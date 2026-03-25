@@ -64,14 +64,12 @@
 import { ref, onMounted } from 'vue'
 import { projectsApi, clientsApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
-import { useToast } from 'primevue/usetoast'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 
-const toast = useToast()
 const { showError, showSuccess } = useErrorHandler()
 const { formatDate, statusColor, statusDot } = useFormatting()
 const projects = ref<any[]>([])

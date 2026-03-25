@@ -92,7 +92,7 @@ import InputNumber from 'primevue/inputnumber'
 
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
-const { formatDate } = useFormatting()
+const { formatDate, toISODate } = useFormatting()
 
 const entries = ref<any[]>([])
 const projectOptions = ref<any[]>([])
@@ -134,14 +134,10 @@ async function loadSummary() {
   } catch {}
 }
 
-function fmtDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 async function createEntry() {
   saving.value = true
   try {
-    await timeEntriesApi.create({ ...form.value, date: fmtDate(form.value.date) })
+    await timeEntriesApi.create({ ...form.value, date: toISODate(form.value.date) })
     showCreate.value = false
     showSuccess('Uren geregistreerd')
     await Promise.all([loadEntries(), loadSummary()])
