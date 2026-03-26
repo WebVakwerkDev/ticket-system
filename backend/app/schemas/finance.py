@@ -10,9 +10,9 @@ class VatBreakdown(BaseModel):
 
 
 class QuarterVatSummary(BaseModel):
-    received_vat: Decimal  # BTW ontvangen van klanten
-    paid_vat: Decimal  # BTW betaald op inkopen
-    vat_due: Decimal  # Af te dragen = received - paid
+    received_vat: Decimal
+    paid_vat: Decimal
+    vat_due: Decimal
     breakdown: list[VatBreakdown]
 
 
@@ -21,7 +21,7 @@ class FinanceOverview(BaseModel):
     open_amount: Decimal
     overdue_amount: Decimal
     total_expenses: Decimal
-    profit: Decimal  # revenue - expenses (excl vat)
+    profit: Decimal
     vat_by_quarter: dict[str, QuarterVatSummary]
 
 
@@ -43,3 +43,70 @@ class YearlyReport(BaseModel):
     total_subtotal: Decimal
     total_vat: Decimal
     total_amount: Decimal
+
+
+# Tax year settings
+class TaxYearSettingsResponse(BaseModel):
+    year: int
+    zelfstandigenaftrek: Decimal
+    startersaftrek_enabled: bool
+    startersaftrek: Decimal
+    mkb_vrijstelling_rate: Decimal
+    zvw_rate: Decimal
+    zvw_max_inkomen: Decimal
+    ib_rate_1: Decimal
+    ib_rate_2: Decimal
+    ib_rate_3: Decimal
+    ib_bracket_1: Decimal
+    ib_bracket_2: Decimal
+
+    model_config = {"from_attributes": True}
+
+
+class TaxYearSettingsUpdate(BaseModel):
+    zelfstandigenaftrek: Decimal | None = None
+    startersaftrek_enabled: bool | None = None
+    startersaftrek: Decimal | None = None
+    mkb_vrijstelling_rate: Decimal | None = None
+    zvw_rate: Decimal | None = None
+    zvw_max_inkomen: Decimal | None = None
+    ib_rate_1: Decimal | None = None
+    ib_rate_2: Decimal | None = None
+    ib_rate_3: Decimal | None = None
+    ib_bracket_1: Decimal | None = None
+    ib_bracket_2: Decimal | None = None
+
+
+# IB calculation per schijf
+class IBSchijf(BaseModel):
+    label: str
+    rate: Decimal
+    inkomen_in_schijf: Decimal
+    belasting: Decimal
+
+
+# Tax summary response
+class TaxSummary(BaseModel):
+    year: int
+    # W&V
+    omzet: Decimal
+    kosten: Decimal
+    brutowinst: Decimal
+    zelfstandigenaftrek: Decimal
+    startersaftrek_enabled: bool
+    startersaftrek: Decimal
+    winst_na_aftrek: Decimal
+    mkb_vrijstelling_rate: Decimal
+    mkb_vrijstelling: Decimal
+    belastbare_winst: Decimal
+    # IB
+    ib_schijven: list[IBSchijf]
+    ib_totaal: Decimal
+    # Zvw
+    zvw_rate: Decimal
+    zvw_grondslag: Decimal
+    zvw_premie: Decimal
+    # Reservering
+    totaal_te_reserveren: Decimal
+    # Settings used
+    settings: TaxYearSettingsResponse
