@@ -208,18 +208,18 @@ async def get_tax_summary(
     )
     kosten = kosten_result.scalar() or Decimal("0")
 
-    # Kosten per categorie
+    # Kosten per categorie — group by raw column, substitute NULL→Overig in Python
     cat_result = await db.execute(
         select(
-            func.coalesce(Expense.category, "Overig").label("categorie"),
+            Expense.category,
             func.sum(Expense.amount_excl_vat).label("bedrag"),
             func.count().label("aantal"),
         )
         .where(extract("year", Expense.date) == year)
-        .group_by(func.coalesce(Expense.category, "Overig"))
+        .group_by(Expense.category)
     )
     kosten_per_categorie = [
-        KostenCategorie(categorie=r.categorie, bedrag=r.bedrag or Decimal("0"), aantal=r.aantal)
+        KostenCategorie(categorie=r.category or "Overig", bedrag=r.bedrag or Decimal("0"), aantal=r.aantal)
         for r in cat_result.all()
     ]
 
