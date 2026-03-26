@@ -1,6 +1,7 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Self
 from app.models.invoice import InvoiceStatus
 
 
@@ -17,18 +18,11 @@ class InvoiceCreate(BaseModel):
     issue_date: date
     service_date: date | None = None
     due_date: date
-    subtotal: Decimal
+    subtotal: Decimal = Decimal("0")
     vat_rate: Decimal = Decimal("21.00")
-    description: str
+    description: str | None = None
     notes: str | None = None
     line_items: list[InvoiceLineItem] = []
-
-    @field_validator("subtotal")
-    @classmethod
-    def subtotal_positive(cls, v: Decimal) -> Decimal:
-        if v <= 0:
-            raise ValueError("Subtotal must be positive")
-        return v
 
     @field_validator("vat_rate")
     @classmethod
@@ -37,19 +31,19 @@ class InvoiceCreate(BaseModel):
             raise ValueError("VAT rate must be between 0 and 100")
         return v
 
-    @field_validator("description")
-    @classmethod
-    def desc_min(cls, v: str) -> str:
-        if len(v.strip()) < 2:
-            raise ValueError("Description must be at least 2 characters")
-        return v.strip()
+    @model_validator(mode="after")
+    def require_description_or_line_items(self) -> Self:
+        has_description = bool(self.description and self.description.strip())
+        has_line_items = len(self.line_items) > 0
+        if not has_description and not has_line_items:
+            raise ValueError("Geef een omschrijving of minimaal één regelitem op")
+        return self
 
 
 class InvoiceUpdate(BaseModel):
     issue_date: date | None = None
     service_date: date | None = None
     due_date: date | None = None
-    subtotal: Decimal | None = None
     vat_rate: Decimal | None = None
     description: str | None = None
     notes: str | None = None
@@ -70,7 +64,7 @@ class InvoiceResponse(BaseModel):
     vat_rate: Decimal
     vat_amount: Decimal
     total_amount: Decimal
-    description: str
+    description: str | None
     notes: str | None
     line_items: list[InvoiceLineItem]
     paid_at: datetime | None

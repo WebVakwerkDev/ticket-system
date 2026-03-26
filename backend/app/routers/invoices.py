@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from datetime import datetime, timezone
 from decimal import Decimal
 import io
@@ -42,6 +42,24 @@ def _calculate_vat(subtotal: Decimal, vat_rate: Decimal) -> tuple[Decimal, Decim
     return vat_amount, total
 
 
+def _build_line_items(raw_items: list) -> tuple[list[dict], Decimal]:
+    """Recalculate item totals server-side and return serialized items + subtotal."""
+    items = []
+    for item in raw_items:
+        qty = Decimal(str(item.quantity if hasattr(item, "quantity") else item["quantity"]))
+        price = Decimal(str(item.unit_price if hasattr(item, "unit_price") else item["unit_price"]))
+        desc = item.description if hasattr(item, "description") else item["description"]
+        item_total = (qty * price).quantize(Decimal("0.01"))
+        items.append({
+            "description": desc,
+            "quantity": str(qty),
+            "unit_price": str(price),
+            "total": str(item_total),
+        })
+    subtotal = sum(Decimal(i["total"]) for i in items)
+    return items, subtotal
+
+
 @router.get("", response_model=list[InvoiceResponse])
 async def list_invoices(
     client_id: str | None = None,
@@ -69,20 +87,19 @@ async def create_invoice(
     current_user=Depends(require_role(Role.ADMIN, Role.FINANCE)),
     db: AsyncSession = Depends(get_db),
 ) -> InvoiceResponse:
-    # Verify client
     client = await db.execute(select(Client).where(Client.id == body.client_id, Client.deleted_at.is_(None)))
     if not client.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
 
     invoice_number = await _generate_invoice_number(db)
-    vat_amount, total_amount = _calculate_vat(body.subtotal, body.vat_rate)
 
-    line_items_data = [item.model_dump() for item in body.line_items] if body.line_items else []
-    # Convert Decimal to str for JSON serialization
-    for item in line_items_data:
-        for key in ("quantity", "unit_price", "total"):
-            if key in item:
-                item[key] = str(item[key])
+    if body.line_items:
+        line_items_data, subtotal = _build_line_items(body.line_items)
+    else:
+        line_items_data = []
+        subtotal = body.subtotal
+
+    vat_amount, total_amount = _calculate_vat(subtotal, body.vat_rate)
 
     invoice = Invoice(
         client_id=body.client_id,
@@ -92,7 +109,7 @@ async def create_invoice(
         service_date=body.service_date,
         due_date=body.due_date,
         status=InvoiceStatus.DRAFT.value,
-        subtotal=body.subtotal,
+        subtotal=subtotal,
         vat_rate=body.vat_rate,
         vat_amount=vat_amount,
         total_amount=total_amount,
@@ -141,13 +158,15 @@ async def update_invoice(
     changes = {}
     update_data = body.model_dump(exclude_unset=True)
 
+    # Handle line_items with server-side recalculation
+    if "line_items" in update_data and update_data["line_items"] is not None:
+        raw_items = update_data.pop("line_items")
+        line_items_data, new_subtotal = _build_line_items(raw_items)
+        changes["line_items"] = {"old": str(invoice.line_items), "new": str(line_items_data)}
+        invoice.line_items = line_items_data
+        invoice.subtotal = new_subtotal
+
     for field, value in update_data.items():
-        if field == "line_items" and value is not None:
-            value = [item.model_dump() if hasattr(item, 'model_dump') else item for item in value]
-            for item in value:
-                for key in ("quantity", "unit_price", "total"):
-                    if key in item and not isinstance(item[key], str):
-                        item[key] = str(item[key])
         if hasattr(value, "value"):
             value = value.value
         old_value = getattr(invoice, field)
@@ -155,23 +174,19 @@ async def update_invoice(
             changes[field] = {"old": str(old_value), "new": str(value)}
             setattr(invoice, field, value)
 
-    # Recalculate if subtotal or vat_rate changed
-    if "subtotal" in update_data or "vat_rate" in update_data:
+    if changes:
         vat_amount, total_amount = _calculate_vat(invoice.subtotal, invoice.vat_rate)
         invoice.vat_amount = vat_amount
         invoice.total_amount = total_amount
-
-    if changes or "subtotal" in update_data or "vat_rate" in update_data:
         await db.flush()
         await db.refresh(invoice)
-
-    if changes:
         await create_audit_log(
             db, "Invoice", invoice.id, "UPDATE",
             actor_user_id=current_user.id,
             metadata=changes,
             ip_address=get_client_ip(request),
         )
+
     return InvoiceResponse.model_validate(invoice)
 
 
@@ -272,6 +287,7 @@ async def download_invoice_pdf(
         "account_holder_name": settings.account_holder_name,
         "payment_term_days": settings.payment_term_days,
         "invoice_footer_text": settings.invoice_footer_text,
+        "website_url": settings.website_url,
     }
 
     pdf_bytes = generate_invoice_pdf(invoice_data, client_data, settings_data)

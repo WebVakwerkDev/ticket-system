@@ -204,6 +204,15 @@ def auth_header(token: str) -> dict:
 
 
 @pytest.fixture
+async def test_business_settings(client, admin_token):
+    """Create minimal business settings (required for PDF generation)."""
+    await client.put("/api/v1/settings", json={
+        "company_name": "Test BV",
+        "email": "test@testbv.nl",
+    }, headers=auth_header(admin_token))
+
+
+@pytest.fixture
 async def test_client_data(client, admin_token):
     """Create a test client and return its data."""
     response = await client.post("/api/v1/clients", json={

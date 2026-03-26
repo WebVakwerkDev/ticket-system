@@ -1,102 +1,164 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"/>
 <style>
-    @page { size: A4; margin: 2cm; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; color: #1a1a1a; line-height: 1.6; }
-    .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-    .company-info { text-align: right; font-size: 9pt; color: #555; }
-    .company-name { font-size: 16pt; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .proposal-title { font-size: 22pt; font-weight: 700; color: #2563eb; margin-bottom: 8px; }
+    @page { size: A4; margin: 2cm 2.5cm 2.5cm 2.5cm; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.5;
+        color: #1a1a1a;
+        background: #fff;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 48px;
+    }
+    .brand { font-size: 18pt; font-weight: 700; color: #111; letter-spacing: -.2px; }
+    .brand-sub { font-size: 9.5pt; color: #777; margin-top: 3px; }
+    .header-info {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 3px 20px;
+        font-size: 10pt;
+        text-align: left;
+    }
+    .hi-lbl { font-weight: 700; color: #111; white-space: nowrap; }
+    .hi-val { color: #444; }
+    .doc-title { font-size: 17pt; font-weight: 700; letter-spacing: .5px; color: #111; margin-bottom: 8px; }
     .subtitle { font-size: 11pt; color: #555; margin-bottom: 30px; }
     .meta-grid { display: flex; justify-content: space-between; margin-bottom: 30px; }
     .meta-block h3 { font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
     .meta-block p { font-size: 10pt; margin-bottom: 2px; }
     .section { margin-bottom: 24px; }
-    .section h2 { font-size: 12pt; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
+    .section h2 {
+        font-size: 12pt;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #e2e8f0;
+    }
     .section p { margin-bottom: 8px; }
-    .price-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin: 30px 0; text-align: center; }
+    .price-box {
+        border: 1.5px solid #d0d0d0;
+        border-radius: 4px;
+        padding: 20px;
+        margin: 30px 0;
+        text-align: center;
+    }
     .price-label { font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; color: #555; }
-    .price-amount { font-size: 28pt; font-weight: 700; color: #2563eb; margin: 8px 0; }
+    .price-amount { font-size: 28pt; font-weight: 700; color: #111; margin: 8px 0; }
     .price-note { font-size: 9pt; color: #888; }
-    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #888; }
+    .footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e5e5;
+        font-size: 9pt;
+        color: #bbb;
+    }
+    .validity {
+        text-align: center;
+        font-size: 9pt;
+        color: #aaa;
+        margin-top: 10px;
+    }
 </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <div class="company-name">{{ settings.company_name }}</div>
+
+<div class="header">
+    <div>
+        <div class="brand">{{ settings.company_name }}</div>
+        {% if settings.website_url or settings.email %}
+        <div class="brand-sub">
+            {% if settings.website_url %}{{ settings.website_url }}{% endif %}
+            {% if settings.website_url and settings.email %} &middot; {% endif %}
+            {% if settings.email %}{{ settings.email }}{% endif %}
         </div>
-        <div class="company-info">
-            <p>{{ settings.address or '' }}</p>
-            <p>{{ settings.email }}</p>
-            <p>{{ settings.phone or '' }}</p>
-        </div>
-    </div>
-
-    <div class="proposal-title">{{ proposal.title }}</div>
-    <div class="subtitle">Offerte voor {{ proposal.recipient_company or proposal.recipient_name }}</div>
-
-    <div class="meta-grid">
-        <div class="meta-block">
-            <h3>Opgesteld voor</h3>
-            <p><strong>{{ proposal.recipient_name }}</strong></p>
-            {% if proposal.recipient_company %}<p>{{ proposal.recipient_company }}</p>{% endif %}
-            <p>{{ proposal.recipient_email }}</p>
-            {% if proposal.recipient_address %}<p>{{ proposal.recipient_address }}</p>{% endif %}
-        </div>
-        <div class="meta-block" style="text-align: right;">
-            <h3>Datum</h3>
-            <p>{{ generated_at }}</p>
-            {% if proposal.delivery_time %}
-            <h3 style="margin-top: 10px;">Levertijd</h3>
-            <p>{{ proposal.delivery_time }}</p>
-            {% endif %}
-        </div>
-    </div>
-
-    {% if proposal.summary %}
-    <div class="section">
-        <h2>Samenvatting</h2>
-        <p>{{ proposal.summary }}</p>
-    </div>
-    {% endif %}
-
-    {% if proposal.scope %}
-    <div class="section">
-        <h2>Scope</h2>
-        <p>{{ proposal.scope }}</p>
-    </div>
-    {% endif %}
-
-    <div class="price-box">
-        <div class="price-label">{{ proposal.price_label }}</div>
-        <div class="price-amount">{{ proposal.amount|currency }}</div>
-        <div class="price-note">Exclusief {{ settings.default_vat_rate }}% BTW</div>
-    </div>
-
-    {% if proposal.notes %}
-    <div class="section">
-        <h2>Opmerkingen</h2>
-        <p>{{ proposal.notes }}</p>
-    </div>
-    {% endif %}
-
-    {% if settings.default_terms_text %}
-    <div class="section">
-        <h2>Voorwaarden</h2>
-        <p style="font-size: 9pt; color: #555;">{{ settings.default_terms_text }}</p>
-    </div>
-    {% endif %}
-
-    <div class="footer">
-        <p>{{ settings.company_name }} | {{ settings.email }} | {% if settings.website_url %}{{ settings.website_url }}{% endif %}</p>
-        {% if settings.quote_footer_text %}
-        <p style="margin-top: 6px;">{{ settings.quote_footer_text }}</p>
         {% endif %}
-        <p style="margin-top: 6px;">Deze offerte is {{ settings.default_quote_valid_days }} dagen geldig.</p>
     </div>
+    <div class="header-info">
+        {% if settings.address %}<span class="hi-lbl">Adres</span><span class="hi-val">{{ settings.address }}</span>{% endif %}
+        {% if settings.phone %}<span class="hi-lbl">Telefoon</span><span class="hi-val">{{ settings.phone }}</span>{% endif %}
+        {% if settings.kvk_number %}<span class="hi-lbl">KVK</span><span class="hi-val">{{ settings.kvk_number }}</span>{% endif %}
+        {% if settings.vat_number %}<span class="hi-lbl">BTW</span><span class="hi-val">{{ settings.vat_number }}</span>{% endif %}
+    </div>
+</div>
+
+<div class="doc-title">OFFERTE</div>
+<div class="subtitle">{{ proposal.title }} — voor {{ proposal.recipient_company or proposal.recipient_name }}</div>
+
+<div class="meta-grid">
+    <div class="meta-block">
+        <h3>Opgesteld voor</h3>
+        <p><strong>{{ proposal.recipient_name }}</strong></p>
+        {% if proposal.recipient_company %}<p>{{ proposal.recipient_company }}</p>{% endif %}
+        <p>{{ proposal.recipient_email }}</p>
+        {% if proposal.recipient_address %}<p>{{ proposal.recipient_address }}</p>{% endif %}
+    </div>
+    <div class="meta-block" style="text-align: right;">
+        <h3>Datum</h3>
+        <p>{{ generated_at }}</p>
+        {% if proposal.delivery_time %}
+        <h3 style="margin-top: 10px;">Levertijd</h3>
+        <p>{{ proposal.delivery_time }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if proposal.summary %}
+<div class="section">
+    <h2>Samenvatting</h2>
+    <p>{{ proposal.summary }}</p>
+</div>
+{% endif %}
+
+{% if proposal.scope %}
+<div class="section">
+    <h2>Scope</h2>
+    <p>{{ proposal.scope }}</p>
+</div>
+{% endif %}
+
+<div class="price-box">
+    <div class="price-label">{{ proposal.price_label }}</div>
+    <div class="price-amount">{{ proposal.amount|currency }}</div>
+    <div class="price-note">Exclusief {{ settings.default_vat_rate }}% BTW</div>
+</div>
+
+{% if proposal.notes %}
+<div class="section">
+    <h2>Opmerkingen</h2>
+    <p>{{ proposal.notes }}</p>
+</div>
+{% endif %}
+
+{% if settings.default_terms_text %}
+<div class="section">
+    <h2>Voorwaarden</h2>
+    <p style="font-size: 9pt; color: #555;">{{ settings.default_terms_text }}</p>
+</div>
+{% endif %}
+
+<div class="footer">
+    <span>{{ settings.company_name }}{% if settings.address %} &middot; {{ settings.address }}{% endif %}</span>
+    <span>
+        {% if settings.kvk_number %}KVK: {{ settings.kvk_number }}{% endif %}
+        {% if settings.kvk_number and settings.vat_number %} &middot; {% endif %}
+        {% if settings.vat_number %}BTW: {{ settings.vat_number }}{% endif %}
+        {% if settings.quote_footer_text %} &middot; {{ settings.quote_footer_text }}{% endif %}
+    </span>
+</div>
+{% if settings.default_quote_valid_days %}
+<div class="validity">Deze offerte is {{ settings.default_quote_valid_days }} dagen geldig.</div>
+{% endif %}
+
 </body>
 </html>

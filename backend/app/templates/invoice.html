@@ -1,181 +1,244 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"/>
 <style>
-    @page { size: A4; margin: 2cm 2.5cm 3cm 2.5cm; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #1a1a1a; line-height: 1.6; }
-
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; }
-    .company-name { font-size: 18pt; font-weight: 700; letter-spacing: -0.5px; }
-    .company-details { text-align: right; font-size: 8.5pt; color: #333; line-height: 1.7; }
-    .company-details .label { color: #888; }
-
-    .client-block { margin-bottom: 45px; line-height: 1.7; }
-    .client-block .name { font-weight: 600; }
-
-    .invoice-title { font-size: 20pt; font-weight: 700; color: #1a1a1a; margin-bottom: 24px; letter-spacing: -0.3px; }
-
-    .meta-table { margin-bottom: 40px; }
-    .meta-table td { padding: 2px 0; font-size: 9.5pt; }
-    .meta-table .label { font-weight: 600; padding-right: 24px; white-space: nowrap; }
-
-    /* Line items */
-    .items { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    .items thead th {
-        text-align: left; font-size: 9pt; font-weight: 600; color: #1a1a1a;
-        padding: 8px 0; border-bottom: 2px solid #1a1a1a;
+    @page { size: A4; margin: 2cm 2.5cm 2.5cm 2.5cm; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.5;
+        color: #1a1a1a;
+        background: #fff;
     }
-    .items thead th.right { text-align: right; }
-    .items tbody td { padding: 10px 0; border-bottom: 1px solid #e5e5e5; font-size: 9.5pt; }
-    .items tbody td.right { text-align: right; }
-
-    /* Combined totals + BTW summary row */
-    .summary-row { width: 100%; margin-bottom: 30px; }
-    .summary-row td { vertical-align: top; }
-    .summary-left { width: 50%; padding-right: 20px; }
-    .summary-right { width: 50%; }
-
-    /* BTW breakdown (left side) */
-    .vat-table { font-size: 8.5pt; border-collapse: collapse; }
-    .vat-table th { text-align: left; font-weight: 600; padding: 3px 16px 3px 0; font-size: 8.5pt; }
-    .vat-table td { padding: 3px 16px 3px 0; }
-
-    /* Totals (right side) */
-    .totals { width: 100%; border-collapse: collapse; }
-    .totals td { padding: 4px 0; font-size: 9.5pt; }
-    .totals td.right { text-align: right; }
-    .totals .line td { border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; }
-    .totals .total td { border-top: 2px solid #1a1a1a; padding-top: 8px; font-weight: 700; font-size: 11pt; }
-
-    /* Payment */
-    .payment { margin-top: 24px; font-size: 9pt; line-height: 1.8; }
-
-    .notes { margin-top: 16px; font-size: 8.5pt; color: #555; }
-
-    /* Footer — not fixed, uses @bottom-center or just sits at bottom with margin */
-    .footer { margin-top: 50px; padding-top: 10px; border-top: 1px solid #e5e5e5; font-size: 7.5pt; color: #999; display: flex; justify-content: space-between; }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 48px;
+    }
+    .brand { font-size: 18pt; font-weight: 700; color: #111; letter-spacing: -.2px; }
+    .brand-sub { font-size: 9.5pt; color: #777; margin-top: 3px; }
+    .header-info {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 3px 20px;
+        font-size: 10pt;
+        text-align: left;
+    }
+    .hi-lbl { font-weight: 700; color: #111; white-space: nowrap; }
+    .hi-val { color: #444; }
+    .recipient {
+        margin-bottom: 36px;
+        font-size: 10.5pt;
+        line-height: 1.75;
+        color: #1a1a1a;
+    }
+    .recipient strong { font-weight: 700; }
+    .recipient .tav { color: #777; font-size: 10pt; }
+    .doc-title {
+        font-size: 17pt;
+        font-weight: 700;
+        letter-spacing: .5px;
+        color: #111;
+        margin-bottom: 14px;
+    }
+    .meta {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 16px;
+        font-size: 10.5pt;
+        max-width: 340px;
+    }
+    .mk { font-weight: 700; color: #111; }
+    .mv { color: #333; }
+    .divider { border: none; border-top: 1px solid #d0d0d0; margin: 18px 0 0 0; }
+    .items { width: 100%; border-collapse: collapse; margin-top: 0; }
+    .items thead tr {
+        border-top: 1.5px solid #111;
+        border-bottom: 1.5px solid #111;
+    }
+    .items th {
+        font-size: 9pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #555;
+        padding: 7px 8px;
+        text-align: left;
+    }
+    .items th.r { text-align: right; }
+    .items tbody td {
+        padding: 9px 8px;
+        font-size: 10.5pt;
+        vertical-align: top;
+        border-bottom: 1px solid #ececec;
+        color: #1a1a1a;
+    }
+    .items tbody td.r {
+        text-align: right;
+        white-space: nowrap;
+    }
+    .bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 2px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    .vat-tbl { border-collapse: collapse; font-size: 9.5pt; margin-top: 14px; }
+    .vat-tbl th {
+        font-weight: 700;
+        color: #555;
+        text-align: left;
+        padding: 5px 24px 4px 0;
+        border-bottom: 1px solid #ccc;
+    }
+    .vat-tbl td { padding: 5px 24px 0 0; color: #444; }
+    .totals { border-collapse: collapse; min-width: 200px; font-size: 10.5pt; }
+    .totals td { padding: 4px 0 4px 24px; color: #555; }
+    .totals td:last-child {
+        text-align: right;
+        white-space: nowrap;
+    }
+    .totals .grand td {
+        font-size: 12pt;
+        font-weight: 700;
+        color: #111;
+        border-top: 1.5px solid #111;
+        padding-top: 8px;
+    }
+    .payment {
+        padding-top: 18px;
+        font-size: 10.5pt;
+        color: #333;
+        line-height: 1.9;
+    }
+    .footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e5e5;
+        font-size: 9pt;
+        color: #bbb;
+    }
 </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <div class="company-name">{{ settings.company_name }}</div>
+
+<div class="header">
+    <div>
+        <div class="brand">{{ settings.company_name }}</div>
+        {% if settings.website_url or settings.email %}
+        <div class="brand-sub">
+            {% if settings.website_url %}{{ settings.website_url }}{% endif %}
+            {% if settings.website_url and settings.email %} &middot; {% endif %}
+            {% if settings.email %}{{ settings.email }}{% endif %}
         </div>
-        <div class="company-details">
-            {{ settings.address or '' }}<br>
-            {{ settings.email }}<br>
-            {% if settings.phone %}{{ settings.phone }}<br>{% endif %}
-            {% if settings.iban %}<span class="label">IBAN:</span> {{ settings.iban }}<br>{% endif %}
-            {% if settings.kvk_number %}<span class="label">KVK:</span> {{ settings.kvk_number }}<br>{% endif %}
-            {% if settings.vat_number %}<span class="label">BTW:</span> {{ settings.vat_number }}{% endif %}
-        </div>
+        {% endif %}
     </div>
-
-    <div class="client-block">
-        <span class="name">{{ client.company_name }}</span><br>
-        {{ client.contact_name }}<br>
-        {% if client.address %}{{ client.address }}<br>{% endif %}
-        {{ client.email }}
+    <div class="header-info">
+        {% if settings.address %}<span class="hi-lbl">Adres</span><span class="hi-val">{{ settings.address }}</span>{% endif %}
+        {% if settings.phone %}<span class="hi-lbl">Telefoon</span><span class="hi-val">{{ settings.phone }}</span>{% endif %}
+        {% if settings.iban %}<span class="hi-lbl">IBAN</span><span class="hi-val">{{ settings.iban }}</span>{% endif %}
+        {% if settings.kvk_number %}<span class="hi-lbl">KVK</span><span class="hi-val">{{ settings.kvk_number }}</span>{% endif %}
+        {% if settings.vat_number %}<span class="hi-lbl">BTW</span><span class="hi-val">{{ settings.vat_number }}</span>{% endif %}
     </div>
+</div>
 
-    <div class="invoice-title">FACTUUR</div>
+<div class="recipient">
+    <strong>{{ client.company_name }}</strong><br/>
+    {% if client.contact_name %}<span class="tav">T.a.v. {{ client.contact_name }}</span><br/>{% endif %}
+    {% if client.address %}{{ client.address }}<br/>{% endif %}
+    {% if client.email %}{{ client.email }}{% endif %}
+</div>
 
-    <table class="meta-table">
-        <tr><td class="label">Factuurnummer:</td><td>{{ invoice.invoice_number }}</td></tr>
-        <tr><td class="label">Factuurdatum:</td><td>{{ invoice.issue_date|date_nl }}</td></tr>
-        <tr><td class="label">Vervaldatum:</td><td>{{ invoice.due_date|date_nl }}</td></tr>
-        {% if invoice.service_date %}<tr><td class="label">Leveringsdatum:</td><td>{{ invoice.service_date|date_nl }}</td></tr>{% endif %}
-        {% if settings.kvk_number %}<tr><td class="label">KvK nummer:</td><td>{{ settings.kvk_number }}</td></tr>{% endif %}
-    </table>
+<div class="doc-title">FACTUUR</div>
+<div class="meta">
+    <span class="mk">Factuurnummer</span><span class="mv">{{ invoice.invoice_number }}</span>
+    <span class="mk">Factuurdatum</span><span class="mv">{{ invoice.issue_date|date_nl }}</span>
+    <span class="mk">Vervaldatum</span><span class="mv">{{ invoice.due_date|date_nl }}</span>
+    {% if invoice.service_date %}
+    <span class="mk">Leveringsdatum</span><span class="mv">{{ invoice.service_date|date_nl }}</span>
+    {% endif %}
+</div>
+<hr class="divider"/>
 
-    <table class="items">
+<table class="items">
+    <thead>
+        <tr>
+            <th style="width:50%;">Omschrijving</th>
+            <th class="r">Aantal</th>
+            <th class="r">Tarief</th>
+            <th class="r">Bedrag excl. BTW</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if invoice.line_items %}
+            {% for item in invoice.line_items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td class="r">{{ item.quantity }}</td>
+                <td class="r">{{ item.unit_price|currency_plain }}</td>
+                <td class="r">{{ item.total|currency_plain }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td>{{ invoice.description }}</td>
+                <td class="r">1</td>
+                <td class="r">{{ invoice.subtotal|currency_plain }}</td>
+                <td class="r">{{ invoice.subtotal|currency_plain }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<div class="bottom">
+    <table class="vat-tbl">
         <thead>
             <tr>
-                <th style="width:50%;">Omschrijving</th>
-                <th class="right">Aantal</th>
-                <th class="right">Tarief in &euro;</th>
-                <th class="right">Bedrag in &euro;</th>
-                <th class="right" style="width:40px;">Btw</th>
+                <th>BTW-percentage</th>
+                <th>Grondslag</th>
+                <th>BTW-bedrag</th>
             </tr>
         </thead>
         <tbody>
-            {% if invoice.line_items %}
-                {% for item in invoice.line_items %}
-                <tr>
-                    <td>{{ item.description }}</td>
-                    <td class="right">{{ item.quantity }}</td>
-                    <td class="right">{{ item.unit_price|currency_plain }}</td>
-                    <td class="right">{{ item.total|currency_plain }}</td>
-                    <td class="right">{{ invoice.vat_rate }}%</td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td>{{ invoice.description }}</td>
-                    <td class="right">1</td>
-                    <td class="right">{{ invoice.subtotal|currency_plain }}</td>
-                    <td class="right">{{ invoice.subtotal|currency_plain }}</td>
-                    <td class="right">{{ invoice.vat_rate }}%</td>
-                </tr>
-            {% endif %}
+            <tr>
+                <td>{% if invoice.vat_rate == 0 %}Vrijgesteld{% else %}{{ invoice.vat_rate }}%{% endif %}</td>
+                <td>{{ invoice.subtotal|currency }}</td>
+                <td>{{ invoice.vat_amount|currency }}</td>
+            </tr>
         </tbody>
     </table>
-
-    <!-- BTW summary (left) + Totals (right) on same line -->
-    <table class="summary-row">
-        <tr>
-            <td class="summary-left">
-                <table class="vat-table">
-                    <tr>
-                        <th>BTW-percentage</th>
-                        <th>Grondslag</th>
-                        <th>BTW-bedrag</th>
-                    </tr>
-                    <tr>
-                        <td>{{ invoice.vat_rate }}%</td>
-                        <td>{{ invoice.subtotal|currency_plain }}</td>
-                        <td>{{ invoice.vat_amount|currency_plain }}</td>
-                    </tr>
-                </table>
-            </td>
-            <td class="summary-right">
-                <table class="totals">
-                    <tr class="line">
-                        <td>Subtotaal</td>
-                        <td class="right">{{ invoice.subtotal|currency_plain }}</td>
-                    </tr>
-                    <tr class="line">
-                        <td>Btw</td>
-                        <td class="right">{{ invoice.vat_amount|currency_plain }}</td>
-                    </tr>
-                    <tr class="total">
-                        <td>Totaal te voldoen</td>
-                        <td class="right">{{ invoice.total_amount|currency_plain }}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+    <table class="totals">
+        <tr><td>Subtotaal</td><td>{{ invoice.subtotal|currency }}</td></tr>
+        <tr><td>BTW {{ invoice.vat_rate }}%</td><td>{{ invoice.vat_amount|currency }}</td></tr>
+        <tr class="grand"><td>Totaal te voldoen</td><td>{{ invoice.total_amount|currency }}</td></tr>
     </table>
+</div>
 
-    <div class="payment">
-        <p>Betaal het bedrag voor de vervaldatum op {{ settings.iban or 'N.v.t.' }} t.n.v. {{ settings.account_holder_name or settings.company_name }} o.v.v. het factuurnummer.</p>
-    </div>
-
-    {% if invoice.notes %}
-    <div class="notes">
-        <strong>Opmerking:</strong> {{ invoice.notes }}
-    </div>
+<div class="payment">
+    {% if settings.iban %}
+    Betaal het bedrag voor de vervaldatum op <strong>{{ settings.iban }}</strong>
+    t.n.v. <strong>{{ settings.account_holder_name or settings.company_name }}</strong>
+    o.v.v. factuurnummer <strong>{{ invoice.invoice_number }}</strong>.
     {% endif %}
+    {% if invoice.notes %}<br/><br/>{{ invoice.notes }}{% endif %}
+    {% if settings.email %}<br/><br/>Vragen? Neem contact op via <strong>{{ settings.email }}</strong>.{% endif %}
+</div>
 
-    {% if settings.invoice_footer_text %}
-    <div class="notes">{{ settings.invoice_footer_text }}</div>
-    {% endif %}
+<div class="footer">
+    <span>{{ settings.company_name }}{% if settings.address %} &middot; {{ settings.address }}{% endif %}</span>
+    <span>
+        {% if settings.kvk_number %}KVK: {{ settings.kvk_number }}{% endif %}
+        {% if settings.kvk_number and settings.vat_number %} &middot; {% endif %}
+        {% if settings.vat_number %}BTW: {{ settings.vat_number }}{% endif %}
+    </span>
+</div>
 
-    <div class="footer">
-        <span>{{ settings.company_name }} | {{ settings.email }}{% if settings.phone %} | {{ settings.phone }}{% endif %}</span>
-        <span>{% if settings.kvk_number %}KVK {{ settings.kvk_number }}{% endif %}{% if settings.vat_number %} | BTW {{ settings.vat_number }}{% endif %}</span>
-    </div>
 </body>
 </html>

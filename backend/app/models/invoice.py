@@ -29,7 +29,7 @@ class Invoice(TimestampMixin, Base):
     vat_rate: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=Decimal("21.00"))
     vat_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     line_items: Mapped[list | None] = mapped_column(JSON, default=list)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
