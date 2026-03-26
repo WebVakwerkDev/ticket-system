@@ -226,17 +226,9 @@
     </Dialog>
 
     <!-- Invoice Dialog -->
-    <Dialog v-model:visible="showInvoiceDialog" header="Nieuwe factuur" modal :style="{ width: '520px' }">
+    <Dialog v-model:visible="showInvoiceDialog" header="Nieuwe factuur" modal :style="{ width: '720px' }" @hide="resetInvoiceForm">
       <form @submit.prevent="createInvoice" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Subtotaal (excl. BTW)</label>
-            <InputNumber v-model="invoiceForm.subtotal" mode="currency" currency="EUR" locale="nl-NL" class="w-full" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">BTW-tarief</label>
-            <InputNumber v-model="invoiceForm.vat_rate" suffix="%" class="w-full" :min="0" :max="100" />
-          </div>
           <div>
             <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Factuurdatum</label>
             <Calendar v-model="invoiceForm.issue_date" dateFormat="dd-mm-yy" class="w-full" />
@@ -245,11 +237,48 @@
             <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Vervaldatum</label>
             <Calendar v-model="invoiceForm.due_date" dateFormat="dd-mm-yy" class="w-full" />
           </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">BTW-tarief</label>
+            <InputNumber v-model="invoiceForm.vat_rate" suffix="%" class="w-full" :min="0" :max="100" />
+          </div>
         </div>
+
+        <!-- Line items -->
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Omschrijving</label>
-          <textarea v-model="invoiceForm.description" class="input min-h-[60px]" required />
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Regelitems</label>
+          <table class="w-full text-sm mb-2">
+            <thead>
+              <tr class="text-xs text-gray-400 uppercase border-b border-gray-200">
+                <th class="text-left pb-1 pr-2" style="width:45%">Omschrijving</th>
+                <th class="text-right pb-1 px-2" style="width:15%">Aantal</th>
+                <th class="text-right pb-1 px-2" style="width:20%">Tarief</th>
+                <th class="text-right pb-1 px-2" style="width:15%">Bedrag</th>
+                <th style="width:5%"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, i) in invoiceLineItems" :key="i" class="border-b border-gray-100">
+                <td class="py-1 pr-2"><input v-model="item.description" class="input py-1 px-2 text-sm" placeholder="Omschrijving" /></td>
+                <td class="py-1 px-2"><input v-model.number="item.quantity" type="number" min="0" step="any" class="input py-1 px-2 text-sm text-right w-full" @input="recalcInvoiceItem(i)" /></td>
+                <td class="py-1 px-2"><input v-model.number="item.unit_price" type="number" min="0" step="0.01" class="input py-1 px-2 text-sm text-right w-full" @input="recalcInvoiceItem(i)" /></td>
+                <td class="py-1 px-2 text-right text-gray-700">{{ formatCurrency(item.total) }}</td>
+                <td class="py-1 pl-1"><button type="button" class="btn-icon text-red-400" @click="invoiceLineItems.splice(i, 1)" :disabled="invoiceLineItems.length === 1"><i class="pi pi-trash text-xs"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="button" class="btn-secondary text-xs" @click="invoiceLineItems.push({ description: '', quantity: 1, unit_price: 0, total: 0 })">
+            <i class="pi pi-plus text-xs"></i> Regel toevoegen
+          </button>
+          <p v-if="invoiceErrors.line_items" class="field-error">{{ invoiceErrors.line_items }}</p>
         </div>
+
+        <!-- Totals preview -->
+        <div class="flex justify-end text-sm text-gray-600 gap-6 pt-1">
+          <span>Subtotaal: <strong>{{ formatCurrency(invoiceSubtotal) }}</strong></span>
+          <span>BTW {{ invoiceForm.vat_rate }}%: <strong>{{ formatCurrency(invoiceVatAmount) }}</strong></span>
+          <span class="text-gray-900 font-semibold">Totaal: {{ formatCurrency(invoiceTotalAmount) }}</span>
+        </div>
+
         <div>
           <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Notities</label>
           <textarea v-model="invoiceForm.notes" class="input min-h-[40px]" />
@@ -323,7 +352,24 @@ const repoForm = ref<any>({ repo_name: '', repo_url: '', default_branch: 'main' 
 const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', amount: 0, delivery_time: '', summary: '', scope: '' })
 const linkForm = ref<any>({ label: '', url: '', description: '' })
 const editForm = ref<any>({})
-const invoiceForm = ref<any>({ subtotal: 0, vat_rate: 21, issue_date: new Date(), due_date: new Date(Date.now() + 30 * 86400000), description: '', notes: '' })
+interface InvoiceLineItem { description: string; quantity: number; unit_price: number; total: number }
+const invoiceForm = ref<any>({ vat_rate: 21, issue_date: new Date(), due_date: new Date(Date.now() + 30 * 86400000), notes: '' })
+const invoiceLineItems = ref<InvoiceLineItem[]>([{ description: '', quantity: 1, unit_price: 0, total: 0 }])
+const invoiceErrors = ref<Record<string, string>>({})
+const invoiceSubtotal = computed(() => invoiceLineItems.value.reduce((s, i) => s + i.total, 0))
+const invoiceVatAmount = computed(() => Math.round(invoiceSubtotal.value * (invoiceForm.value.vat_rate / 100) * 100) / 100)
+const invoiceTotalAmount = computed(() => invoiceSubtotal.value + invoiceVatAmount.value)
+
+function recalcInvoiceItem(i: number) {
+  const item = invoiceLineItems.value[i]
+  item.total = Math.round((item.quantity || 0) * (item.unit_price || 0) * 100) / 100
+}
+
+function resetInvoiceForm() {
+  invoiceForm.value = { vat_rate: 21, issue_date: new Date(), due_date: new Date(Date.now() + 30 * 86400000), notes: '' }
+  invoiceLineItems.value = [{ description: '', quantity: 1, unit_price: 0, total: 0 }]
+  invoiceErrors.value = {}
+}
 
 const statusOptions = [
   { label: 'Lead', value: 'LEAD' }, { label: 'Intake', value: 'INTAKE' },
@@ -442,28 +488,39 @@ async function downloadInvoicePdf(inv: any) {
 }
 
 function openInvoiceDialog() {
-  invoiceForm.value = { subtotal: 0, vat_rate: 21, issue_date: new Date(), due_date: new Date(Date.now() + 30 * 86400000), description: '', notes: '' }
+  resetInvoiceForm()
   showInvoiceDialog.value = true
 }
 
 async function createInvoice() {
+  invoiceErrors.value = {}
+  const items = invoiceLineItems.value.filter(i => i.description.trim())
+  if (!items.length) {
+    invoiceErrors.value.line_items = 'Voeg minimaal één regelitem toe'
+    return
+  }
   saving.value = true
   try {
     await invoicesApi.create({
       client_id: project.value.client_id,
       project_id: project.value.id,
-      subtotal: invoiceForm.value.subtotal,
       vat_rate: invoiceForm.value.vat_rate,
       issue_date: toISODate(invoiceForm.value.issue_date),
       due_date: toISODate(invoiceForm.value.due_date),
-      description: invoiceForm.value.description,
       notes: invoiceForm.value.notes || undefined,
+      line_items: items.map(i => ({ description: i.description, quantity: String(i.quantity), unit_price: String(i.unit_price), total: String(i.total) })),
     })
     showInvoiceDialog.value = false
     const { data } = await invoicesApi.list({ project_id: project.value.id })
     invoices.value = data
     showSuccess('Factuur aangemaakt')
-  } catch (err: any) { showError(err) }
+  } catch (err: any) {
+    if (err.response?.status === 422) {
+      const detail = err.response.data?.detail
+      if (Array.isArray(detail)) detail.forEach((e: any) => { invoiceErrors.value[e.loc?.slice(-1)[0]] = e.msg })
+      else invoiceErrors.value.line_items = detail || 'Validatiefout'
+    } else { showError(err) }
+  }
   saving.value = false
 }
 
