@@ -169,7 +169,6 @@ function validateField(field: string): boolean {
   if (field === 'iban' && v) {
     const n = v.replace(/\s/g, '').toUpperCase()
     if (!/^[A-Z]{2}\d{2}[A-Z0-9]{4,30}$/.test(n)) { errors.value.iban = 'Ongeldig IBAN-formaat'; return false }
-    if (!ibanMod97(n)) { errors.value.iban = 'IBAN-controlegetal klopt niet'; return false }
   }
   if (field === 'phone' && v) {
     const stripped = v.replace(/[\s\-()]/g, '')
@@ -179,16 +178,6 @@ function validateField(field: string): boolean {
     }
   }
   return true
-}
-
-function ibanMod97(iban: string): boolean {
-  const rearranged = iban.slice(4) + iban.slice(0, 4)
-  const numeric = rearranged.split('').map(c => c >= 'A' ? String(c.charCodeAt(0) - 55) : c).join('')
-  let remainder = 0
-  for (const chunk of numeric.match(/.{1,9}/g) ?? []) {
-    remainder = Number(String(remainder) + chunk) % 97
-  }
-  return remainder === 1
 }
 
 function validateAll(): boolean {

@@ -87,7 +87,9 @@ class BusinessSettingsUpdate(BaseModel):
 class BusinessSettingsResponse(BaseModel):
     id: int
     company_name: str
-    address: str | None
+    street: str | None
+    postal_code: str | None
+    city: str | None
     kvk_number: str | None
     vat_number: str | None
     iban: str | None
