@@ -191,7 +191,6 @@
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Levertijd</label><input v-model="proposalForm.delivery_time" class="input" placeholder="Bijv. 4-6 weken" /></div>
         </div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Samenvatting</label><textarea v-model="proposalForm.summary" class="input min-h-[60px]" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Scope</label><textarea v-model="proposalForm.scope" class="input min-h-[60px]" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showProposalDialog = false">Annuleren</button>
           <button type="submit" class="btn-primary" :disabled="saving">Aanmaken</button>
@@ -349,7 +348,7 @@ const showProposalDialog = ref(false)
 
 const commForm = ref<any>({ type: 'EMAIL', subject: '', content: '', occurred_at: new Date() })
 const repoForm = ref<any>({ repo_name: '', repo_url: '', default_branch: 'main' })
-const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '', scope: '' })
+const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '' })
 const linkForm = ref<any>({ label: '', url: '', description: '' })
 const editForm = ref<any>({})
 interface InvoiceLineItem { description: string; quantity: number; unit_price: number; total: number }

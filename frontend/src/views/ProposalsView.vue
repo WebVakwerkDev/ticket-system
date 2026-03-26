@@ -39,7 +39,6 @@
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrijfsnaam</label><input v-model="form.recipient_company" class="input" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Levertijd</label><input v-model="form.delivery_time" class="input" placeholder="bijv. 4-6 weken" /></div>
         </div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Scope</label><textarea v-model="form.scope" class="input min-h-[80px]" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showCreate = false">Annuleren</button>
           <button type="submit" class="btn-primary" :disabled="saving">Aanmaken</button>
@@ -69,7 +68,7 @@ const clientOptions = ref<any[]>([])
 const loading = ref(true)
 const showCreate = ref(false)
 const saving = ref(false)
-const form = ref<any>({ title: '', client_id: '', amount: 0, recipient_name: '', recipient_email: '', recipient_company: '', delivery_time: '', scope: '' })
+const form = ref<any>({ title: '', client_id: '', amount: 0, recipient_name: '', recipient_email: '', recipient_company: '', delivery_time: '' })
 
 onMounted(async () => {
   await Promise.all([loadProposals(), loadClients()])
@@ -92,7 +91,7 @@ async function loadClients() {
 
 async function createProposal() {
   saving.value = true
-  try { await proposalsApi.create(form.value); showCreate.value = false; form.value = { title: '', client_id: '', amount: 0, recipient_name: '', recipient_email: '', recipient_company: '', delivery_time: '', scope: '' }; showSuccess('Offerte aangemaakt') }
+  try { await proposalsApi.create(form.value); showCreate.value = false; form.value = { title: '', client_id: '', amount: 0, recipient_name: '', recipient_email: '', recipient_company: '', delivery_time: '' }; showSuccess('Offerte aangemaakt') }
   catch (err: any) { showError(err) }
   saving.value = false
 }
