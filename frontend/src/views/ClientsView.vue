@@ -33,6 +33,11 @@
             <span class="font-mono text-xs" :class="data.project_count > 0 ? 'text-green-600' : 'text-gray-400'">{{ data.project_count }}</span>
           </template>
         </Column>
+        <Column header="" style="width:60px">
+          <template #body="{ data }">
+            <button class="btn-icon text-red-600 hover:text-red-700" @click.stop="deleteClient(data)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
+          </template>
+        </Column>
       </DataTable>
     </div>
 
@@ -82,12 +87,14 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { clientsApi } from '@/api/services'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 
 const auth = useAuthStore()
 const { showError, showSuccess } = useErrorHandler()
+const confirm = useConfirm()
 const clients = ref<any[]>([])
 const loading = ref(true)
 const showCreate = ref(false)
@@ -101,6 +108,23 @@ async function loadClients() {
   try { const { data } = await clientsApi.list(); clients.value = data }
   catch (err: any) { showError(err, 'Klanten laden mislukt') }
   loading.value = false
+}
+
+function deleteClient(client: any) {
+  confirm.require({
+    message: `"${client.company_name}" verwijderen?`,
+    header: 'Bevestiging',
+    acceptLabel: 'Verwijderen',
+    rejectLabel: 'Annuleren',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await clientsApi.delete(client.id)
+        showSuccess('Klant verwijderd')
+        await loadClients()
+      } catch (err: any) { showError(err) }
+    },
+  })
 }
 
 async function createClient() {

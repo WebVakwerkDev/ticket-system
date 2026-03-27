@@ -38,6 +38,11 @@
         <Column field="created_at" header="Aangemaakt" sortable style="width: 130px">
           <template #body="{ data }"><span class="text-xs font-mono text-gray-500">{{ formatDate(data.created_at) }}</span></template>
         </Column>
+        <Column header="" style="width:60px">
+          <template #body="{ data }">
+            <button class="btn-icon text-red-600 hover:text-red-700" @click.stop="deleteProject(data)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
+          </template>
+        </Column>
       </DataTable>
     </div>
 
@@ -65,12 +70,14 @@ import { ref, onMounted } from 'vue'
 import { projectsApi, clientsApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 
 const { showError, showSuccess } = useErrorHandler()
+const confirm = useConfirm()
 const { formatDate, statusColor, statusDot } = useFormatting()
 const projects = ref<any[]>([])
 const clientOptions = ref<any[]>([])
@@ -107,6 +114,23 @@ async function loadProjects() {
 async function loadClients() {
   try { const { data } = await clientsApi.list(); clientOptions.value = data.map((c: any) => ({ label: c.company_name, value: c.id })) } catch {}
 }
+function deleteProject(project: any) {
+  confirm.require({
+    message: `Project "${project.name}" verwijderen?`,
+    header: 'Bevestiging',
+    acceptLabel: 'Verwijderen',
+    rejectLabel: 'Annuleren',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await projectsApi.delete(project.id)
+        showSuccess('Project verwijderd')
+        await loadProjects()
+      } catch (err: any) { showError(err) }
+    },
+  })
+}
+
 async function createProject() {
   saving.value = true
   try {
