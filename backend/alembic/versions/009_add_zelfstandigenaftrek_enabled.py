@@ -1,4 +1,4 @@
-"""Add zelfstandigenaftrek_enabled toggle to tax_year_settings
+"""Add kor_enabled and zelfstandigenaftrek_enabled toggles to tax_year_settings
 
 Revision ID: 009
 Revises: 008
@@ -16,9 +16,14 @@ depends_on = None
 def upgrade() -> None:
     op.add_column(
         'tax_year_settings',
+        sa.Column('kor_enabled', sa.Boolean(), nullable=False, server_default='false'),
+    )
+    op.add_column(
+        'tax_year_settings',
         sa.Column('zelfstandigenaftrek_enabled', sa.Boolean(), nullable=False, server_default='false'),
     )
 
 
 def downgrade() -> None:
     op.drop_column('tax_year_settings', 'zelfstandigenaftrek_enabled')
+    op.drop_column('tax_year_settings', 'kor_enabled')

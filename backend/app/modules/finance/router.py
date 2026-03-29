@@ -26,6 +26,7 @@ from app.schemas.finance import (
 router = APIRouter(prefix="/api/v1/finance", tags=["finance"])
 
 _DEFAULTS = {
+    "kor_enabled": False,
     "zelfstandigenaftrek_enabled": False,
     "zelfstandigenaftrek": Decimal("1200.00"),
     "startersaftrek_enabled": False,
@@ -173,7 +174,7 @@ async def update_tax_settings(
     for field, value in update_data.items():
         if value is not None:
             setattr(row, field, value)
-        elif field in ("zelfstandigenaftrek_enabled", "startersaftrek_enabled"):
+        elif field in ("kor_enabled", "zelfstandigenaftrek_enabled", "startersaftrek_enabled"):
             setattr(row, field, value)
 
     await db.flush()
@@ -250,6 +251,7 @@ async def get_tax_summary(
 
     return TaxSummary(
         year=year,
+        kor_enabled=s.kor_enabled,
         omzet=omzet,
         kosten=kosten,
         brutowinst=brutowinst,

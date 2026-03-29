@@ -65,7 +65,11 @@
       <!-- ── BTW ── -->
       <TabPanel header="BTW">
         <div class="space-y-5 pt-4">
-          <div class="card overflow-hidden">
+          <div v-if="taxSummary?.kor_enabled" class="card p-5 border-l-4 border-blue-400">
+            <p class="text-sm font-medium text-blue-800 mb-1">KOR actief</p>
+            <p class="text-xs text-blue-600">Je maakt gebruik van de Kleineondernemersregeling. Je hoeft geen BTW te berekenen aan klanten en geen BTW-aangifte te doen.</p>
+          </div>
+          <div v-else class="card overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 class="text-sm font-medium text-gray-800">BTW-aangifte per kwartaal {{ selectedYear }}</h2>
               <span class="text-[10px] font-mono text-gray-400">Q1 30 apr · Q2 31 jul · Q3 31 okt · Q4 31 jan</span>
@@ -107,7 +111,7 @@
           </div>
 
           <!-- Per kwartaal detail -->
-          <div class="grid grid-cols-2 gap-4">
+          <div v-if="!taxSummary?.kor_enabled" class="grid grid-cols-2 gap-4">
             <div v-for="q in quarters" :key="q.key" class="card p-4">
               <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-gray-800 uppercase tracking-wider">{{ q.key }}</span>
@@ -243,8 +247,19 @@
                 <i class="pi text-gray-400 text-xs" :class="showSettings ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
               </button>
               <div v-if="showSettings" class="p-5 border-t border-gray-200 space-y-5">
-                <!-- Aftrekposten -->
+                <!-- KOR -->
                 <div>
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">BTW-regeling</p>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" v-model="settingsForm.kor_enabled" class="rounded" />
+                    <span class="text-xs font-medium text-gray-700">KOR (Kleineondernemersregeling)</span>
+                    <span class="info-btn" title="Bij KOR hoef je geen BTW te berekenen aan klanten en geen BTW-aangifte te doen. Je mag dan ook geen BTW op inkopen terugvragen.">i</span>
+                  </label>
+                  <p v-if="settingsForm.kor_enabled" class="text-[10px] text-amber-600 mt-1 ml-5">Geen BTW berekenen of terugvragen. BTW-tab is niet van toepassing.</p>
+                </div>
+
+                <!-- Aftrekposten -->
+                <div class="pt-4 border-t border-gray-100">
                   <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Aftrekposten</p>
                   <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
@@ -276,7 +291,7 @@
                     <div>
                       <label class="settings-label flex items-center gap-1">
                         MKB-winstvrijstelling %
-                        <span class="info-btn" title="Percentage van de winst na ondernemersaftrek dat vrijgesteld is van IB. Automatisch van toepassing voor alle IB-ondernemers.">i</span>
+                        <span class="info-btn" title="Percentage van de winst na ondernemersaftrek dat vrijgesteld is van IB. Altijd van toepassing voor alle IB-ondernemers.">i</span>
                       </label>
                       <InputNumber v-model="settingsForm.mkb_vrijstelling_rate" suffix="%" :min="0" :max="100" :maxFractionDigits="2" class="w-full" />
                     </div>
@@ -429,6 +444,7 @@ async function saveSettings() {
   savingSettings.value = true
   try {
     await financeApi.updateTaxSettings(selectedYear.value, {
+      kor_enabled: settingsForm.value.kor_enabled,
       zelfstandigenaftrek_enabled: settingsForm.value.zelfstandigenaftrek_enabled,
       zelfstandigenaftrek: settingsForm.value.zelfstandigenaftrek,
       startersaftrek_enabled: settingsForm.value.startersaftrek_enabled,

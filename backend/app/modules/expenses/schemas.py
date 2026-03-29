@@ -4,12 +4,12 @@ from datetime import date as DateType, datetime
 from typing import Optional, Literal
 
 EXPENSE_CATEGORIES: list[str] = [
-    "Software", "Hardware", "Reizen", "Marketing",
+    "Software", "Hardware", "Telefoon", "Reizen", "Marketing",
     "Kantoor", "Abonnementen", "Overig"
 ]
 
 ExpenseCategory = Literal[
-    "Software", "Hardware", "Reizen", "Marketing",
+    "Software", "Hardware", "Telefoon", "Reizen", "Marketing",
     "Kantoor", "Abonnementen", "Overig"
 ]
 
