@@ -64,19 +64,19 @@ async def get_finance_overview(
     target_year = year or date.today().year
 
     paid = await db.execute(
-        select(func.coalesce(func.sum(Invoice.total_amount), 0))
+        select(func.coalesce(func.sum(Invoice.subtotal), 0))
         .where(Invoice.status == InvoiceStatus.PAID.value, extract("year", Invoice.issue_date) == target_year)
     )
     total_revenue = paid.scalar() or Decimal("0")
 
     sent = await db.execute(
-        select(func.coalesce(func.sum(Invoice.total_amount), 0))
+        select(func.coalesce(func.sum(Invoice.subtotal), 0))
         .where(Invoice.status == InvoiceStatus.SENT.value, extract("year", Invoice.issue_date) == target_year)
     )
     open_amount = sent.scalar() or Decimal("0")
 
     overdue = await db.execute(
-        select(func.coalesce(func.sum(Invoice.total_amount), 0))
+        select(func.coalesce(func.sum(Invoice.subtotal), 0))
         .where(Invoice.status == InvoiceStatus.OVERDUE.value, extract("year", Invoice.issue_date) == target_year)
     )
     overdue_amount = overdue.scalar() or Decimal("0")
@@ -100,7 +100,7 @@ async def get_finance_overview(
                 func.sum(Invoice.total_amount).label("total"),
             )
             .where(
-                Invoice.status == InvoiceStatus.PAID.value,
+                Invoice.status.in_([InvoiceStatus.PAID.value, InvoiceStatus.SENT.value, InvoiceStatus.OVERDUE.value]),
                 extract("year", Invoice.issue_date) == target_year,
                 extract("month", Invoice.issue_date) >= start_month,
                 extract("month", Invoice.issue_date) <= end_month,
