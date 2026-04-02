@@ -207,6 +207,13 @@
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrag</label><InputNumber v-model="proposalForm.amount" mode="currency" currency="EUR" locale="nl-NL" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Levertijd</label><input v-model="proposalForm.delivery_time" class="input" placeholder="Bijv. 4-6 weken" /></div>
         </div>
+        <div class="col-span-2">
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Prijslabel</label>
+          <div class="flex gap-2">
+            <Dropdown v-model="proposalForm.price_label" :options="priceLabelOptions" optionLabel="label" optionValue="value" class="w-48" />
+            <input v-model="proposalForm.price_label" class="input flex-1" placeholder="Of vrij invoeren..." />
+          </div>
+        </div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Samenvatting</label><textarea v-model="proposalForm.summary" class="input min-h-[60px]" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showProposalDialog = false">Annuleren</button>
@@ -391,7 +398,7 @@ const showProposalDialog = ref(false)
 
 const commForm = ref<any>({ type: 'EMAIL', subject: '', content: '', occurred_at: new Date() })
 const repoForm = ref<any>({ repo_name: '', repo_url: '', default_branch: 'main' })
-const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '' })
+const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '', price_label: 'Projectprijs' })
 const linkForm = ref<any>({ label: '', url: '', description: '' })
 const editForm = ref<any>({})
 const editToolsInput = ref('')
@@ -447,6 +454,11 @@ const deliveryFormOptions = [
   { label: 'SaaS', value: 'SaaS' },
   { label: 'Self-hosted', value: 'self-hosted' },
   { label: 'Embedded', value: 'embedded' },
+]
+const priceLabelOptions = [
+  { label: 'Projectprijs', value: 'Projectprijs' },
+  { label: 'Abonnementsprijs', value: 'Abonnementsprijs' },
+  { label: 'Maatwerktarief', value: 'Maatwerktarief' },
 ]
 
 const tabs = computed(() => [
@@ -649,6 +661,7 @@ function openProposalDialog() {
     delivery_time: '',
     summary: '',
     scope: '',
+    price_label: 'Projectprijs',
   }
   showProposalDialog.value = true
 }
