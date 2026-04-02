@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta, timezone
 from app.database import get_db
 from app.core.dependencies import require_role
 from app.core.rbac import Role
-from app.models.project import ProjectWorkspace, ProjectStatus
+from app.models.project import ProjectWorkspace, ProjectStatus, ProjectType
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.audit_log import AuditLog
 from app.models.repository import ProjectRepository
@@ -69,12 +69,22 @@ async def get_dashboard_stats(
     ]
 
     # Projects without repos
+    WEB_TYPES = [
+        ProjectType.NEW_WEBSITE.value,
+        ProjectType.REDESIGN.value,
+        ProjectType.MAINTENANCE.value,
+        ProjectType.LANDING_PAGE.value,
+        ProjectType.PORTFOLIO.value,
+        ProjectType.WEBSHOP.value,
+    ]
+
     subq = select(ProjectRepository.project_id).distinct()
     without_repos = await db.execute(
         select(func.count(ProjectWorkspace.id))
         .where(
             ProjectWorkspace.deleted_at.is_(None),
             ProjectWorkspace.status.in_([ProjectStatus.IN_PROGRESS.value, ProjectStatus.REVIEW.value]),
+            ProjectWorkspace.project_type.in_(WEB_TYPES),
             ProjectWorkspace.id.notin_(subq),
         )
     )
