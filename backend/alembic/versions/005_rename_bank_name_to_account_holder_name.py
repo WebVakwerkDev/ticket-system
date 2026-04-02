@@ -13,8 +13,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.alter_column('business_settings', 'bank_name', new_column_name='account_holder_name')
+    # No-op: column was already created as account_holder_name in 001_initial_schema
+    pass
 
 
 def downgrade() -> None:
-    op.alter_column('business_settings', 'account_holder_name', new_column_name='bank_name')
+    # No-op: column was already created as account_holder_name in 001_initial_schema
+    pass

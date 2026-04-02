@@ -1,5 +1,10 @@
 import api from './client'
 
+// Re-exports from migrated modules (backwards compatibility for views not yet migrated)
+export { tasksApi } from '@/modules/tasks/api'
+export { expensesApi } from '@/modules/expenses/api'
+export { clientsApi } from '@/modules/clients/api'
+
 // Auth
 export const authApi = {
   login: (email: string, password: string) =>
@@ -19,15 +24,6 @@ export const usersApi = {
   create: (data: any) => api.post('/users', data),
   update: (id: string, data: any) => api.patch(`/users/${id}`, data),
   delete: (id: string) => api.delete(`/users/${id}`),
-}
-
-// Clients
-export const clientsApi = {
-  list: () => api.get('/clients'),
-  get: (id: string) => api.get(`/clients/${id}`),
-  create: (data: any) => api.post('/clients', data),
-  update: (id: string, data: any) => api.patch(`/clients/${id}`, data),
-  delete: (id: string) => api.delete(`/clients/${id}`),
 }
 
 // Projects
@@ -90,14 +86,6 @@ export const linksApi = {
   delete: (id: string) => api.delete(`/links/${id}`),
 }
 
-// Tasks
-export const tasksApi = {
-  list: (params?: any) => api.get('/tasks', { params }),
-  create: (data: any) => api.post('/tasks', data),
-  update: (id: string, data: any) => api.put(`/tasks/${id}`, data),
-  delete: (id: string) => api.delete(`/tasks/${id}`),
-}
-
 // Time Entries
 export const timeEntriesApi = {
   list: (params?: any) => api.get('/time-entries', { params }),
@@ -105,14 +93,6 @@ export const timeEntriesApi = {
   update: (id: string, data: any) => api.put(`/time-entries/${id}`, data),
   delete: (id: string) => api.delete(`/time-entries/${id}`),
   summary: (year?: number) => api.get('/time-entries/summary', { params: year ? { year } : {} }),
-}
-
-// Expenses
-export const expensesApi = {
-  list: (params?: any) => api.get('/expenses', { params }),
-  create: (data: any) => api.post('/expenses', data),
-  update: (id: string, data: any) => api.put(`/expenses/${id}`, data),
-  delete: (id: string) => api.delete(`/expenses/${id}`),
 }
 
 // Finance

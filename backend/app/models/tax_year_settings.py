@@ -12,7 +12,11 @@ class TaxYearSettings(TimestampMixin, Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     year: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
 
+    # KOR
+    kor_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+
     # Aftrekposten
+    zelfstandigenaftrek_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     zelfstandigenaftrek: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("1200.00"))
     startersaftrek_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     startersaftrek: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("2123.00"))

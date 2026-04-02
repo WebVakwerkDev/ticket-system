@@ -1,5 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { loadModules } from '@/modules/loader'
+
+// Load feature modules (routes + menu items)
+export const modules = loadModules()
+
+// Core routes that are always active
+const coreChildren: RouteRecordRaw[] = [
+  { path: '', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
+  { path: 'settings', name: 'settings', component: () => import('@/views/SettingsView.vue'), meta: { roles: ['ADMIN'] } },
+]
+
+// All feature routes are now provided by modules via modules.routes
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,18 +27,8 @@ const router = createRouter({
       path: '/',
       component: () => import('@/layouts/AppLayout.vue'),
       children: [
-        { path: '', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
-        { path: 'clients', name: 'clients', component: () => import('@/views/ClientsView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE', 'FINANCE'] } },
-        { path: 'clients/:id', name: 'client-detail', component: () => import('@/views/ClientDetailView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE', 'FINANCE'] } },
-        { path: 'projects', name: 'projects', component: () => import('@/views/ProjectsView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE'] } },
-        { path: 'projects/:id', name: 'project-detail', component: () => import('@/views/ProjectDetailView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE'] } },
-        { path: 'invoices', name: 'invoices', component: () => import('@/views/InvoicesView.vue'), meta: { roles: ['ADMIN', 'FINANCE'] } },
-        { path: 'proposals', name: 'proposals', component: () => import('@/views/ProposalsView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE'] } },
-        { path: 'tasks', name: 'tasks', component: () => import('@/views/TasksView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE'] } },
-        { path: 'time-entries', name: 'time-entries', component: () => import('@/views/TimeEntriesView.vue'), meta: { roles: ['ADMIN', 'EMPLOYEE'] } },
-        { path: 'expenses', name: 'expenses', component: () => import('@/views/ExpensesView.vue'), meta: { roles: ['ADMIN', 'FINANCE'] } },
-        { path: 'finance', name: 'finance', component: () => import('@/views/FinanceView.vue'), meta: { roles: ['ADMIN', 'FINANCE'] } },
-        { path: 'settings', name: 'settings', component: () => import('@/views/SettingsView.vue'), meta: { roles: ['ADMIN'] } },
+        ...coreChildren,
+        ...modules.routes,
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },

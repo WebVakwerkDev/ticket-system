@@ -48,6 +48,8 @@ class YearlyReport(BaseModel):
 # Tax year settings
 class TaxYearSettingsResponse(BaseModel):
     year: int
+    kor_enabled: bool
+    zelfstandigenaftrek_enabled: bool
     zelfstandigenaftrek: Decimal
     startersaftrek_enabled: bool
     startersaftrek: Decimal
@@ -64,6 +66,8 @@ class TaxYearSettingsResponse(BaseModel):
 
 
 class TaxYearSettingsUpdate(BaseModel):
+    kor_enabled: bool | None = None
+    zelfstandigenaftrek_enabled: bool | None = None
     zelfstandigenaftrek: Decimal | None = None
     startersaftrek_enabled: bool | None = None
     startersaftrek: Decimal | None = None
@@ -94,10 +98,13 @@ class IBSchijf(BaseModel):
 # Tax summary response
 class TaxSummary(BaseModel):
     year: int
+    # KOR
+    kor_enabled: bool
     # W&V
     omzet: Decimal
     kosten: Decimal
     brutowinst: Decimal
+    zelfstandigenaftrek_enabled: bool
     zelfstandigenaftrek: Decimal
     startersaftrek_enabled: bool
     startersaftrek: Decimal

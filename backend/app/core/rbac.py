@@ -68,9 +68,24 @@ ROLE_PERMISSIONS: dict[str, set[Role]] = {
 }
 
 
+# Module permissions are merged into this dict at startup by the registry.
+_module_permissions: dict[str, set[Role]] = {}
+
+
+def register_module_permissions(permissions: dict[str, set[str]]) -> None:
+    """Merge permissions from a loaded module into the RBAC map.
+
+    Called by the module registry during startup. Module permissions extend
+    (never override) the core permission map.
+    """
+    for key, role_names in permissions.items():
+        _module_permissions[key] = {Role(r) for r in role_names}
+
+
 def check_permission(user_role: str, permission: str) -> None:
     role = Role(user_role)
-    allowed_roles = ROLE_PERMISSIONS.get(permission, set())
+    # Check core permissions first, then module permissions
+    allowed_roles = ROLE_PERMISSIONS.get(permission) or _module_permissions.get(permission, set())
     if role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

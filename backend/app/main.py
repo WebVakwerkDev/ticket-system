@@ -11,27 +11,18 @@ from app.database import engine, async_session
 from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.logging import RequestLoggingMiddleware
+from app.modules.registry import ModuleRegistry
 
-# Import all routers
+# Core routers (not yet migrated to modules)
 from app.routers import (
     auth,
     users,
-    clients,
-    projects,
     communication,
     notes,
-    invoices,
-    proposals,
     repositories,
     links,
-    finance,
     dashboard,
     settings as settings_router,
-    export,
-    external,
-    time_entries,
-    expenses,
-    tasks,
     change_requests,
 )
 
@@ -180,25 +171,22 @@ def create_app() -> FastAPI:
             )
         return {"status": "ok"}
 
-    # --- Register routers ---
+    # --- Register core routers (always active) ---
     app.include_router(auth.router)
     app.include_router(users.router)
-    app.include_router(clients.router)
-    app.include_router(projects.router)
-    app.include_router(communication.router)
-    app.include_router(notes.router)
-    app.include_router(invoices.router)
-    app.include_router(proposals.router)
-    app.include_router(repositories.router)
-    app.include_router(links.router)
-    app.include_router(finance.router)
     app.include_router(dashboard.router)
     app.include_router(settings_router.router)
-    app.include_router(export.router)
-    app.include_router(external.router)
-    app.include_router(time_entries.router)
-    app.include_router(expenses.router)
-    app.include_router(tasks.router)
+
+    # --- Register feature modules from app/modules/ ---
+    registry = ModuleRegistry()
+    registry.register_all(app)
+    app.state.module_registry = registry
+
+    # --- Legacy routers (not yet migrated to modules) ---
+    app.include_router(communication.router)
+    app.include_router(notes.router)
+    app.include_router(repositories.router)
+    app.include_router(links.router)
     app.include_router(change_requests.router)
 
     return app
