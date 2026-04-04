@@ -29,45 +29,28 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Bestaande .env veiligstellen
+        run: |
+          if [ -f .env ]; then
+            cp .env /tmp/.env.backup
+            echo "Bestaande .env opgeslagen als backup"
+          fi
+
       - name: Code ophalen
         uses: actions/checkout@v4
         with:
           clean: true
 
-      - name: Omgevingsvariabelen instellen
-        env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          EXTERNAL_API_KEY: ${{ secrets.EXTERNAL_API_KEY }}
-          CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
-          FRONTEND_PORT: ${{ secrets.FRONTEND_PORT }}
-          SEED_ADMIN_EMAIL: ${{ secrets.SEED_ADMIN_EMAIL }}
-          SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
+      - name: .env herstellen
         run: |
-          cat > .env << EOF
-          POSTGRES_DB=${POSTGRES_DB}
-          POSTGRES_USER=${POSTGRES_USER}
-          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-          REDIS_PASSWORD=${REDIS_PASSWORD}
-          DATABASE_URL=${DATABASE_URL}
-          REDIS_URL=${REDIS_URL}
-          JWT_SECRET_KEY=${JWT_SECRET_KEY}
-          EXTERNAL_API_KEY=${EXTERNAL_API_KEY}
-          CORS_ORIGINS=${CORS_ORIGINS}
-          VITE_API_URL=${VITE_API_URL}
-          BACKEND_PORT=${BACKEND_PORT}
-          FRONTEND_PORT=${FRONTEND_PORT}
-          SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL}
-          SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD}
-          EOF
-          sed -i 's/^          //' .env
+          if [ -f /tmp/.env.backup ]; then
+            cp /tmp/.env.backup .env
+            rm /tmp/.env.backup
+            echo "Bestaande .env hersteld"
+          else
+            echo "Geen bestaande .env gevonden — maak er handmatig een aan op de server"
+            exit 1
+          fi
 
       - name: Docker images bouwen
         run: $COMPOSE_CMD build
