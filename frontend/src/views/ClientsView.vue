@@ -1,7 +1,13 @@
 <template>
   <div class="space-y-5 animate-slide-up">
     <div class="flex items-center justify-between">
-      <p class="text-xs font-mono text-gray-500">{{ clients.length }} klanten</p>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input v-model="search" class="input pl-9 w-64" placeholder="Zoek op naam, e-mail..." />
+        </div>
+        <span class="text-xs font-mono text-gray-400">{{ filteredClients.length }} klanten</span>
+      </div>
       <button v-if="auth.hasRole('ADMIN','EMPLOYEE')" class="btn-primary" @click="showCreate = true">
         <i class="pi pi-plus text-xs"></i> Nieuwe klant
       </button>
@@ -15,7 +21,7 @@
     </div>
 
     <div v-else class="card overflow-hidden light-table">
-      <DataTable :value="clients" stripedRows paginator :rows="20" :rowsPerPageOptions="[10,20,50]"
+      <DataTable :value="filteredClients" stripedRows paginator :rows="20" :rowsPerPageOptions="[10,20,50]"
         sortField="company_name" :sortOrder="1"
         @row-click="(e: any) => $router.push(`/clients/${e.data.id}`)">
         <Column field="company_name" header="Bedrijf" sortable>
@@ -30,12 +36,15 @@
         </Column>
         <Column field="project_count" header="Projecten" sortable style="width: 100px">
           <template #body="{ data }">
-            <span class="font-mono text-xs" :class="data.project_count > 0 ? 'text-green-600' : 'text-gray-400'">{{ data.project_count }}</span>
+            <span class="font-mono text-xs" :class="data.project_count > 0 ? 'text-blue-600' : 'text-gray-400'">{{ data.project_count }}</span>
           </template>
         </Column>
-        <Column header="" style="width:60px">
+        <Column header="" style="width:90px">
           <template #body="{ data }">
-            <button class="btn-icon text-red-600 hover:text-red-700" @click.stop="deleteClient(data)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
+            <div class="flex items-center gap-1 justify-end">
+              <button class="btn-icon text-gray-400 hover:text-blue-600" @click.stop="$router.push(`/clients/${data.id}`)" title="Bekijken"><i class="pi pi-eye text-xs"></i></button>
+              <button v-if="auth.hasRole('ADMIN','EMPLOYEE')" class="btn-icon text-gray-400 hover:text-red-600" @click.stop="deleteClient(data)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
+            </div>
           </template>
         </Column>
       </DataTable>
@@ -44,15 +53,15 @@
     <Dialog v-model:visible="showCreate" header="Nieuwe klant" modal :style="{ width: '480px' }">
       <form @submit.prevent="createClient" class="space-y-4">
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrijfsnaam</label>
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrijfsnaam <span class="text-red-400">*</span></label>
           <input v-model="form.company_name" class="input" required />
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Contactpersoon</label>
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Contactpersoon <span class="text-red-400">*</span></label>
           <input v-model="form.contact_name" class="input" required />
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">E-mailadres</label>
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">E-mailadres <span class="text-red-400">*</span></label>
           <input v-model="form.email" type="email" class="input" required />
         </div>
         <div>
@@ -83,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { clientsApi } from '@/api/services'
 import { useErrorHandler } from '@/composables/useErrorHandler'
@@ -97,9 +106,20 @@ const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
 const clients = ref<any[]>([])
 const loading = ref(true)
+const search = ref('')
 const showCreate = ref(false)
 const saving = ref(false)
 const form = ref({ company_name: '', contact_name: '', email: '', phone: '', street: '', postal_code: '', city: '' })
+
+const filteredClients = computed(() => {
+  if (!search.value) return clients.value
+  const q = search.value.toLowerCase()
+  return clients.value.filter((c: any) =>
+    c.company_name?.toLowerCase().includes(q) ||
+    c.contact_name?.toLowerCase().includes(q) ||
+    c.email?.toLowerCase().includes(q)
+  )
+})
 
 onMounted(loadClients)
 

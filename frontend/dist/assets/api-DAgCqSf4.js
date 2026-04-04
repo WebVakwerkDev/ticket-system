@@ -1,0 +1,1 @@
+import{Q as s}from"./index-BCSlcbH7.js";const p={list:t=>s.get("/tasks",{params:t}),create:t=>s.post("/tasks",t),update:(t,e)=>s.put(`/tasks/${t}`,e),delete:t=>s.delete(`/tasks/${t}`)};export{p as t};

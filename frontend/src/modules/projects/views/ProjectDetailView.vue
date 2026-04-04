@@ -12,10 +12,27 @@
       <div class="flex-1">
         <div class="flex items-center gap-3">
           <h2 class="text-lg font-semibold text-gray-900">{{ project.name }}</h2>
-          <span :class="statusColor(project.status)" class="badge">{{ project.status.replace(/_/g, ' ') }}</span>
-          <div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full" :class="statusDot(project.priority)"></div><span class="text-xs font-mono text-gray-500">{{ project.priority }}</span></div>
+          <span :class="statusColor(project.status)" class="badge">{{ statusLabel(project.status) }}</span>
+          <div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full" :class="statusDot(project.priority)"></div><span class="text-xs font-mono text-gray-500">{{ statusLabel(project.priority) }}</span></div>
         </div>
         <p class="text-xs font-mono text-gray-500 mt-1">{{ project.client?.company_name }} · {{ project.project_type?.replace(/_/g, ' ') }} · <span class="text-gray-400">{{ project.slug }}</span></p>
+    <!-- Extra metadata voor automatisering/software -->
+    <div v-if="project.tools_used?.length || project.delivery_form || project.recurring_fee" class="flex flex-wrap gap-3 mt-2">
+      <div v-if="project.tools_used?.length" class="flex items-center gap-1.5">
+        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Tools</span>
+        <div class="flex flex-wrap gap-1">
+          <span v-for="tool in project.tools_used" :key="tool" class="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[11px] rounded">{{ tool }}</span>
+        </div>
+      </div>
+      <div v-if="project.delivery_form" class="flex items-center gap-1.5">
+        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Levering</span>
+        <span class="text-xs text-gray-600">{{ project.delivery_form }}</span>
+      </div>
+      <div v-if="project.recurring_fee" class="flex items-center gap-1.5">
+        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Abonnement</span>
+        <span class="text-xs font-mono text-gray-700">{{ formatCurrency(project.recurring_fee) }}/mnd</span>
+      </div>
+    </div>
       </div>
       <button class="btn-secondary" @click="showEditDialog = true"><i class="pi pi-pencil text-xs"></i> Bewerken</button>
     </div>
@@ -31,7 +48,7 @@
       <nav class="flex gap-1">
         <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key"
           class="px-3 py-2 text-xs font-medium transition-colors rounded-t-md"
-          :class="activeTab === tab.key ? 'text-green-600 bg-white border border-gray-200 border-b-white -mb-px' : 'text-gray-500 hover:text-gray-700'">
+          :class="activeTab === tab.key ? 'text-blue-600 bg-white border border-gray-200 border-b-white -mb-px' : 'text-gray-500 hover:text-gray-700'">
           {{ tab.label }} <span class="font-mono text-gray-400 ml-1">{{ tab.count }}</span>
         </button>
       </nav>
@@ -44,7 +61,7 @@
         <div class="flex items-start justify-between">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span :class="statusColor(entry.type)" class="badge text-[10px]">{{ entry.type }}</span>
+              <span :class="statusColor(entry.type)" class="badge text-[10px]">{{ statusLabel(entry.type) }}</span>
               <span class="text-sm font-medium text-gray-800">{{ entry.subject }}</span>
             </div>
             <p class="text-sm text-gray-500 mt-2 whitespace-pre-wrap">{{ entry.content }}</p>
@@ -67,7 +84,7 @@
       </div>
       <div v-for="task in projectTasks" :key="task.id" class="card p-4 flex items-center gap-3">
         <button class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
-          :class="task.status === 'DONE' ? 'bg-green-500 border-green-500' : task.status === 'IN_PROGRESS' ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-green-400'"
+          :class="task.status === 'DONE' ? 'bg-blue-600 border-blue-600' : task.status === 'IN_PROGRESS' ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'"
           @click="toggleTaskDone(task)">
           <i v-if="task.status === 'DONE'" class="pi pi-check text-white text-[10px]"></i>
           <div v-else-if="task.status === 'IN_PROGRESS'" class="w-2 h-2 rounded-full bg-blue-400"></div>
@@ -103,7 +120,7 @@
       <div class="flex justify-end"><button class="btn-secondary text-xs" @click="showRepoDialog = true"><i class="pi pi-plus text-xs"></i> Toevoegen</button></div>
       <div v-for="repo in repositories" :key="repo.id" class="card p-4 flex justify-between items-center">
         <div>
-          <a :href="repo.repo_url" target="_blank" class="text-sm font-medium text-green-600 hover:text-green-700 transition-colors">{{ repo.repo_name }}</a>
+          <a :href="repo.repo_url" target="_blank" class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">{{ repo.repo_name }}</a>
           <p class="text-[11px] font-mono text-gray-400">{{ repo.default_branch }}</p>
         </div>
         <button class="btn-icon text-red-600" @click="deleteRepo(repo.id)"><i class="pi pi-trash text-xs"></i></button>
@@ -116,7 +133,7 @@
       <div class="flex justify-end"><button class="btn-secondary text-xs" @click="showLinkDialog = true"><i class="pi pi-plus text-xs"></i> Toevoegen</button></div>
       <div v-for="link in links" :key="link.id" class="card p-4 flex justify-between items-center">
         <div>
-          <a :href="link.url" target="_blank" class="text-sm font-medium text-green-600 hover:text-green-700 transition-colors">{{ link.label }}</a>
+          <a :href="link.url" target="_blank" class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">{{ link.label }}</a>
           <p v-if="link.description" class="text-[11px] text-gray-500">{{ link.description }}</p>
         </div>
         <button class="btn-icon text-red-600" @click="deleteLink(link.id)"><i class="pi pi-trash text-xs"></i></button>
@@ -133,12 +150,12 @@
         <div class="flex items-center gap-4">
           <span class="font-mono text-xs text-gray-700">{{ inv.invoice_number }}</span>
           <span class="text-xs text-gray-500">{{ formatDate(inv.issue_date) }}</span>
-          <span :class="statusColor(inv.status)" class="badge text-[10px]">{{ inv.status }}</span>
+          <span :class="statusColor(inv.status)" class="badge text-[10px]">{{ statusLabel(inv.status) }}</span>
         </div>
         <div class="flex items-center gap-3">
           <span class="font-mono text-sm font-medium text-gray-800">{{ formatCurrency(inv.total_amount) }}</span>
           <button class="btn-icon" @click="downloadInvoicePdf(inv)" title="PDF"><i class="pi pi-file-pdf text-xs"></i></button>
-          <button v-if="inv.status !== 'PAID'" class="btn-icon text-green-600" @click="markInvoicePaid(inv)" title="Betaald markeren"><i class="pi pi-check text-xs"></i></button>
+          <button v-if="inv.status !== 'PAID'" class="btn-icon text-blue-600" @click="markInvoicePaid(inv)" title="Betaald markeren"><i class="pi pi-check text-xs"></i></button>
           <button class="btn-icon text-red-600" @click="deleteInvoice(inv)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
         </div>
       </div>
@@ -153,7 +170,7 @@
       <div v-for="prop in proposals" :key="prop.id" class="card p-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <span class="text-sm font-medium text-gray-800">{{ prop.title }}</span>
-          <span :class="statusColor(prop.status)" class="badge text-[10px]">{{ prop.status }}</span>
+          <span :class="statusColor(prop.status)" class="badge text-[10px]">{{ statusLabel(prop.status) }}</span>
         </div>
         <div class="flex items-center gap-3">
           <span class="font-mono text-sm font-medium text-gray-800">{{ formatCurrency(prop.amount) }}</span>
@@ -170,8 +187,8 @@
         <div class="grid grid-cols-2 gap-4">
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Type</label><Dropdown v-model="commForm.type" :options="commTypes" optionLabel="label" optionValue="value" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Datum</label><Calendar v-model="commForm.occurred_at" showTime dateFormat="dd-mm-yy" class="w-full" /></div>
-          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Onderwerp</label><input v-model="commForm.subject" class="input" required /></div>
-          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Inhoud</label><textarea v-model="commForm.content" class="input min-h-[100px]" required /></div>
+          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Onderwerp <span class="text-red-400">*</span></label><input v-model="commForm.subject" class="input" required /></div>
+          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Inhoud <span class="text-red-400">*</span></label><textarea v-model="commForm.content" class="input min-h-[100px]" required /></div>
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showCommDialog = false">Annuleren</button>
@@ -183,13 +200,22 @@
     <!-- Proposal Dialog -->
     <Dialog v-model:visible="showProposalDialog" header="Nieuwe offerte" modal :style="{ width: '520px' }">
       <form @submit.prevent="createProposal" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Titel</label><input v-model="proposalForm.title" class="input" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Titel <span class="text-red-400">*</span></label><input v-model="proposalForm.title" class="input" required /></div>
         <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Ontvanger naam</label><input v-model="proposalForm.recipient_name" class="input" required /></div>
-          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Ontvanger e-mail</label><input v-model="proposalForm.recipient_email" class="input" type="email" required /></div>
+          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Ontvanger naam <span class="text-red-400">*</span></label><input v-model="proposalForm.recipient_name" class="input" required /></div>
+          <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Ontvanger e-mail <span class="text-red-400">*</span></label><input v-model="proposalForm.recipient_email" class="input" type="email" required /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrag</label><InputNumber v-model="proposalForm.amount" mode="currency" currency="EUR" locale="nl-NL" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Levertijd</label><input v-model="proposalForm.delivery_time" class="input" placeholder="Bijv. 4-6 weken" /></div>
         </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Prijslabel</label>
+            <input v-model="proposalForm.price_label" class="input" list="proposal-price-label-suggestions" placeholder="Bijv. Projectprijs, Abonnementsprijs..." />
+            <datalist id="proposal-price-label-suggestions">
+              <option value="Projectprijs" />
+              <option value="Abonnementsprijs" />
+              <option value="Maatwerktarief" />
+            </datalist>
+          </div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Samenvatting</label><textarea v-model="proposalForm.summary" class="input min-h-[60px]" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showProposalDialog = false">Annuleren</button>
@@ -201,8 +227,8 @@
     <!-- Repository Dialog -->
     <Dialog v-model:visible="showRepoDialog" header="Repository toevoegen" modal :style="{ width: '440px' }">
       <form @submit.prevent="addRepo" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Naam</label><input v-model="repoForm.repo_name" class="input" placeholder="owner/repo" required /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">URL</label><input v-model="repoForm.repo_url" class="input" placeholder="https://github.com/..." required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Naam <span class="text-red-400">*</span></label><input v-model="repoForm.repo_name" class="input" placeholder="owner/repo" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">URL <span class="text-red-400">*</span></label><input v-model="repoForm.repo_url" class="input" placeholder="https://github.com/..." required /></div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Default branch</label><input v-model="repoForm.default_branch" class="input" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showRepoDialog = false">Annuleren</button>
@@ -214,8 +240,8 @@
     <!-- Link Dialog -->
     <Dialog v-model:visible="showLinkDialog" header="Link toevoegen" modal :style="{ width: '440px' }">
       <form @submit.prevent="addLink" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Label</label><input v-model="linkForm.label" class="input" required /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">URL</label><input v-model="linkForm.url" class="input" placeholder="https://..." required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Label <span class="text-red-400">*</span></label><input v-model="linkForm.label" class="input" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">URL <span class="text-red-400">*</span></label><input v-model="linkForm.url" class="input" placeholder="https://..." required /></div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Beschrijving</label><input v-model="linkForm.description" class="input" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showLinkDialog = false">Annuleren</button>
@@ -298,6 +324,32 @@
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Prioriteit</label><Dropdown v-model="editForm.priority" :options="priorityOptions" optionLabel="label" optionValue="value" class="w-full" /></div>
         </div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Beschrijving</label><textarea v-model="editForm.description" class="input min-h-[80px]" /></div>
+
+        <!-- Tools gebruikt -->
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Tools gebruikt</label>
+          <input v-model="editToolsInput" class="input" placeholder="Make, n8n, OpenAI (komma-gescheiden)" @blur="parseToolsInput" />
+          <div v-if="editForm.tools_used?.length" class="flex flex-wrap gap-1.5 mt-2">
+            <span v-for="tool in editForm.tools_used" :key="tool"
+              class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-200">
+              {{ tool }}
+              <button type="button" @click="editForm.tools_used = (editForm.tools_used ?? []).filter((t: string) => t !== tool)" class="hover:text-blue-900">&times;</button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Leveringsvorm + Maandelijks tarief -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Leveringsvorm</label>
+            <Dropdown v-model="editForm.delivery_form" :options="deliveryFormOptions" optionLabel="label" optionValue="value" placeholder="Selecteer" showClear class="w-full" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Maandelijks tarief</label>
+            <InputNumber v-model="editForm.recurring_fee" mode="currency" currency="EUR" locale="nl-NL" class="w-full" placeholder="Optioneel" />
+          </div>
+        </div>
+
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
           <button type="button" class="btn-secondary" @click="showEditDialog = false">Annuleren</button>
           <button type="submit" class="btn-primary" :disabled="saving">Opslaan</button>
@@ -321,7 +373,7 @@ import InputNumber from 'primevue/inputnumber'
 const route = useRoute()
 const router = useRouter()
 const { showError, showSuccess } = useErrorHandler()
-const { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob, toISODate } = useFormatting()
+const { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, statusLabel, downloadBlob, toISODate } = useFormatting()
 
 const project = ref<any>(null)
 const loading = ref(true)
@@ -348,9 +400,18 @@ const showProposalDialog = ref(false)
 
 const commForm = ref<any>({ type: 'EMAIL', subject: '', content: '', occurred_at: new Date() })
 const repoForm = ref<any>({ repo_name: '', repo_url: '', default_branch: 'main' })
-const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '' })
+const proposalForm = ref<any>({ title: '', recipient_name: '', recipient_email: '', recipient_company: '', amount: 0, delivery_time: '', summary: '', price_label: 'Projectprijs' })
 const linkForm = ref<any>({ label: '', url: '', description: '' })
 const editForm = ref<any>({})
+const editToolsInput = ref('')
+
+function parseToolsInput() {
+  if (!editToolsInput.value.trim()) return
+  const parsed = editToolsInput.value.split(',').map(t => t.trim()).filter(Boolean)
+  const existing = editForm.value.tools_used ?? []
+  editForm.value.tools_used = [...new Set([...existing, ...parsed])]
+  editToolsInput.value = ''
+}
 interface InvoiceLineItem { description: string; quantity: number; unit_price: number; total: number }
 const invoiceForm = ref<any>({ vat_rate: 21, issue_date: new Date(), due_date: new Date(Date.now() + 30 * 86400000), notes: '' })
 const invoiceLineItems = ref<InvoiceLineItem[]>([{ description: '', quantity: 1, unit_price: 0, total: 0 }])
@@ -371,10 +432,16 @@ function resetInvoiceForm() {
 }
 
 const statusOptions = [
-  { label: 'Lead', value: 'LEAD' }, { label: 'Intake', value: 'INTAKE' },
-  { label: 'In Progress', value: 'IN_PROGRESS' }, { label: 'Wachtend', value: 'WAITING_FOR_CLIENT' },
-  { label: 'Review', value: 'REVIEW' }, { label: 'Afgerond', value: 'COMPLETED' },
-  { label: 'Onderhoud', value: 'MAINTENANCE' }, { label: 'Gepauzeerd', value: 'PAUSED' },
+  { label: 'Lead', value: 'LEAD' },
+  { label: 'Intake', value: 'INTAKE' },
+  { label: 'In Progress', value: 'IN_PROGRESS' },
+  { label: 'Testen', value: 'TESTING' },
+  { label: 'Wachtend', value: 'WAITING_FOR_CLIENT' },
+  { label: 'Review', value: 'REVIEW' },
+  { label: 'Afgerond', value: 'COMPLETED' },
+  { label: 'Live', value: 'LIVE' },
+  { label: 'Onderhoud', value: 'MAINTENANCE' },
+  { label: 'Gepauzeerd', value: 'PAUSED' },
 ]
 const priorityOptions = [
   { label: 'Laag', value: 'LOW' }, { label: 'Gemiddeld', value: 'MEDIUM' },
@@ -384,6 +451,11 @@ const commTypes = [
   { label: 'E-mail', value: 'EMAIL' }, { label: 'Telefoon', value: 'CALL' },
   { label: 'Meeting', value: 'MEETING' }, { label: 'WhatsApp', value: 'WHATSAPP' },
   { label: 'DM', value: 'DM' }, { label: 'Intern', value: 'INTERNAL' }, { label: 'Overig', value: 'OTHER' },
+]
+const deliveryFormOptions = [
+  { label: 'SaaS', value: 'SaaS' },
+  { label: 'Self-hosted', value: 'self-hosted' },
+  { label: 'Embedded', value: 'embedded' },
 ]
 
 const tabs = computed(() => [
@@ -401,7 +473,15 @@ onMounted(async () => {
   try {
     const { data } = await projectsApi.get(id)
     project.value = data
-    editForm.value = { name: data.name, status: data.status, priority: data.priority, description: data.description }
+    editForm.value = {
+      name: data.name,
+      status: data.status,
+      priority: data.priority,
+      description: data.description,
+      tools_used: data.tools_used ?? [],
+      delivery_form: data.delivery_form ?? null,
+      recurring_fee: data.recurring_fee ? parseFloat(data.recurring_fee) : null,
+    }
     await loadAllTabs(id)
   } catch (err: any) { showError(err, 'Project laden mislukt'); router.push('/projects') }
   loading.value = false
@@ -578,6 +658,7 @@ function openProposalDialog() {
     delivery_time: '',
     summary: '',
     scope: '',
+    price_label: 'Projectprijs',
   }
   showProposalDialog.value = true
 }

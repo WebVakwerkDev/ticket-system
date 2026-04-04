@@ -2,11 +2,12 @@
   <div class="space-y-5 animate-slide-up">
     <div class="flex items-center justify-between gap-3 flex-wrap">
       <div class="flex items-center gap-2">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input v-model="search" class="input pl-9 w-64" placeholder="Zoek op omschrijving..." />
+        </div>
+        <Dropdown v-model="categoryFilter" :options="categoryOptions" optionLabel="label" optionValue="value" placeholder="Alle categorieën" showClear class="w-48" />
         <span class="text-xs font-mono text-gray-400">{{ filteredExpenses.length }} uitgaven</span>
-        <select v-model="categoryFilter" class="input text-xs py-1 h-8 w-44">
-          <option value="">Alle categorieën</option>
-          <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
-        </select>
       </div>
       <button class="btn-primary" @click="openCreate"><i class="pi pi-plus text-xs"></i> Nieuwe uitgave</button>
     </div>
@@ -51,7 +52,7 @@
 
     <Dialog v-model:visible="showDialog" :header="editTarget ? 'Uitgave bewerken' : 'Nieuwe uitgave'" modal :style="{ width: '500px' }">
       <form @submit.prevent="editTarget ? updateExpense() : createExpense()" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Aanschaf</label><input v-model="form.description" class="input" required placeholder="Bijv. Adobe Creative Cloud" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Aanschaf <span class="text-red-400">*</span></label><input v-model="form.description" class="input" required placeholder="Bijv. Adobe Creative Cloud" /></div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Categorie</label>
@@ -110,7 +111,9 @@ function categoryChip(cat: string | null) {
 }
 
 const expenses = ref<any[]>([])
-const categoryFilter = ref('')
+const search = ref('')
+const categoryFilter = ref<string | null>(null)
+const categoryOptions = CATEGORIES.map(c => ({ label: c, value: c }))
 const showDialog = ref(false)
 const editTarget = ref<any>(null)
 const saving = ref(false)
@@ -124,9 +127,17 @@ const vatOptions = [
 const blankForm = () => ({ description: '', invoice_number: '', date: new Date(), amount_incl_vat: 0, vat_rate: 21, category: 'Overig' })
 const form = ref<any>(blankForm())
 
-const filteredExpenses = computed(() =>
-  categoryFilter.value ? expenses.value.filter(e => (e.category || 'Overig') === categoryFilter.value) : expenses.value
-)
+const filteredExpenses = computed(() => {
+  let result = expenses.value
+  if (categoryFilter.value) {
+    result = result.filter(e => (e.category || 'Overig') === categoryFilter.value)
+  }
+  const q = search.value.toLowerCase().trim()
+  if (q) {
+    result = result.filter(e => (e.description || '').toLowerCase().includes(q))
+  }
+  return result
+})
 
 const previewExcl = computed(() => {
   const incl = form.value.amount_incl_vat || 0

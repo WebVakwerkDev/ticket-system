@@ -1,0 +1,1 @@
+import{Q as t}from"./index-BCSlcbH7.js";const i={list:()=>t.get("/clients"),get:e=>t.get(`/clients/${e}`),create:e=>t.post("/clients",e),update:(e,s)=>t.patch(`/clients/${e}`,s),delete:e=>t.delete(`/clients/${e}`)};export{i as c};

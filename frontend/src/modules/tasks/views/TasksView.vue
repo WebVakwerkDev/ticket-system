@@ -6,7 +6,7 @@
       <div class="divide-y divide-gray-100">
         <div v-for="task in upcomingTasks" :key="task.id" class="px-5 py-3 flex items-center gap-4">
           <button class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
-            :class="task.status === 'DONE' ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-green-400'"
+            :class="task.status === 'DONE' ? 'bg-blue-600 border-blue-600' : 'border-gray-300 hover:border-blue-400'"
             @click="toggleDone(task)">
             <i v-if="task.status === 'DONE'" class="pi pi-check text-white text-[10px]"></i>
           </button>
@@ -22,9 +22,13 @@
     <!-- Controls -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input v-model="search" class="input pl-9 w-64" placeholder="Zoek op titel..." />
+        </div>
         <Dropdown v-model="filterStatus" :options="statusOptions" optionLabel="label" optionValue="value" placeholder="Alle statussen" showClear class="w-44" @change="loadTasks" />
         <Dropdown v-model="filterProject" :options="projectOptions" optionLabel="label" optionValue="value" placeholder="Alle projecten" showClear class="w-56" @change="loadTasks" />
-        <span class="text-xs font-mono text-gray-400">{{ tasks.length }} taken</span>
+        <span class="text-xs font-mono text-gray-400">{{ filteredTasks.length }} taken</span>
       </div>
       <button class="btn-primary" @click="showCreate = true"><i class="pi pi-plus text-xs"></i> Nieuwe taak</button>
     </div>
@@ -32,9 +36,9 @@
     <!-- Task list -->
     <div class="card overflow-hidden">
       <div class="divide-y divide-gray-100">
-        <div v-for="task in tasks" :key="task.id" class="px-5 py-3.5 flex items-center gap-4 hover:bg-gray-50 transition-colors">
+        <div v-for="task in filteredTasks" :key="task.id" class="px-5 py-3.5 flex items-center gap-4 hover:bg-gray-50 transition-colors">
           <button class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
-            :class="task.status === 'DONE' ? 'bg-green-500 border-green-500' : task.status === 'IN_PROGRESS' ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-green-400'"
+            :class="task.status === 'DONE' ? 'bg-blue-600 border-blue-600' : task.status === 'IN_PROGRESS' ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'"
             @click="toggleDone(task)">
             <i v-if="task.status === 'DONE'" class="pi pi-check text-white text-[10px]"></i>
             <div v-else-if="task.status === 'IN_PROGRESS'" class="w-2 h-2 rounded-full bg-blue-400"></div>
@@ -48,14 +52,14 @@
           <Dropdown v-model="task.status" :options="statusChoices" optionLabel="label" optionValue="value" class="w-32 text-xs" @change="updateStatus(task)" />
           <button class="btn-icon text-red-600 hover:text-red-700" @click="deleteTask(task)"><i class="pi pi-trash text-xs"></i></button>
         </div>
-        <p v-if="!tasks.length" class="text-center text-sm text-gray-400 py-12">Geen taken</p>
+        <p v-if="!filteredTasks.length" class="text-center text-sm text-gray-400 py-12">Geen taken</p>
       </div>
     </div>
 
     <!-- Create dialog -->
     <Dialog v-model:visible="showCreate" header="Nieuwe taak" modal :style="{ width: '480px' }">
       <form @submit.prevent="createTask" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Titel</label><input v-model="form.title" class="input" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Titel <span class="text-red-400">*</span></label><input v-model="form.title" class="input" required /></div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Omschrijving (optioneel)</label><textarea v-model="form.description" class="input min-h-[50px]" /></div>
         <div class="grid grid-cols-2 gap-4">
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Project (optioneel)</label><Dropdown v-model="form.project_id" :options="projectOptions" optionLabel="label" optionValue="value" placeholder="Geen project" showClear class="w-full" /></div>
@@ -71,9 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { tasksApi } from '@/modules/tasks/api'
-import { projectsApi } from '@/api/services'
+import { ref, computed, onMounted } from 'vue'
+import { tasksApi, projectsApi } from '@/api/services'
 import { useFormatting } from '@/composables/useFormatting'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useConfirm } from 'primevue/useconfirm'
@@ -92,7 +95,14 @@ const filterStatus = ref<string | null>(null)
 const filterProject = ref<string | null>(null)
 const showCreate = ref(false)
 const saving = ref(false)
+const search = ref('')
 const form = ref<any>({ title: '', description: '', project_id: null, deadline: null })
+
+const filteredTasks = computed(() => {
+  if (!search.value.trim()) return tasks.value
+  const q = search.value.toLowerCase().trim()
+  return tasks.value.filter((t: any) => t.title.toLowerCase().includes(q))
+})
 
 const statusOptions = [
   { label: 'Te doen', value: 'TODO' },

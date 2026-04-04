@@ -27,7 +27,7 @@
         <h3 class="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-3">Projecten <span class="text-gray-400">({{ client.projects?.length || 0 }})</span></h3>
         <div class="space-y-2">
           <router-link v-for="p in client.projects" :key="p.id" :to="`/projects/${p.id}`"
-            class="flex items-center gap-2 text-sm text-gray-700 hover:text-green-600 transition-colors">
+            class="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition-colors">
             <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="statusDot(p.status)"></div>
             <span class="truncate">{{ p.name }}</span>
           </router-link>
@@ -39,7 +39,7 @@
         <div class="space-y-2">
           <div v-for="inv in client.invoices" :key="inv.id" class="flex items-center justify-between text-sm">
             <span class="font-mono text-xs text-gray-500">{{ inv.invoice_number }}</span>
-            <span :class="statusColor(inv.status)" class="badge text-[10px]">{{ inv.status }}</span>
+            <span :class="statusColor(inv.status)" class="badge text-[10px]">{{ statusLabel(inv.status) }}</span>
           </div>
           <p v-if="!client.invoices?.length" class="text-xs text-gray-400">Geen facturen</p>
         </div>
@@ -48,9 +48,9 @@
 
     <Dialog v-model:visible="showEdit" header="Klant bewerken" modal :style="{ width: '480px' }">
       <form @submit.prevent="updateClient" class="space-y-4">
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrijfsnaam</label><input v-model="editForm.company_name" class="input" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Contactpersoon</label><input v-model="editForm.contact_name" class="input" /></div>
-        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">E-mailadres</label><input v-model="editForm.email" type="email" class="input" /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Bedrijfsnaam <span class="text-red-400">*</span></label><input v-model="editForm.company_name" class="input" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Contactpersoon <span class="text-red-400">*</span></label><input v-model="editForm.contact_name" class="input" required /></div>
+        <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">E-mailadres <span class="text-red-400">*</span></label><input v-model="editForm.email" type="email" class="input" required /></div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Telefoon</label><input v-model="editForm.phone" class="input" /></div>
         <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Adres</label><textarea v-model="editForm.address" class="input min-h-[60px]" /></div>
         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
@@ -77,7 +77,7 @@ const route = useRoute()
 const router = useRouter()
 const { showError, showSuccess } = useErrorHandler()
 const confirm = useConfirm()
-const { statusColor, statusDot } = useFormatting()
+const { statusColor, statusDot, statusLabel } = useFormatting()
 
 const client = ref<any>(null)
 const loading = ref(true)

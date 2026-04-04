@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <!-- Subtle grid background -->
-    <div class="fixed inset-0 bg-[linear-gradient(rgba(34,197,94,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.02)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+    <div class="fixed inset-0 bg-[linear-gradient(rgba(37,99,235,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.02)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
 
     <div class="relative w-full max-w-sm animate-slide-up">
       <!-- Logo -->
       <div class="flex items-center justify-center gap-3 mb-10">
-        <div class="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-          <span class="text-green-600 font-bold text-lg">A</span>
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+          <span class="text-blue-600 font-bold text-lg">A</span>
         </div>
         <span class="text-xl font-semibold text-gray-900 tracking-tight">Accuro</span>
       </div>
@@ -56,7 +56,7 @@
         </form>
       </div>
 
-      <p class="text-center text-[10px] text-gray-400 font-mono mt-6">SECURED WITH JWT + BCRYPT</p>
+      <p class="text-center text-[10px] text-gray-400 font-mono mt-6">Accuro &copy; {{ new Date().getFullYear() }}</p>
     </div>
   </div>
 </template>

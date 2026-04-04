@@ -55,7 +55,11 @@
           <span class="text-[11px] font-mono text-gray-400 shrink-0">{{ formatDateTime(activity.created_at) }}</span>
         </div>
         <div v-if="!stats?.recent_activity?.length" class="px-5 py-12 text-center">
-          <p class="text-sm text-gray-500">Geen activiteit</p>
+          <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <i class="pi pi-clock text-gray-400"></i>
+          </div>
+          <p class="text-sm text-gray-500">Geen recente activiteit</p>
+          <p class="text-xs text-gray-400 mt-1">Activiteit van de afgelopen 7 dagen verschijnt hier</p>
         </div>
       </div>
     </div>

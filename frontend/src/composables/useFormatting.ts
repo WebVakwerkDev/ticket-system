@@ -78,6 +78,24 @@ export function useFormatting() {
     return colors[status] || 'bg-gray-400'
   }
 
+  function statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      LEAD: 'Lead', INTAKE: 'Intake', IN_PROGRESS: 'In uitvoering',
+      WAITING_FOR_CLIENT: 'Wachtend op klant', REVIEW: 'Review', COMPLETED: 'Afgerond',
+      MAINTENANCE: 'Onderhoud', PAUSED: 'Gepauzeerd', TESTING: 'Testen', LIVE: 'Live',
+      NEW: 'Nieuw', REVIEWED: 'Beoordeeld', PLANNED: 'Gepland',
+      WAITING_FOR_FEEDBACK: 'Wachtend op feedback', DONE: 'Afgerond',
+      DRAFT: 'Concept', SENT: 'Verzonden', PAID: 'Betaald', OVERDUE: 'Achterstallig',
+      READY: 'Gereed',
+      TODO: 'Te doen',
+      LOW: 'Laag', MEDIUM: 'Gemiddeld', HIGH: 'Hoog', URGENT: 'Urgent',
+      SMALL: 'Klein', LARGE: 'Groot',
+      EMAIL: 'E-mail', CALL: 'Telefoon', MEETING: 'Meeting', WHATSAPP: 'WhatsApp',
+      DM: 'DM', INTERNAL: 'Intern', OTHER: 'Overig',
+    }
+    return labels[status] || status.replace(/_/g, ' ')
+  }
+
   function downloadBlob(blob: Blob, filename: string) {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -91,5 +109,5 @@ export function useFormatting() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
 
-  return { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, downloadBlob, toISODate }
+  return { formatDate, formatDateTime, formatCurrency, statusColor, statusDot, statusLabel, downloadBlob, toISODate }
 }

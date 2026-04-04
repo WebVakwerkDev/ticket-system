@@ -15,15 +15,19 @@
     <!-- Controls -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input v-model="search" class="input pl-9 w-64" placeholder="Zoek op project of omschrijving..." />
+        </div>
         <Dropdown v-model="filterProject" :options="projectOptions" optionLabel="label" optionValue="value" placeholder="Alle projecten" showClear class="w-56" @change="loadEntries" />
-        <span class="text-xs font-mono text-gray-400">{{ entries.length }} registraties</span>
+        <span class="text-xs font-mono text-gray-400">{{ filteredEntries.length }} registraties</span>
       </div>
       <button class="btn-primary" @click="showCreate = true"><i class="pi pi-plus text-xs"></i> Uren toevoegen</button>
     </div>
 
     <!-- Table -->
     <div class="card overflow-hidden light-table">
-      <DataTable :value="entries" stripedRows paginator :rows="20" sortField="date" :sortOrder="-1">
+      <DataTable :value="filteredEntries" stripedRows paginator :rows="20" sortField="date" :sortOrder="-1">
         <Column field="date" header="Datum" sortable style="width:120px">
           <template #body="{ data }"><span class="font-mono text-xs text-gray-500">{{ formatDate(data.date) }}</span></template>
         </Column>
@@ -48,7 +52,7 @@
     <Dialog v-model:visible="showCreate" header="Uren registreren" modal :style="{ width: '480px' }">
       <form @submit.prevent="createEntry" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
-          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Project</label><Dropdown v-model="form.project_id" :options="projectOptions" optionLabel="label" optionValue="value" placeholder="Selecteer project" class="w-full" /></div>
+          <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Project <span class="text-red-400">*</span></label><Dropdown v-model="form.project_id" :options="projectOptions" optionLabel="label" optionValue="value" placeholder="Selecteer project" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Datum</label><Calendar v-model="form.date" dateFormat="dd-mm-yy" class="w-full" /></div>
           <div><label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Uren</label><InputNumber v-model="form.hours" :minFractionDigits="1" :maxFractionDigits="2" :min="0.25" :max="24" :step="0.25" class="w-full" /></div>
         </div>
@@ -88,7 +92,17 @@ const currentYear = new Date().getFullYear()
 const currentMonth = new Date().getMonth() + 1
 const summary = ref<any>({ total_hours: 0, monthly: [], by_project: [] })
 
+const search = ref('')
 const form = ref<any>({ project_id: '', date: new Date(), hours: 8, description: '' })
+
+const filteredEntries = computed(() => {
+  const q = search.value.toLowerCase().trim()
+  if (!q) return entries.value
+  return entries.value.filter(e =>
+    (e.project_name || '').toLowerCase().includes(q) ||
+    (e.description || '').toLowerCase().includes(q)
+  )
+})
 
 const currentMonthHours = computed(() => {
   const entry = summary.value.monthly?.find((m: any) => m.month === currentMonth)

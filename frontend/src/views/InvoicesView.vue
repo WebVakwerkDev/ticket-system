@@ -2,9 +2,13 @@
   <div class="space-y-5 animate-slide-up">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input v-model="search" class="input pl-9 w-64" placeholder="Zoek op factuurnummer of klant..." />
+        </div>
         <Dropdown v-model="filters.status" :options="statusOptions" optionLabel="label" optionValue="value"
           placeholder="Status" showClear class="w-40" @change="loadInvoices" />
-        <span class="text-xs font-mono text-gray-400">{{ invoices.length }} facturen</span>
+        <span class="text-xs font-mono text-gray-400">{{ filteredInvoices.length }} facturen</span>
       </div>
       <button class="btn-primary" @click="openCreate"><i class="pi pi-plus text-xs"></i> Nieuwe factuur</button>
     </div>
@@ -17,7 +21,7 @@
     </div>
 
     <div v-else class="card overflow-hidden light-table">
-      <DataTable :value="invoices" stripedRows paginator :rows="20" sortField="created_at" :sortOrder="-1">
+      <DataTable :value="filteredInvoices" stripedRows paginator :rows="20" sortField="created_at" :sortOrder="-1">
         <Column field="invoice_number" header="Nummer" sortable style="width:130px">
           <template #body="{ data }"><span class="font-mono text-xs text-gray-700">{{ data.invoice_number }}</span></template>
         </Column>
@@ -31,13 +35,13 @@
           <template #body="{ data }"><span class="font-mono text-sm font-medium text-gray-800">{{ formatCurrency(data.total_amount) }}</span></template>
         </Column>
         <Column field="status" header="Status" sortable style="width:110px">
-          <template #body="{ data }"><span :class="statusColor(data.status)" class="badge">{{ data.status }}</span></template>
+          <template #body="{ data }"><span :class="statusColor(data.status)" class="badge">{{ invoiceStatusLabels[data.status] || data.status }}</span></template>
         </Column>
         <Column header="" style="width:140px">
           <template #body="{ data }">
             <div class="flex gap-1 justify-end">
               <button class="btn-icon" @click.stop="downloadPdf(data)" title="PDF"><i class="pi pi-file-pdf text-xs"></i></button>
-              <button v-if="data.status !== 'PAID'" class="btn-icon text-green-600 hover:text-green-700" @click.stop="markPaid(data)" title="Betaald"><i class="pi pi-check text-xs"></i></button>
+              <button v-if="data.status !== 'PAID'" class="btn-icon text-blue-600 hover:text-blue-700" @click.stop="markPaid(data)" title="Betaald"><i class="pi pi-check text-xs"></i></button>
               <button class="btn-icon text-red-600 hover:text-red-700" @click.stop="deleteInvoice(data)" title="Verwijderen"><i class="pi pi-trash text-xs"></i></button>
             </div>
           </template>
@@ -52,7 +56,7 @@
         <!-- Client + Dates -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="form-label">Klant</label>
+            <label class="form-label">Klant <span class="text-red-400">*</span></label>
             <Dropdown v-model="form.client_id" :options="clientOptions" optionLabel="label" optionValue="value"
               placeholder="Selecteer klant" class="w-full" :class="{ 'p-invalid': errors.client_id }" />
             <p v-if="errors.client_id" class="field-error">{{ errors.client_id }}</p>
@@ -64,13 +68,13 @@
             <p v-if="errors.vat_rate" class="field-error">{{ errors.vat_rate }}</p>
           </div>
           <div>
-            <label class="form-label">Factuurdatum</label>
+            <label class="form-label">Factuurdatum <span class="text-red-400">*</span></label>
             <Calendar v-model="form.issue_date" dateFormat="dd-mm-yy" class="w-full"
               :class="{ 'p-invalid': errors.issue_date }" />
             <p v-if="errors.issue_date" class="field-error">{{ errors.issue_date }}</p>
           </div>
           <div>
-            <label class="form-label">Vervaldatum</label>
+            <label class="form-label">Vervaldatum <span class="text-red-400">*</span></label>
             <Calendar v-model="form.due_date" dateFormat="dd-mm-yy" class="w-full"
               :class="{ 'p-invalid': errors.due_date }" />
             <p v-if="errors.due_date" class="field-error">{{ errors.due_date }}</p>
@@ -207,7 +211,16 @@ const loading = ref(true)
 const showCreate = ref(false)
 const saving = ref(false)
 const errors = ref<Record<string, string>>({})
+const search = ref('')
 const filters = ref<{ status: string | null }>({ status: null })
+
+const invoiceStatusLabels: Record<string, string> = {
+  DRAFT: 'Concept',
+  SENT: 'Verzonden',
+  PAID: 'Betaald',
+  OVERDUE: 'Achterstallig',
+  READY: 'Gereed',
+}
 
 const statusOptions = [
   { label: 'Concept', value: 'DRAFT' },
@@ -231,6 +244,15 @@ const form = ref<InvoiceForm>(makeDefaultForm())
 const lineItems = ref<LineItem[]>([{ description: '', quantity: 1, unit_price: 0, total: 0 }])
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
+
+const filteredInvoices = computed(() => {
+  const q = search.value.toLowerCase().trim()
+  if (!q) return invoices.value
+  return invoices.value.filter(inv =>
+    (inv.invoice_number || '').toLowerCase().includes(q) ||
+    (clientMap.value[inv.client_id] || '').toLowerCase().includes(q)
+  )
+})
 
 const subtotal = computed(() =>
   lineItems.value.reduce((sum, item) => sum + item.total, 0)

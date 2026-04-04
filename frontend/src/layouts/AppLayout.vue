@@ -9,8 +9,8 @@
     >
       <!-- Logo -->
       <div class="h-14 flex items-center px-4 border-b border-gray-200 shrink-0">
-        <div class="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
-          <span class="text-green-600 font-bold text-sm">A</span>
+        <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+          <span class="text-blue-600 font-bold text-sm">A</span>
         </div>
         <span
           class="ml-3 text-sm font-semibold text-gray-900 whitespace-nowrap transition-opacity duration-200"
@@ -26,7 +26,7 @@
           :to="item.to"
           class="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150 group/item relative"
           :class="isActive(item.to)
-            ? 'bg-green-50 text-green-700'
+            ? 'bg-blue-50 text-blue-700'
             : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
         >
           <i :class="item.icon" class="text-[15px] w-5 text-center shrink-0"></i>
@@ -37,7 +37,7 @@
           <!-- Active indicator -->
           <div
             v-if="isActive(item.to)"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-green-600 rounded-r"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-blue-600 rounded-r"
           ></div>
         </router-link>
       </nav>
@@ -63,9 +63,15 @@
     <main class="flex-1 flex flex-col overflow-hidden">
       <!-- Top bar -->
       <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
-        <div class="flex items-center gap-3">
-          <h1 class="text-sm font-medium text-gray-900">{{ pageTitle }}</h1>
-          <span v-if="pageSubtitle" class="text-xs text-gray-400 font-mono">{{ pageSubtitle }}</span>
+        <div class="flex items-center gap-2 text-sm">
+          <router-link to="/" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="pi pi-home text-xs"></i>
+          </router-link>
+          <template v-for="(crumb, i) in breadcrumbs" :key="i">
+            <i class="pi pi-angle-right text-gray-300 text-xs"></i>
+            <router-link v-if="crumb.to" :to="crumb.to" class="text-gray-400 hover:text-gray-600 transition-colors">{{ crumb.label }}</router-link>
+            <span v-else class="text-gray-900 font-medium">{{ crumb.label }}</span>
+          </template>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-[10px] font-mono text-gray-400">v1.0</span>
@@ -118,23 +124,29 @@ const visibleMenuItems = computed(() =>
   menuItems.filter((item) => auth.hasRole(...item.roles))
 )
 
-const pageTitles: Record<string, [string, string?]> = {
-  dashboard: ['Dashboard'],
-  clients: ['Klanten', 'overzicht'],
-  'client-detail': ['Klant'],
-  projects: ['Projecten', 'overzicht'],
-  'project-detail': ['Project'],
-  tasks: ['Taken', 'overzicht'],
-  'time-entries': ['Uren', 'registratie'],
-  invoices: ['Facturen', 'overzicht'],
-  proposals: ['Offertes', 'overzicht'],
-  expenses: ['Uitgaven', 'overzicht'],
-  finance: ['Financieel', 'overzicht'],
-  settings: ['Instellingen', 'beheer'],
+const breadcrumbConfig: Record<string, { label: string; parent?: { label: string; to: string } }> = {
+  dashboard: { label: 'Dashboard' },
+  clients: { label: 'Klanten' },
+  'client-detail': { label: 'Klantdetail', parent: { label: 'Klanten', to: '/clients' } },
+  projects: { label: 'Projecten' },
+  'project-detail': { label: 'Projectdetail', parent: { label: 'Projecten', to: '/projects' } },
+  tasks: { label: 'Taken' },
+  'time-entries': { label: 'Urenregistratie' },
+  invoices: { label: 'Facturen' },
+  proposals: { label: 'Offertes' },
+  expenses: { label: 'Uitgaven' },
+  finance: { label: 'Financieel overzicht' },
+  settings: { label: 'Instellingen' },
 }
 
-const pageTitle = computed(() => pageTitles[route.name as string]?.[0] || 'Accuro')
-const pageSubtitle = computed(() => pageTitles[route.name as string]?.[1] || '')
+const breadcrumbs = computed(() => {
+  const config = breadcrumbConfig[route.name as string]
+  if (!config) return [{ label: 'Accuro' }]
+  const crumbs: { label: string; to?: string }[] = []
+  if (config.parent) crumbs.push({ label: config.parent.label, to: config.parent.to })
+  crumbs.push({ label: config.label })
+  return crumbs
+})
 
 const initials = computed(() => {
   const name = auth.user?.name || ''
