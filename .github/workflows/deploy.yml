@@ -1,4 +1,4 @@
-name: Deploy
+name: "CD: Deploy naar Productie"
 
 on:
   push:
@@ -23,18 +23,18 @@ env:
 
 jobs:
   deploy:
-    name: Deploy application
+    name: "Applicatie deployen"
     runs-on: self-hosted
     environment: ${{ github.event.inputs.environment || 'production' }}
     timeout-minutes: 15
 
     steps:
-      - name: Checkout latest code
+      - name: Code ophalen
         uses: actions/checkout@v4
         with:
           clean: true
 
-      - name: Create .env from secrets
+      - name: Omgevingsvariabelen instellen
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -69,16 +69,16 @@ jobs:
           EOF
           sed -i 's/^          //' .env
 
-      - name: Build new images
+      - name: Docker images bouwen
         run: $COMPOSE_CMD build
 
-      - name: Stop application (keep volumes)
+      - name: Applicatie stoppen (volumes behouden)
         run: $COMPOSE_CMD down
 
-      - name: Start application
+      - name: Applicatie starten
         run: $COMPOSE_CMD up -d
 
-      - name: Wait for health checks
+      - name: Wachten op health checks
         run: |
           echo "Waiting for services to become healthy..."
           timeout 120 bash -c '
@@ -96,10 +96,10 @@ jobs:
             done
           '
 
-      - name: Show running services
+      - name: Draaiende services tonen
         if: always()
         run: $COMPOSE_CMD ps
 
-      - name: Show logs on failure
+      - name: Logs tonen bij fout
         if: failure()
         run: $COMPOSE_CMD logs --tail=50
