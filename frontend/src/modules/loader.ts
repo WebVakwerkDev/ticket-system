@@ -1,4 +1,5 @@
 import type { ModuleManifest, ModuleMenuItem, LoadedModules } from './types'
+import { logger } from '@/lib/logger'
 
 /**
  * Discover all module manifests from subdirectories of `src/modules/`.
@@ -21,7 +22,7 @@ function discoverManifests(): ModuleManifest[] {
   for (const [path, mod] of Object.entries(manifestFiles)) {
     const manifest = mod.default
     if (!manifest?.name || !manifest?.routes) {
-      console.warn(`[modules] ${path} heeft geen geldig manifest — overgeslagen.`)
+      logger.warn(`${path} heeft geen geldig manifest — overgeslagen.`)
       continue
     }
     manifests.push(manifest)
@@ -38,8 +39,8 @@ function resolveOrder(manifests: ModuleManifest[]): ModuleManifest[] {
   for (const manifest of manifests) {
     for (const dep of manifest.dependsOn ?? []) {
       if (!available.has(dep)) {
-        console.error(
-          `[modules] Module '${manifest.name}' heeft module '${dep}' nodig, ` +
+        logger.error(
+          `Module '${manifest.name}' heeft module '${dep}' nodig, ` +
           `maar die is niet gevonden. Controleer of de module bestaat in src/modules/.`,
         )
       }
@@ -87,8 +88,8 @@ function resolveOrder(manifests: ModuleManifest[]): ModuleManifest[] {
 
   if (ordered.length !== byName.size) {
     const cycleMembers = [...byName.keys()].filter((n) => !ordered.includes(n))
-    console.error(
-      `[modules] Circulaire afhankelijkheid gevonden tussen: ${cycleMembers.join(', ')}. ` +
+    logger.error(
+      `Circulaire afhankelijkheid gevonden tussen: ${cycleMembers.join(', ')}. ` +
       `Controleer de 'dependsOn' velden.`,
     )
   }
@@ -123,7 +124,7 @@ export function loadModules(): LoadedModules {
   const moduleNames = ordered.map((m) => m.name)
 
   if (moduleNames.length > 0) {
-    console.info(`[modules] ${moduleNames.length} modules geladen: ${moduleNames.join(', ')}`)
+    logger.info(`${moduleNames.length} modules geladen: ${moduleNames.join(', ')}`)
   }
 
   return { routes, menuItems, moduleNames }

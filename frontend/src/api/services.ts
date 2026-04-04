@@ -1,4 +1,17 @@
+import type { AxiosResponse } from 'axios'
 import api from './client'
+import type {
+  TokenResponse,
+  User,
+  Project,
+  Invoice,
+  Task,
+  TimeEntry,
+  Expense,
+  CompanySettings,
+  DashboardStats,
+  TaxSettings,
+} from './types'
 
 // Re-exports from migrated modules (backwards compatibility for views not yet migrated)
 export { tasksApi } from '@/modules/tasks/api'
@@ -7,118 +20,170 @@ export { clientsApi } from '@/modules/clients/api'
 
 // Auth
 export const authApi = {
-  login: (email: string, password: string) =>
+  login: (email: string, password: string): Promise<AxiosResponse<TokenResponse>> =>
     api.post('/auth/login', { email, password }),
-  refresh: (refreshToken: string) =>
+  refresh: (refreshToken: string): Promise<AxiosResponse<TokenResponse>> =>
     api.post('/auth/refresh', { refresh_token: refreshToken }),
-  logout: () => api.post('/auth/logout'),
-  me: () => api.get('/auth/me'),
-  changePassword: (currentPassword: string, newPassword: string) =>
+  logout: (): Promise<AxiosResponse<void>> =>
+    api.post('/auth/logout'),
+  me: (): Promise<AxiosResponse<User>> =>
+    api.get('/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string): Promise<AxiosResponse<void>> =>
     api.put('/auth/me/password', { current_password: currentPassword, new_password: newPassword }),
 }
 
 // Users
 export const usersApi = {
-  list: () => api.get('/users'),
-  get: (id: string) => api.get(`/users/${id}`),
-  create: (data: any) => api.post('/users', data),
-  update: (id: string, data: any) => api.patch(`/users/${id}`, data),
-  delete: (id: string) => api.delete(`/users/${id}`),
+  list: (): Promise<AxiosResponse<User[]>> =>
+    api.get('/users'),
+  get: (id: string): Promise<AxiosResponse<User>> =>
+    api.get(`/users/${id}`),
+  create: (data: Partial<User>): Promise<AxiosResponse<User>> =>
+    api.post('/users', data),
+  update: (id: string, data: Partial<User>): Promise<AxiosResponse<User>> =>
+    api.patch(`/users/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/users/${id}`),
 }
 
 // Projects
 export const projectsApi = {
-  list: (params?: any) => api.get('/projects', { params }),
-  get: (id: string) => api.get(`/projects/${id}`),
-  getBySlug: (slug: string) => api.get(`/projects/by-slug/${slug}`),
-  create: (data: any) => api.post('/projects', data),
-  update: (id: string, data: any) => api.patch(`/projects/${id}`, data),
-  delete: (id: string) => api.delete(`/projects/${id}`),
+  list: (params?: Record<string, unknown>): Promise<AxiosResponse<Project[]>> =>
+    api.get('/projects', { params }),
+  get: (id: string): Promise<AxiosResponse<Project>> =>
+    api.get(`/projects/${id}`),
+  getBySlug: (slug: string): Promise<AxiosResponse<Project>> =>
+    api.get(`/projects/by-slug/${slug}`),
+  create: (data: Partial<Project>): Promise<AxiosResponse<Project>> =>
+    api.post('/projects', data),
+  update: (id: string, data: Partial<Project>): Promise<AxiosResponse<Project>> =>
+    api.patch(`/projects/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/projects/${id}`),
 }
 
 // Communication
 export const communicationApi = {
-  list: (projectId: string) => api.get(`/projects/${projectId}/communications`),
-  create: (projectId: string, data: any) => api.post(`/projects/${projectId}/communications`, data),
-  delete: (id: string) => api.delete(`/communications/${id}`),
+  list: (projectId: string): Promise<AxiosResponse<unknown[]>> =>
+    api.get(`/projects/${projectId}/communications`),
+  create: (projectId: string, data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.post(`/projects/${projectId}/communications`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/communications/${id}`),
 }
 
 // Notes
 export const notesApi = {
-  list: (projectId: string) => api.get(`/projects/${projectId}/notes`),
-  create: (projectId: string, data: any) => api.post(`/projects/${projectId}/notes`, data),
-  delete: (id: string) => api.delete(`/notes/${id}`),
+  list: (projectId: string): Promise<AxiosResponse<unknown[]>> =>
+    api.get(`/projects/${projectId}/notes`),
+  create: (projectId: string, data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.post(`/projects/${projectId}/notes`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/notes/${id}`),
 }
 
 // Invoices
 export const invoicesApi = {
-  list: (params?: any) => api.get('/invoices', { params }),
-  get: (id: string) => api.get(`/invoices/${id}`),
-  create: (data: any) => api.post('/invoices', data),
-  update: (id: string, data: any) => api.patch(`/invoices/${id}`, data),
-  delete: (id: string) => api.delete(`/invoices/${id}`),
-  markPaid: (id: string) => api.post(`/invoices/${id}/mark-paid`),
-  downloadPdf: (id: string) => api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
+  list: (params?: Record<string, unknown>): Promise<AxiosResponse<Invoice[]>> =>
+    api.get('/invoices', { params }),
+  get: (id: string): Promise<AxiosResponse<Invoice>> =>
+    api.get(`/invoices/${id}`),
+  create: (data: Partial<Invoice>): Promise<AxiosResponse<Invoice>> =>
+    api.post('/invoices', data),
+  update: (id: string, data: Partial<Invoice>): Promise<AxiosResponse<Invoice>> =>
+    api.patch(`/invoices/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/invoices/${id}`),
+  markPaid: (id: string): Promise<AxiosResponse<Invoice>> =>
+    api.post(`/invoices/${id}/mark-paid`),
+  downloadPdf: (id: string): Promise<AxiosResponse<Blob>> =>
+    api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
 }
 
 // Proposals
 export const proposalsApi = {
-  list: () => api.get('/proposals'),
-  listByProject: (projectId: string) => api.get(`/proposals/by-project/${projectId}`),
-  get: (id: string) => api.get(`/proposals/${id}`),
-  create: (data: any) => api.post('/proposals', data),
-  update: (id: string, data: any) => api.patch(`/proposals/${id}`, data),
-  delete: (id: string) => api.delete(`/proposals/${id}`),
-  downloadPdf: (id: string) => api.get(`/proposals/${id}/pdf`, { responseType: 'blob' }),
+  list: (): Promise<AxiosResponse<unknown[]>> =>
+    api.get('/proposals'),
+  listByProject: (projectId: string): Promise<AxiosResponse<unknown[]>> =>
+    api.get(`/proposals/by-project/${projectId}`),
+  get: (id: string): Promise<AxiosResponse<unknown>> =>
+    api.get(`/proposals/${id}`),
+  create: (data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.post('/proposals', data),
+  update: (id: string, data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.patch(`/proposals/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/proposals/${id}`),
+  downloadPdf: (id: string): Promise<AxiosResponse<Blob>> =>
+    api.get(`/proposals/${id}/pdf`, { responseType: 'blob' }),
 }
 
 // Repositories
 export const repositoriesApi = {
-  list: (projectId: string) => api.get(`/projects/${projectId}/repositories`),
-  create: (projectId: string, data: any) => api.post(`/projects/${projectId}/repositories`, data),
-  delete: (id: string) => api.delete(`/repositories/${id}`),
+  list: (projectId: string): Promise<AxiosResponse<unknown[]>> =>
+    api.get(`/projects/${projectId}/repositories`),
+  create: (projectId: string, data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.post(`/projects/${projectId}/repositories`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/repositories/${id}`),
 }
 
 // Links
 export const linksApi = {
-  list: (projectId: string) => api.get(`/projects/${projectId}/links`),
-  create: (projectId: string, data: any) => api.post(`/projects/${projectId}/links`, data),
-  delete: (id: string) => api.delete(`/links/${id}`),
+  list: (projectId: string): Promise<AxiosResponse<unknown[]>> =>
+    api.get(`/projects/${projectId}/links`),
+  create: (projectId: string, data: Record<string, unknown>): Promise<AxiosResponse<unknown>> =>
+    api.post(`/projects/${projectId}/links`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/links/${id}`),
 }
 
 // Time Entries
 export const timeEntriesApi = {
-  list: (params?: any) => api.get('/time-entries', { params }),
-  create: (data: any) => api.post('/time-entries', data),
-  update: (id: string, data: any) => api.put(`/time-entries/${id}`, data),
-  delete: (id: string) => api.delete(`/time-entries/${id}`),
-  summary: (year?: number) => api.get('/time-entries/summary', { params: year ? { year } : {} }),
+  list: (params?: Record<string, unknown>): Promise<AxiosResponse<TimeEntry[]>> =>
+    api.get('/time-entries', { params }),
+  create: (data: Partial<TimeEntry>): Promise<AxiosResponse<TimeEntry>> =>
+    api.post('/time-entries', data),
+  update: (id: string, data: Partial<TimeEntry>): Promise<AxiosResponse<TimeEntry>> =>
+    api.put(`/time-entries/${id}`, data),
+  delete: (id: string): Promise<AxiosResponse<void>> =>
+    api.delete(`/time-entries/${id}`),
+  summary: (year?: number): Promise<AxiosResponse<unknown>> =>
+    api.get('/time-entries/summary', { params: year ? { year } : {} }),
 }
 
 // Finance
 export const financeApi = {
-  overview: (year?: number) => api.get('/finance/overview', { params: year ? { year } : {} }),
-  monthlyReport: (year: number, month: number, format = 'json') =>
+  overview: (year?: number): Promise<AxiosResponse<unknown>> =>
+    api.get('/finance/overview', { params: year ? { year } : {} }),
+  monthlyReport: (year: number, month: number, format = 'json'): Promise<AxiosResponse<unknown>> =>
     api.get('/finance/reports/monthly', { params: { year, month, format }, responseType: format === 'pdf' ? 'blob' : 'json' }),
-  yearlyReport: (year: number, format = 'json', includeUnpaid = false) =>
+  yearlyReport: (year: number, format = 'json', includeUnpaid = false): Promise<AxiosResponse<unknown>> =>
     api.get('/finance/reports/yearly', { params: { year, format, include_unpaid: includeUnpaid }, responseType: format === 'pdf' ? 'blob' : 'json' }),
-  taxSettings: (year: number) => api.get(`/finance/tax-settings/${year}`),
-  updateTaxSettings: (year: number, data: any) => api.put(`/finance/tax-settings/${year}`, data),
-  taxSummary: (year: number) => api.get(`/finance/tax-summary/${year}`),
+  taxSettings: (year: number): Promise<AxiosResponse<TaxSettings>> =>
+    api.get(`/finance/tax-settings/${year}`),
+  updateTaxSettings: (year: number, data: Partial<TaxSettings>): Promise<AxiosResponse<TaxSettings>> =>
+    api.put(`/finance/tax-settings/${year}`, data),
+  taxSummary: (year: number): Promise<AxiosResponse<unknown>> =>
+    api.get(`/finance/tax-summary/${year}`),
 }
 
 // Dashboard
 export const dashboardApi = {
-  stats: () => api.get('/dashboard/stats'),
+  stats: (): Promise<AxiosResponse<DashboardStats>> =>
+    api.get('/dashboard/stats'),
 }
 
 // Settings
 export const settingsApi = {
-  get: () => api.get('/settings'),
-  update: (data: any) => api.put('/settings', data),
+  get: (): Promise<AxiosResponse<CompanySettings>> =>
+    api.get('/settings'),
+  update: (data: Partial<CompanySettings>): Promise<AxiosResponse<CompanySettings>> =>
+    api.put('/settings', data),
 }
 
 // Export
 export const exportApi = {
-  database: (password: string) => api.post('/export/database', { password }),
+  database: (password: string): Promise<AxiosResponse<unknown>> =>
+    api.post('/export/database', { password }),
 }

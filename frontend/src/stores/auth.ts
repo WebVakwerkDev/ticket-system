@@ -2,15 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/api/services'
 import { setAccessToken } from '@/api/client'
+import type { User } from '@/api/types'
 import router from '@/router'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  is_active: boolean
-}
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
