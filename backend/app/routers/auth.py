@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
+from app.config import get_settings
 from app.core.security import verify_password, hash_password, create_access_token, create_refresh_token, decode_token
 from app.core.auth import store_refresh_token, get_stored_refresh_token, delete_refresh_token
 from app.core.dependencies import get_current_user, get_client_ip
 from app.services.audit_service import create_audit_log
 from app.models.user import User
-from app.schemas.auth import LoginRequest, TokenResponse, RefreshRequest, PasswordChangeRequest
+from app.schemas.auth import LoginRequest, TokenResponse, PasswordChangeRequest
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 async def login(
     body: LoginRequest,
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
     result = await db.execute(
@@ -29,11 +31,22 @@ async def login(
             detail="Invalid email or password",
         )
 
+    settings = get_settings()
     access_token = create_access_token({"sub": user.id, "role": user.role})
     refresh_token = create_refresh_token({"sub": user.id})
 
     user_agent = request.headers.get("User-Agent", "")
     await store_refresh_token(user.id, refresh_token, user_agent)
+
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        path="/api/v1/auth/refresh",
+    )
 
     await create_audit_log(
         db, "User", user.id, "LOGIN",
@@ -42,19 +55,27 @@ async def login(
         user_agent=user_agent,
     )
 
-    return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+    return TokenResponse(access_token=access_token)
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(body: RefreshRequest, request: Request, db: AsyncSession = Depends(get_db)) -> TokenResponse:
-    payload = decode_token(body.refresh_token)
+async def refresh_token(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> TokenResponse:
+    settings = get_settings()
+    token_from_cookie = request.cookies.get("refresh_token")
+    if not token_from_cookie:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No refresh token")
+
+    payload = decode_token(token_from_cookie)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
     user_id = payload.get("sub")
     stored = await get_stored_refresh_token(user_id)
-    if stored != body.refresh_token:
-        # Possible token theft — invalidate all tokens for this user
+    if stored != token_from_cookie:
         await delete_refresh_token(user_id)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token reuse detected")
 
@@ -69,12 +90,29 @@ async def refresh_token(body: RefreshRequest, request: Request, db: AsyncSession
     user_agent = request.headers.get("User-Agent", "")
     await store_refresh_token(user.id, new_refresh, user_agent)
 
-    return TokenResponse(access_token=new_access, refresh_token=new_refresh)
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        path="/api/v1/auth/refresh",
+    )
+
+    return TokenResponse(access_token=new_access)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(current_user: User = Depends(get_current_user)) -> None:
+async def logout(
+    response: Response,
+    current_user: User = Depends(get_current_user),
+) -> None:
     await delete_refresh_token(current_user.id)
+    response.delete_cookie(
+        key="refresh_token",
+        path="/api/v1/auth/refresh",
+    )
 
 
 @router.get("/me")
