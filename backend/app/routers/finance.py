@@ -10,6 +10,7 @@ import calendar
 
 from app.database import get_db
 from app.core.dependencies import require_role, get_business_settings
+from app.services.tax_service import TaxCalculator
 from app.core.rbac import Role
 from app.services.pdf_service import generate_report_pdf
 from app.models.invoice import Invoice, InvoiceStatus
@@ -19,8 +20,7 @@ from app.models.business_settings import BusinessSettings
 from app.models.tax_year_settings import TaxYearSettings
 from app.schemas.finance import (
     FinanceOverview, VatBreakdown, QuarterVatSummary, MonthlyReport, YearlyReport,
-    TaxYearSettingsResponse, TaxYearSettingsUpdate, TaxSummary, IBSchijf,
-    KostenCategorie,
+    TaxYearSettingsResponse, TaxYearSettingsUpdate, TaxSummary, KostenCategorie,
 )
 
 router = APIRouter(prefix="/api/v1/finance", tags=["finance"])
@@ -39,11 +39,6 @@ _DEFAULTS = {
     "ib_bracket_1": Decimal("38441.00"),
     "ib_bracket_2": Decimal("76817.00"),
 }
-
-
-def _nl_currency(v: Decimal) -> str:
-    """Format a Decimal as a Dutch integer currency string, e.g. 38.441."""
-    return f"{int(v):,}".replace(",", ".")
 
 
 async def _get_or_default_tax_settings(db: AsyncSession, year: int) -> TaxYearSettingsResponse:
@@ -193,21 +188,18 @@ async def get_tax_summary(
 ) -> TaxSummary:
     s = await _get_or_default_tax_settings(db, year)
 
-    # Omzet: betaalde facturen in jaar (subtotal excl BTW)
     omzet_result = await db.execute(
         select(func.coalesce(func.sum(Invoice.subtotal), 0))
         .where(Invoice.status == InvoiceStatus.PAID.value, extract("year", Invoice.issue_date) == year)
     )
     omzet = omzet_result.scalar() or Decimal("0")
 
-    # Kosten: uitgaven excl. BTW in jaar
     kosten_result = await db.execute(
         select(func.coalesce(func.sum(Expense.amount_excl_vat), 0))
         .where(extract("year", Expense.date) == year)
     )
     kosten = kosten_result.scalar() or Decimal("0")
 
-    # Kosten per categorie — group by raw column, substitute NULL→Overig in Python
     cat_result = await db.execute(
         select(
             Expense.category,
@@ -222,67 +214,7 @@ async def get_tax_summary(
         for r in cat_result.all()
     ]
 
-    brutowinst = omzet - kosten
-
-    # Aftrekposten
-    zelfstandigenaftrek = s.zelfstandigenaftrek
-    startersaftrek = s.startersaftrek if s.startersaftrek_enabled else Decimal("0")
-    winst_na_aftrek = max(brutowinst - zelfstandigenaftrek - startersaftrek, Decimal("0"))
-
-    # MKB-winstvrijstelling
-    mkb_vrijstelling = (winst_na_aftrek * s.mkb_vrijstelling_rate / Decimal("100")).quantize(Decimal("0.01"))
-    belastbare_winst = max(winst_na_aftrek - mkb_vrijstelling, Decimal("0"))
-
-    # Inkomstenbelasting per schijf
-    ib_schijven: list[IBSchijf] = []
-    resterend = belastbare_winst
-
-    # Schijf 1
-    in_schijf_1 = min(resterend, s.ib_bracket_1)
-    ib_1 = (in_schijf_1 * s.ib_rate_1 / Decimal("100")).quantize(Decimal("0.01"))
-    ib_schijven.append(IBSchijf(label=f"Schijf 1 (t/m €{_nl_currency(s.ib_bracket_1)})", rate=s.ib_rate_1, inkomen_in_schijf=in_schijf_1, belasting=ib_1))
-    resterend = max(resterend - s.ib_bracket_1, Decimal("0"))
-
-    # Schijf 2
-    in_schijf_2 = min(resterend, s.ib_bracket_2 - s.ib_bracket_1)
-    ib_2 = (in_schijf_2 * s.ib_rate_2 / Decimal("100")).quantize(Decimal("0.01"))
-    ib_schijven.append(IBSchijf(label=f"Schijf 2 (€{_nl_currency(s.ib_bracket_1)} – €{_nl_currency(s.ib_bracket_2)})", rate=s.ib_rate_2, inkomen_in_schijf=in_schijf_2, belasting=ib_2))
-    resterend = max(resterend - (s.ib_bracket_2 - s.ib_bracket_1), Decimal("0"))
-
-    # Schijf 3
-    in_schijf_3 = resterend
-    ib_3 = (in_schijf_3 * s.ib_rate_3 / Decimal("100")).quantize(Decimal("0.01"))
-    ib_schijven.append(IBSchijf(label=f"Schijf 3 (boven €{_nl_currency(s.ib_bracket_2)})", rate=s.ib_rate_3, inkomen_in_schijf=in_schijf_3, belasting=ib_3))
-
-    ib_totaal = ib_1 + ib_2 + ib_3
-
-    # Zvw-premie
-    zvw_grondslag = min(belastbare_winst, s.zvw_max_inkomen)
-    zvw_premie = (zvw_grondslag * s.zvw_rate / Decimal("100")).quantize(Decimal("0.01"))
-
-    totaal_te_reserveren = ib_totaal + zvw_premie
-
-    return TaxSummary(
-        year=year,
-        omzet=omzet,
-        kosten=kosten,
-        brutowinst=brutowinst,
-        zelfstandigenaftrek=zelfstandigenaftrek,
-        startersaftrek_enabled=s.startersaftrek_enabled,
-        startersaftrek=startersaftrek,
-        winst_na_aftrek=winst_na_aftrek,
-        mkb_vrijstelling_rate=s.mkb_vrijstelling_rate,
-        mkb_vrijstelling=mkb_vrijstelling,
-        belastbare_winst=belastbare_winst,
-        ib_schijven=ib_schijven,
-        ib_totaal=ib_totaal,
-        zvw_rate=s.zvw_rate,
-        zvw_grondslag=zvw_grondslag,
-        zvw_premie=zvw_premie,
-        totaal_te_reserveren=totaal_te_reserveren,
-        settings=s,
-        kosten_per_categorie=kosten_per_categorie,
-    )
+    return TaxCalculator(s).calculate(omzet, kosten, kosten_per_categorie)
 
 
 @router.get("/reports/monthly")
