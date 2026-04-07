@@ -69,7 +69,7 @@ jobs:
               python3 -c "
           import sys, json
           services = [json.loads(line) for line in sys.stdin if line.strip()]
-          unhealthy = [s[\"Service\"] for s in services if s.get(\"Health\") not in (\"healthy\", \"\")]
+          unhealthy = [s[\"Service\"] for s in services if s.get(\"Health\") not in (\"healthy\", \"\", None)]
           if unhealthy:
               print(f\"Waiting on: {unhealthy}\")
               sys.exit(1)
