@@ -1,3 +1,10 @@
+import sys
+from unittest.mock import MagicMock
+
+# Mock WeasyPrint before any app imports — libpango system libs not available in test env
+_weasyprint_mock = MagicMock()
+sys.modules["weasyprint"] = _weasyprint_mock
+
 import os
 
 # Set test environment variables BEFORE importing app modules
