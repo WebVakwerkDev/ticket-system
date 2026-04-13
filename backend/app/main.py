@@ -39,6 +39,11 @@ async def lifespan(app: FastAPI):
     await _seed_admin_user()
     await _seed_business_settings()
 
+    # Initialize OAuth RSA key and seed OAuth client
+    _init_oauth_rsa_key(settings)
+    async with async_session() as db:
+        await _seed_oauth_client(db)
+
     yield
 
     await engine.dispose()
@@ -101,6 +106,63 @@ async def _seed_business_settings():
         db.add(bs)
         await db.commit()
         logger.info("business_settings_seeded", company=settings.SEED_COMPANY_NAME)
+
+
+def _init_oauth_rsa_key(settings) -> None:
+    """Load or auto-generate the RSA private key used for JWT signing."""
+    import logging
+
+    import app.core.oauth as oauth_core
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    _logger = logging.getLogger(__name__)
+
+    if settings.OAUTH_RSA_PRIVATE_KEY:
+        oauth_core.init_rsa_key(settings.OAUTH_RSA_PRIVATE_KEY)
+    else:
+        _logger.warning(
+            "OAUTH_RSA_PRIVATE_KEY not set — generating ephemeral RSA key. "
+            "DO NOT use this in production."
+        )
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).decode()
+        oauth_core.init_rsa_key(pem)
+
+
+async def _seed_oauth_client(db) -> None:
+    """Seed a test OAuth client if SEED_OAUTH_CLIENT_ID is configured."""
+    from sqlalchemy import select
+
+    from app.core.security import hash_password
+    from app.models.oauth_client import OAuthClient
+
+    settings = get_settings()
+    if not settings.SEED_OAUTH_CLIENT_ID:
+        return
+
+    result = await db.execute(
+        select(OAuthClient).where(OAuthClient.client_id == settings.SEED_OAUTH_CLIENT_ID)
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        return
+
+    client = OAuthClient(
+        client_id=settings.SEED_OAUTH_CLIENT_ID,
+        client_secret_hash=hash_password(settings.SEED_OAUTH_CLIENT_SECRET),
+        name=settings.SEED_OAUTH_CLIENT_NAME,
+        redirect_uris=[settings.SEED_OAUTH_REDIRECT_URI],
+        allowed_scopes="openid profile email",
+        is_active=True,
+    )
+    db.add(client)
+    await db.commit()
+    logger.info("oauth_client_seeded", client_id=settings.SEED_OAUTH_CLIENT_ID)
 
 
 def create_app() -> FastAPI:
