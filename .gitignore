@@ -62,10 +62,9 @@ venv/
 
 # Old files
 *.old
-<<<<<<< Updated upstream
-=======
 
 # Git worktrees
 .worktrees/
+
+# Generated docs / plans (local only)
 /docs
->>>>>>> Stashed changes
